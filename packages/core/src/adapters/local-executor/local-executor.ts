@@ -26,7 +26,7 @@ import type {
   Snapshot,
 } from '../../ports/executor.js';
 import { ExecutorError, type ExecutorErrorReason } from './executor-error.js';
-import { isConfigurationSurface, patchPaths } from './patch-paths.js';
+import { isConfigurationSurface, patchPaths } from '../../domain/patch-paths.js';
 import { spawnProcess, type ProcessOutput, type ProcessRunner } from './process.js';
 
 export interface LocalExecutorOptions {
