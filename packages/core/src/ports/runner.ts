@@ -23,8 +23,8 @@ export interface RunRequest {
   readonly strictMcpConfig: boolean;
   /** The suite's opt-in limits; empty by default (ADR 0008). */
   readonly limits: Limits;
-  /** `none` for one-turn judges (ADR 0007). */
-  readonly tools: 'all' | 'none';
+  /** `none` for one-turn judges (ADR 0007); `read_only` (Read, Glob, Grep only) for agentic judges exploring a run folder. */
+  readonly tools: 'all' | 'read_only' | 'none';
   /** Overrides `limits.maxTurns`; judges pass 1. */
   readonly maxTurns?: number;
   /** JSON Schema enforcing the final answer; the result carries `structuredOutput`. */
