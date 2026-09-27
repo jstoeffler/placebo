@@ -147,7 +147,7 @@ module.exports = {
   ],
   options: {
     doNotFollow: { path: 'node_modules' },
-    exclude: { path: '^packages/[^/]+/(dist|\\.tsbuild|coverage)/' },
+    exclude: { path: '^packages/[^/]+/(bin|dist|\\.tsbuild|coverage)/' },
     tsPreCompilationDeps: true,
     combinedDependencies: true,
     tsConfig: { fileName: 'tsconfig.base.json' },
