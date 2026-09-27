@@ -13,7 +13,14 @@ import { err, ok } from '../kernel/result.js';
 import type { JudgeContext } from './context.js';
 import { commandEvidence } from './evidence.js';
 import { errorGrade, refOf } from './grades.js';
-import { askJudge, inJudgeFolder, issuesText, type JudgeValidator } from './judge.js';
+import {
+  askJudge,
+  inJudgeFolder,
+  issuesText,
+  type JudgeAnswer,
+  type JudgeValidator,
+  spendOf,
+} from './judge.js';
 import { COMPARISON_SYSTEM_PROMPT, comparisonPrompt } from './judge-prompts.js';
 
 type ComparisonSpec = Extract<GraderSpec, { type: 'comparison' }>;
@@ -92,9 +99,7 @@ async function compareOne(
     outputSchema: COMPARISON_JUDGE_OUTPUT_SCHEMA,
   };
 
-  const raw: unknown[] = [];
-  const reasons: string[] = [];
-  let wins = 0;
+  const given: JudgeAnswer<ComparisonJudgeOutput>[] = [];
   const asked = await inJudgeFolder(input, undefined, async (folder) => {
     for (let repeat = 1; repeat <= spec.repeats; repeat++) {
       const answer = await askJudge(input, query, folder, validateComparison);
@@ -103,15 +108,15 @@ async function compareOne(
           spec.repeats > 1 ? ` (repeat ${String(repeat)} of ${String(spec.repeats)})` : '';
         return `${answer.error}${which}`;
       }
-      raw.push(answer.value.raw);
-      reasons.push(answer.value.value.reason);
-      if (answer.value.value.better === position) wins += 1;
+      given.push(answer.value);
     }
     return undefined;
   });
   const failure = asked.ok ? asked.value : asked.error;
   if (failure !== undefined) return errorGrade(ref, 'judge', failure);
 
+  const reasons = given.map((answer) => answer.value.reason);
+  const wins = given.filter((answer) => answer.value.better === position).length;
   const score = wins / spec.repeats;
   return {
     grader: ref,
@@ -127,7 +132,8 @@ async function compareOne(
           ? reasons.join('')
           : reasons.map((r, i) => `${String(i + 1)}: ${r}`).join('\n'),
       model: input.judgeModel,
-      raw,
+      raw: given.map((answer) => answer.raw),
+      spend: spendOf(given),
     },
   };
 }

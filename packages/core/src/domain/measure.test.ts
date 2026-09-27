@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { sampleChange } from '../testing/fixtures.js';
+import { sampleChange, sampleJudgeSpend } from '../testing/fixtures.js';
 import { RunnerEvent } from './events.js';
 import { Grade } from './grade.js';
 import { deriveMeasurements, deriveOutcome } from './measure.js';
@@ -133,6 +133,7 @@ describe('GradeDetail additions', () => {
         reason: 'b handles the edge case.',
         model: 'claude-opus-5-5',
         raw: [{ better: 'b', reason: 'b handles the edge case.' }],
+        spend: sampleJudgeSpend,
       },
     };
     const error = {
@@ -159,6 +160,7 @@ describe('GradeDetail additions', () => {
         reason: '',
         model: 'm',
         raw: [],
+        spend: sampleJudgeSpend,
       },
     });
     expect(result.error?.issues.map((i) => `${i.path.join('.')}: ${i.message}`)).toEqual([

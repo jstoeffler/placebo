@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { ReviewId, RunId } from '../kernel/ids.js';
+import { TokenUsage } from './events.js';
 import { ChecklistAnswer } from './review.js';
 import { GRADER_TYPES } from './suite.js';
 
@@ -12,6 +13,15 @@ export const GraderRef = z.discriminatedUnion('type', [
   z.strictObject({ type: z.literal('review'), index: z.null() }),
 ]);
 export type GraderRef = z.infer<typeof GraderRef>;
+
+/** What a judge grade cost: summed over every repeat's judge call. */
+export const JudgeSpend = z.strictObject({
+  costUsd: z.number().nonnegative(),
+  tokens: TokenUsage,
+  /** Judge calls made, one per repeat. */
+  calls: z.int().nonnegative(),
+});
+export type JudgeSpend = z.infer<typeof JudgeSpend>;
 
 /** Why a grade has its score; shown next to the change in the report. */
 export const GradeDetail = z.discriminatedUnion('type', [
@@ -33,6 +43,7 @@ export const GradeDetail = z.discriminatedUnion('type', [
     raw: z.array(z.unknown()),
     /** Checklist judges: the final answer per question. */
     answers: z.array(ChecklistAnswer).optional(),
+    spend: JudgeSpend,
   }),
   /**
    * A comparison judge's verdict for the run the grade is stored on (always a treatment run):
@@ -48,6 +59,7 @@ export const GradeDetail = z.discriminatedUnion('type', [
     model: z.string(),
     /** The schema-enforced answer of each repeat, verbatim. */
     raw: z.array(z.unknown()),
+    spend: JudgeSpend,
   }),
   /** The grader could not produce a score (command failed to spawn, judge answer invalid, ...); scored 0. */
   z.strictObject({ type: z.literal('error'), message: z.string() }),

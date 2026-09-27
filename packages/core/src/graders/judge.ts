@@ -1,4 +1,5 @@
-import type { ResultEvent } from '../domain/events.js';
+import type { ResultEvent, TokenUsage } from '../domain/events.js';
+import type { JudgeSpend } from '../domain/grade.js';
 import { err, ok, type Result } from '../kernel/result.js';
 import type { RunFolder } from '../ports/executor.js';
 import { RunnerInfraError, type RunRequest } from '../ports/runner.js';
@@ -17,10 +18,26 @@ export interface JudgeQuery {
   readonly agentic?: boolean;
 }
 
-/** A judge answer that passed validation, with the structured output verbatim. */
+/** A judge answer that passed validation, with the structured output verbatim and its cost. */
 export interface JudgeAnswer<T> {
   readonly value: T;
   readonly raw: unknown;
+  readonly costUsd: number;
+  readonly tokens: TokenUsage;
+}
+
+/** The spend of a judge grade: the sum over its answers, one call each. */
+export function spendOf(answers: readonly JudgeAnswer<unknown>[]): JudgeSpend {
+  const tokens: TokenUsage = { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 };
+  let costUsd = 0;
+  for (const answer of answers) {
+    costUsd += answer.costUsd;
+    tokens.input += answer.tokens.input;
+    tokens.output += answer.tokens.output;
+    tokens.cacheRead += answer.tokens.cacheRead;
+    tokens.cacheWrite += answer.tokens.cacheWrite;
+  }
+  return { costUsd, tokens, calls: answers.length };
 }
 
 /** Validates a judge's structured output; the error is a message for the grade detail. */
@@ -94,8 +111,12 @@ export async function askJudge<T>(
   validate: JudgeValidator<T>,
 ): Promise<Result<JudgeAnswer<T>, string>> {
   let result: ResultEvent;
+  let tokens: TokenUsage;
   try {
-    ({ result } = await ctx.runner.run(judgeRequest(ctx, query, folder), () => undefined));
+    ({ result, usage: tokens } = await ctx.runner.run(
+      judgeRequest(ctx, query, folder),
+      () => undefined,
+    ));
   } catch (error) {
     if (error instanceof RunnerInfraError) throw error;
     return err(`judge could not run: ${messageOf(error)}`);
@@ -107,7 +128,7 @@ export async function askJudge<T>(
   if (raw === undefined) return err('judge returned no structured output');
   const valid = validate(raw);
   if (!valid.ok) return err(`judge answer is invalid: ${valid.error}`);
-  return ok({ value: valid.value, raw });
+  return ok({ value: valid.value, raw, costUsd: result.costUsd, tokens });
 }
 
 export function messageOf(error: unknown): string {

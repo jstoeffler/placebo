@@ -76,6 +76,12 @@ export const sampleChange = {
   bytes: 39,
 };
 
+export const sampleJudgeSpend = {
+  costUsd: 0.03,
+  tokens: { input: 2000, output: 150, cacheRead: 0, cacheWrite: 0 },
+  calls: 1,
+};
+
 export const sampleGrades = [
   {
     grader: { type: 'command', index: 0 },
@@ -104,6 +110,7 @@ export const sampleGrades = [
         { question: 'Rounds half up?', yes: true },
         { question: 'Keeps signature?', yes: true },
       ],
+      spend: sampleJudgeSpend,
     },
   },
 ];
@@ -279,6 +286,7 @@ export function comparisonGrade(won: boolean): unknown {
       reason: won ? 'This one is better.' : 'The other one is better.',
       model: 'claude-opus-5-5',
       raw: [{ better: won ? 'a' : 'b', reason: 'Clearer.' }],
+      spend: sampleJudgeSpend,
     },
   };
 }

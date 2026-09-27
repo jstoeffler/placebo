@@ -326,6 +326,11 @@ describe('gradeRun: checklist judge', () => {
           { question: 'Does it round half up?', yes: true, note: 'reason 0' },
           { question: 'Does `refund` keep its signature?', yes: false, note: 'reason 1' },
         ],
+        spend: {
+          costUsd: 0,
+          tokens: { input: 100, output: 20, cacheRead: 0, cacheWrite: 0 },
+          calls: 1,
+        },
       },
     });
     expect(grades[0]).not.toHaveProperty('passed');
@@ -372,7 +377,11 @@ describe('gradeRun: checklist judge', () => {
   });
 
   it('averages repeats and keeps every answer', async () => {
-    const plans = [answers(true, true), answers(true, false), answers(false, false)];
+    const costing = (plan: FakePlan): FakePlan => ({
+      ...plan,
+      result: { ...plan.result, costUsd: 0.02 },
+    });
+    const plans = [answers(true, true), answers(true, false), answers(false, false)].map(costing);
     const { ctx, runner } = setup([{ type: 'checklist', questions: QUESTIONS_PATH, repeats: 3 }], {
       plan: () => plans[runner.requests.length - 1]!,
     });
@@ -381,6 +390,11 @@ describe('gradeRun: checklist judge', () => {
     expect(grade?.score).toBe(1);
     if (grade?.detail.type !== 'judge') throw new Error('expected a judge detail');
     expect(grade.detail.raw).toHaveLength(3);
+    expect(grade.detail.spend).toEqual({
+      costUsd: 0.06,
+      tokens: { input: 300, output: 60, cacheRead: 0, cacheWrite: 0 },
+      calls: 3,
+    });
     expect(grade.detail.answers).toEqual([
       {
         question: 'Does it round half up?',

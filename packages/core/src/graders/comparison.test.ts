@@ -250,6 +250,11 @@ describe('gradeComparisons', () => {
     expect(runner.requests[0]!.prompt).toBe(runner.requests[1]!.prompt);
     expect(only?.grade.score).toBe(0.5);
     expect(only?.grade.detail).toMatchObject({
+      spend: {
+        costUsd: 0,
+        tokens: { input: 200, output: 40, cacheRead: 0, cacheWrite: 0 },
+        calls: 2,
+      },
       preferred: false,
       reason: '1: first\n2: second',
       raw: [

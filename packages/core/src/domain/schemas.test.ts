@@ -245,6 +245,17 @@ describe('Grade', () => {
     expect(issuesOf(Grade, withOpponent)).toEqual(['detail: Unrecognized key: "opponentRunId"']);
   });
 
+  it('requires the judge spend, with whole call counts', () => {
+    const judge = sampleGrades[1]!;
+    const { spend, ...withoutSpend } = judge.detail;
+    expect(issuesOf(Grade, { ...judge, detail: withoutSpend })).toEqual([
+      'detail.spend: Invalid input: expected object, received undefined',
+    ]);
+    expect(
+      issuesOf(Grade, { ...judge, detail: { ...judge.detail, spend: { ...spend, calls: 1.5 } } }),
+    ).toEqual(['detail.spend.calls: Invalid input: expected int, received number']);
+  });
+
   it('rejects an unknown detail type', () => {
     expect(issuesOf(Grade, withPath(sampleGrades[0]!, ['detail', 'type'], 'stdout'))).toEqual([
       "detail.type: Invalid discriminator value. Expected 'command' | 'check' | 'judge' | 'comparison' | 'error' | 'review'",

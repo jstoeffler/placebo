@@ -9,7 +9,15 @@ import type { GraderSpec } from '../domain/suite.js';
 import { err, ok } from '../kernel/result.js';
 import type { GradingContext } from './context.js';
 import { errorGrade } from './grades.js';
-import { askJudge, inJudgeFolder, issuesText, type JudgeValidator, messageOf } from './judge.js';
+import {
+  askJudge,
+  inJudgeFolder,
+  issuesText,
+  type JudgeAnswer,
+  type JudgeValidator,
+  messageOf,
+  spendOf,
+} from './judge.js';
 import {
   AGENTIC_ADDENDUM,
   CHECKLIST_SYSTEM_PROMPT,
@@ -82,8 +90,7 @@ export async function gradeChecklist(
     return ok(parsed.data);
   };
 
-  const repeats: ChecklistJudgeOutput[] = [];
-  const raw: unknown[] = [];
+  const given: JudgeAnswer<ChecklistJudgeOutput>[] = [];
   const asked = await inJudgeFolder(
     ctx,
     spec.agentic ? ctx.runFolder : undefined,
@@ -95,8 +102,7 @@ export async function gradeChecklist(
             spec.repeats > 1 ? ` (repeat ${String(repeat)} of ${String(spec.repeats)})` : '';
           return `${answer.error}${which}`;
         }
-        repeats.push(answer.value.value);
-        raw.push(answer.value.raw);
+        given.push(answer.value);
       }
       return undefined;
     },
@@ -104,14 +110,18 @@ export async function gradeChecklist(
   const failure = asked.ok ? asked.value : asked.error;
   if (failure !== undefined) return errorGrade(ref, 'judge', failure);
 
+  const repeats = given.map((answer) => answer.value);
+  const raw = given.map((answer) => answer.raw);
   const answers: ChecklistAnswer[] = questions.map((question, i) => {
-    const given = repeats.flatMap((output) => output.answers.slice(i, i + 1));
-    const yesCount = given.filter((a) => a.yes).length;
+    const replies = repeats.flatMap((output) => output.answers.slice(i, i + 1));
+    const yesCount = replies.filter((a) => a.yes).length;
     const note =
-      given.length === 1
-        ? given.map((a) => a.reason).join('')
-        : given.map((a, r) => `${String(r + 1)}: ${a.yes ? 'yes' : 'no'}, ${a.reason}`).join('\n');
-    return { question, yes: yesCount * 2 > given.length, note };
+      replies.length === 1
+        ? replies.map((a) => a.reason).join('')
+        : replies
+            .map((a, r) => `${String(r + 1)}: ${a.yes ? 'yes' : 'no'}, ${a.reason}`)
+            .join('\n');
+    return { question, yes: yesCount * 2 > replies.length, note };
   });
   const score =
     repeats.reduce((sum, output) => sum + output.answers.filter((a) => a.yes).length, 0) /
@@ -124,6 +134,13 @@ export async function gradeChecklist(
     grader: ref,
     kind: 'judge',
     score,
-    detail: { type: 'judge', model: ctx.judgeModel, reasoning, raw, answers },
+    detail: {
+      type: 'judge',
+      model: ctx.judgeModel,
+      reasoning,
+      raw,
+      answers,
+      spend: spendOf(given),
+    },
   };
 }
