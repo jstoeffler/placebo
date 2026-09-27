@@ -9,7 +9,7 @@ export const DEFAULT_SETTING_SOURCES: readonly SettingSource[] = ['project'];
 
 /** What to run. Every field is explicit so a stored run can say exactly how it was started. */
 export interface RunRequest {
-  /** The run folder (or, for judges, a config-stripped copy). */
+  /** The run folder, or for judges a judge folder from the executor. */
   readonly cwd: string;
   /** Sent bare, with no wrapper. */
   readonly prompt: string;
