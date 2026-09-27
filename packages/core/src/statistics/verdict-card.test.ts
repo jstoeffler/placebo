@@ -58,7 +58,7 @@ describe('buildVerdictCard', () => {
   it('adds checklist and win rate rows when those grades exist', () => {
     const exp = experiment(['a']);
     const runs = [
-      makeRun({ taskId: 'a', grades: [checklistGrade(1)] }),
+      makeRun({ taskId: 'a', arm: 'control', grades: [checklistGrade(1)] }),
       makeRun({ taskId: 'a', arm: 'none', grades: [checklistGrade(2), comparisonGrade(true)] }),
     ];
     const { rows } = card(runs, exp);
@@ -98,8 +98,8 @@ describe('buildVerdictCard', () => {
       ...passRuns('a', 'control', [false]),
       ...passRuns('a', 'none', [false]),
       ...passRuns('a', 'other', [true]),
-      makeRun({ taskId: 'b' }),
-      makeRun({ taskId: 'b', arm: 'none' }),
+      makeRun({ taskId: 'b', arm: 'control', grades: [] }),
+      makeRun({ taskId: 'b', arm: 'none', grades: [] }),
     ];
     expect(card(runs, exp).deadTasks).toEqual([]);
   });
@@ -109,7 +109,7 @@ describe('buildVerdictCard', () => {
     const runs = [
       ...passRuns('a', 'control', [true, true]),
       ...passRuns('a', 'none', [true]),
-      makeRun({ taskId: 'a', arm: 'none', outcome: 'crashed' }),
+      makeRun({ taskId: 'a', arm: 'none', outcome: 'crashed', grades: [] }),
     ];
     const passRate = card(runs, exp).rows[0];
     expect(passRate).toMatchObject({ metric: 'passRate', difference: -50, runCount: 4 });
@@ -129,7 +129,7 @@ describe('buildVerdictCard', () => {
     const exp = experiment(['a']);
     const runs = [
       ...passRuns('a', 'control', [true, false]),
-      makeRun({ taskId: 'a', arm: 'none', measurements: { costUsd: 0.3 } }),
+      makeRun({ taskId: 'a', arm: 'none', measurements: { costUsd: 0.3 }, grades: [] }),
     ];
     const { perTask } = card(runs, exp);
     expect(perTask).toHaveLength(2);

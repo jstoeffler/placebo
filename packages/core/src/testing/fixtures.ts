@@ -1,6 +1,9 @@
 // Valid sample values of every domain type, as plain input objects. Tests start from these and
 // change one field, so each test shows exactly what it is about.
 
+import type { z } from 'zod';
+import { Experiment } from '../domain/experiment.js';
+import { Review } from '../domain/review.js';
 import { Run } from '../domain/run.js';
 
 const T0 = '2026-09-27T10:00:00.000Z';
@@ -186,41 +189,70 @@ export const sampleResults = {
   reviews: [sampleReview],
 };
 
-let runCounter = 0;
+/** Top-level overrides for a builder; an override of `undefined` removes the field. */
+type Overrides<Schema extends z.ZodType> = {
+  [K in keyof z.input<Schema>]?: z.input<Schema>[K] | undefined;
+};
 
-export interface MakeRunInput {
-  /** `control` or a variant name. Defaults to `control`. */
-  readonly arm?: string;
-  readonly taskId?: string;
-  readonly outcome?: string;
-  /** Shallow overrides of `sampleMeasurements`; `tokens` is merged too. */
+function build<Schema extends z.ZodType>(
+  schema: Schema,
+  sample: object,
+  overrides: object,
+): z.output<Schema> {
+  const merged: Record<string, unknown> = { ...sample, ...overrides };
+  for (const [name, value] of Object.entries(merged))
+    if (value === undefined) Reflect.deleteProperty(merged, name);
+  return schema.parse(merged);
+}
+
+/**
+ * Overrides for `makeRun`: any top-level `Run` field, plus two shorthands. `arm` may be an arm
+ * name (`control` or a variant name); `measurements` is merged into `sampleMeasurements`, tokens
+ * included, so a test names only the fields it is about.
+ */
+export type MakeRunOverrides = Omit<Overrides<typeof Run>, 'arm' | 'measurements' | 'grades'> & {
+  readonly arm?: z.input<typeof Run>['arm'] | string;
   readonly measurements?: Partial<Omit<typeof sampleMeasurements, 'tokens'>> & {
     readonly tokens?: Partial<typeof sampleMeasurements.tokens>;
   };
-  /** Defaults to no grades. */
+  /** Grade inputs; validated by the `Run` schema. */
   readonly grades?: readonly unknown[];
+};
+
+function armInput(arm: z.input<typeof Run>['arm'] | string): z.input<typeof Run>['arm'] {
+  if (typeof arm !== 'string') return arm;
+  return arm === 'control'
+    ? { kind: 'control' }
+    : { kind: 'treatment', variant: arm, patch: `variants/${arm}.patch` };
 }
 
-/** A parsed `Run` built from `sampleRun`, with a fresh id. */
-export function makeRun(input: MakeRunInput = {}): Run {
-  runCounter += 1;
-  const arm = input.arm ?? 'control';
-  return Run.parse({
-    ...sampleRun,
-    id: `run-${String(runCounter)}`,
-    taskId: input.taskId ?? sampleRun.taskId,
-    arm:
-      arm === 'control'
-        ? { kind: 'control' }
-        : { kind: 'treatment', variant: arm, patch: `variants/${arm}.patch` },
-    outcome: input.outcome ?? 'completed',
-    measurements: {
-      ...sampleMeasurements,
-      ...input.measurements,
-      tokens: { ...sampleMeasurements.tokens, ...input.measurements?.tokens },
-    },
-    grades: input.grades ?? [],
+/** A parsed `Run` from `sampleRun` with top-level fields replaced by `overrides`. */
+export function makeRun(overrides: MakeRunOverrides = {}): Run {
+  const { arm, measurements, ...rest } = overrides;
+  return build(Run, sampleRun, {
+    ...rest,
+    ...('arm' in overrides && { arm: arm === undefined ? undefined : armInput(arm) }),
+    ...('measurements' in overrides && {
+      measurements:
+        measurements === undefined
+          ? undefined
+          : {
+              ...sampleMeasurements,
+              ...measurements,
+              tokens: { ...sampleMeasurements.tokens, ...measurements.tokens },
+            },
+    }),
   });
+}
+
+/** A parsed `Experiment` from `sampleExperiment` with top-level fields replaced by `overrides`. */
+export function makeExperiment(overrides: Overrides<typeof Experiment> = {}): Experiment {
+  return build(Experiment, sampleExperiment, overrides);
+}
+
+/** A parsed `Review` from `sampleReview` with top-level fields replaced by `overrides`. */
+export function makeReview(overrides: Overrides<typeof Review> = {}): Review {
+  return build(Review, sampleReview, overrides);
 }
 
 /** A deterministic `command` grade. */

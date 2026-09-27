@@ -41,3 +41,4 @@ export * from './adapters/local-executor/executor-error.js';
 export * from './adapters/local-executor/local-executor.js';
 export * from './adapters/local-executor/patch-paths.js';
 export * from './adapters/local-executor/process.js';
+export * from './adapters/memory-store/memory-run-store.js';

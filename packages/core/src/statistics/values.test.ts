@@ -56,7 +56,7 @@ describe('metricValue', () => {
     });
 
     it('is 0 for an ungraded run of a task known to have deterministic graders', () => {
-      const run = makeRun({ outcome: 'crashed' });
+      const run = makeRun({ outcome: 'crashed', grades: [] });
       expect(metricValue(run, 'passRate', { deterministicGraders: true })).toBe(0);
       expect(metricValue(run, 'passRate', { deterministicGraders: false })).toBeUndefined();
     });
@@ -84,7 +84,7 @@ describe('metricValue', () => {
     });
 
     it('is undefined on control runs, even with comparison grades', () => {
-      const run = makeRun({ grades: [comparisonGrade(true)] });
+      const run = makeRun({ arm: 'control', grades: [comparisonGrade(true)] });
       expect(metricValue(run, 'winRate')).toBeUndefined();
     });
 
