@@ -27,7 +27,8 @@
     "provenance": true
   },
   "scripts": {
-    "build": "tsdown"
+    "build": "tsdown",
+    "smoke": "jiti scripts/smoke-runner.ts"
   },
   "dependencies": {
     "@anthropic-ai/claude-agent-sdk": "0.3.283",
