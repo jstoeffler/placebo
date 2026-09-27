@@ -2,11 +2,11 @@
   "extends": "../../tsconfig.base.json",
   "compilerOptions": {
     "lib": ["es2025", "dom", "dom.iterable"],
-    "types": ["node"],
+    "types": ["node", "vite/client"],
     "jsx": "react-jsx",
     "module": "preserve",
     "moduleResolution": "bundler"
   },
-  "include": ["src", "*.ts"],
+  "include": ["src", "scripts", "*.ts"],
   "references": [{ "path": "../core" }]
 }

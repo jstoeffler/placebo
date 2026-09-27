@@ -37,6 +37,12 @@ describe('report build', () => {
 
   it('inlines the application script', () => {
     expect(html).toMatch(/<script type="module"[^>]*>[\s\S]{1000,}<\/script>/);
-    expect(html).toContain('No results embedded');
+    expect(html).toContain('No results in this report');
+  });
+
+  it('carries the results placeholder for the cli to replace', () => {
+    expect(html).toContain(
+      '<script id="placebo-results" type="application/json"><!--PLACEBO_RESULTS--></script>',
+    );
   });
 });
