@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { TaskId } from '../kernel/ids.js';
 import type { MarginKey } from './suite.js';
 
 /** One measured quantity per run that gets a difference, a range and a verdict. */
@@ -32,6 +33,12 @@ export interface MetricInfo {
    * the metric can be helps, harms or no evidence but never placebo.
    */
   readonly margin: MarginKey | null;
+  /**
+   * When set, each task's treatment mean is compared with this fixed value instead of the
+   * control arm's runs, and only treatment runs count. Win rate uses 0.5: a treatment that wins
+   * half its comparisons makes no difference.
+   */
+  readonly reference?: number;
 }
 
 /** In card order: pass rate and cost lead by convention (brief §10). */
@@ -45,7 +52,7 @@ export const METRICS: Readonly<Record<Metric, MetricInfo>> = {
   turns: { label: 'turns', higherIsBetter: false, unit: 'absolute', margin: null },
   durationMs: { label: 'duration', higherIsBetter: false, unit: 'percent', margin: 'duration' },
   checklist: { label: 'checklist', higherIsBetter: true, unit: 'absolute', margin: null },
-  winRate: { label: 'win rate', higherIsBetter: true, unit: 'pts', margin: null },
+  winRate: { label: 'win rate', higherIsBetter: true, unit: 'pts', margin: null, reference: 0.5 },
 };
 
 /** The single tag on a metric row (brief §10, ADR 0005). */
@@ -69,6 +76,11 @@ export const MetricRow = z
     taskCount: z.int().nonnegative(),
     /** Runs that contributed, both arms. */
     runCount: z.int().nonnegative(),
+    /**
+     * Tasks left out of this row because the difference is undefined on them: a `percent`
+     * metric whose control mean is zero. Absent when none were left out.
+     */
+    excludedTasks: z.array(TaskId).optional(),
   })
   .refine(({ range: [lo, hi] }) => lo <= hi, {
     error: 'range must be [low, high]',
