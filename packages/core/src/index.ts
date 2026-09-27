@@ -28,3 +28,6 @@ export * from './ports/executor.js';
 export * from './ports/reporter.js';
 export * from './ports/run-store.js';
 export * from './ports/runner.js';
+
+// adapters
+export * from './adapters/memory-store/memory-run-store.js';

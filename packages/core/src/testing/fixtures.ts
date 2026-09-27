@@ -1,6 +1,11 @@
 // Valid sample values of every domain type, as plain input objects. Tests start from these and
 // change one field, so each test shows exactly what it is about.
 
+import type { z } from 'zod';
+import { Experiment } from '../domain/experiment.js';
+import { Review } from '../domain/review.js';
+import { Run } from '../domain/run.js';
+
 const T0 = '2026-09-27T10:00:00.000Z';
 const T1 = '2026-09-27T10:05:00.000Z';
 const SHA_A = 'a'.repeat(64);
@@ -183,3 +188,34 @@ export const sampleResults = {
   warnings: [{ type: 'few_tasks', taskCount: 1, threshold: 5 }],
   reviews: [sampleReview],
 };
+
+/** Top-level overrides for a builder; an override of `undefined` removes the field. */
+type Overrides<Schema extends z.ZodType> = {
+  [K in keyof z.input<Schema>]?: z.input<Schema>[K] | undefined;
+};
+
+function build<Schema extends z.ZodType>(
+  schema: Schema,
+  sample: object,
+  overrides: Overrides<Schema>,
+): z.output<Schema> {
+  const merged: Record<string, unknown> = { ...sample, ...overrides };
+  for (const [name, value] of Object.entries(merged))
+    if (value === undefined) Reflect.deleteProperty(merged, name);
+  return schema.parse(merged);
+}
+
+/** A parsed `Run` from `sampleRun` with top-level fields replaced by `overrides`. */
+export function makeRun(overrides: Overrides<typeof Run> = {}): Run {
+  return build(Run, sampleRun, overrides);
+}
+
+/** A parsed `Experiment` from `sampleExperiment` with top-level fields replaced by `overrides`. */
+export function makeExperiment(overrides: Overrides<typeof Experiment> = {}): Experiment {
+  return build(Experiment, sampleExperiment, overrides);
+}
+
+/** A parsed `Review` from `sampleReview` with top-level fields replaced by `overrides`. */
+export function makeReview(overrides: Overrides<typeof Review> = {}): Review {
+  return build(Review, sampleReview, overrides);
+}
