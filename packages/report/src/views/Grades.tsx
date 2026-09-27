@@ -2,25 +2,27 @@ import type {
   ChecklistAnswer,
   Grade,
   GradeDetail,
+  JudgeSpend,
   Review,
   Run,
   TaskSummary,
 } from '@placebo-eval/core/results';
 import { ArmLabel, useReport } from '../context.js';
 import { armName, graderLabel, runOrdinal, type RunFilter } from '../data/model.js';
-import { formatDuration } from '../format.js';
+import { formatCount, formatCurrency, formatDuration } from '../format.js';
 import { toHash } from '../route.js';
 
 type DetailOf<T extends GradeDetail['type']> = Extract<GradeDetail, { type: T }>;
 
 function scoreText(grade: Grade): string {
+  if (grade.detail.type === 'error') return 'error';
   if (grade.passed !== undefined) return grade.passed ? 'pass' : 'fail';
   const answers =
     grade.detail.type === 'judge' || grade.detail.type === 'review'
       ? grade.detail.answers
       : undefined;
   if (answers !== undefined) return `${String(grade.score)} of ${String(answers.length)} yes`;
-  if (grade.grader.type === 'comparison') return grade.score >= 1 ? 'won' : 'lost';
+  if (grade.detail.type === 'comparison') return grade.detail.preferred ? 'won' : 'lost';
   return `score ${String(grade.score)}`;
 }
 
@@ -83,7 +85,11 @@ function GradeBody({
     case 'check':
       return <p>{detail.message}</p>;
     case 'judge':
-      return <JudgeBody detail={detail} filter={filter} />;
+      return <JudgeBody detail={detail} />;
+    case 'comparison':
+      return <ComparisonBody detail={detail} filter={filter} />;
+    case 'error':
+      return <p className="grade-error">{detail.message}</p>;
     case 'review':
       return (
         <>
@@ -129,32 +135,67 @@ function Output({ label, text }: { readonly label: string; readonly text: string
   );
 }
 
-function JudgeBody({
+function JudgeBody({ detail }: { readonly detail: DetailOf<'judge'> }) {
+  return (
+    <>
+      <p className="grade-by">Judged by {detail.model}</p>
+      {detail.answers !== undefined && <Answers answers={detail.answers} />}
+      <p className="reasoning">{detail.reasoning}</p>
+      <Spend spend={detail.spend} />
+    </>
+  );
+}
+
+function ComparisonBody({
   detail,
   filter,
 }: {
-  readonly detail: DetailOf<'judge'>;
+  readonly detail: DetailOf<'comparison'>;
   readonly filter: RunFilter;
 }) {
   return (
     <>
       <p className="grade-by">Judged by {detail.model}</p>
-      {detail.opponentRunId !== undefined && (
-        <Opponent runId={detail.opponentRunId} shownAs={detail.shownAs} filter={filter} />
-      )}
-      {detail.answers !== undefined && <Answers answers={detail.answers} />}
-      <p className="reasoning">{detail.reasoning}</p>
+      <Opponent runId={detail.opponentRunId} position={detail.position} filter={filter} />
+      <p>
+        {detail.preferred ? 'The judge preferred this run.' : 'The judge preferred the other run.'}
+      </p>
+      <p className="reasoning">{detail.reason}</p>
+      <Spend spend={detail.spend} />
     </>
+  );
+}
+
+function Spend({ spend }: { readonly spend: JudgeSpend }) {
+  const { tokens } = spend;
+  return (
+    <dl className="facts">
+      <div>
+        <dt>Judge cost</dt>
+        <dd>{formatCurrency(spend.costUsd)}</dd>
+      </div>
+      <div>
+        <dt>Judge tokens</dt>
+        <dd>
+          {formatCount(tokens.input + tokens.cacheRead + tokens.cacheWrite)} in,{' '}
+          {formatCount(tokens.output)} out
+        </dd>
+      </div>
+      <div>
+        <dt>Judge calls</dt>
+        <dd>{spend.calls}</dd>
+      </div>
+    </dl>
   );
 }
 
 function Opponent({
   runId,
-  shownAs,
+  position,
   filter,
 }: {
   readonly runId: string;
-  readonly shownAs?: 'a' | 'b' | undefined;
+  readonly position?: 'a' | 'b' | undefined;
   readonly filter: RunFilter;
 }) {
   const { index } = useReport();
@@ -170,10 +211,10 @@ function Opponent({
           <ArmLabel name={armName(opponent.arm)} />
         </a>
       )}
-      {shownAs !== undefined && (
+      {position !== undefined && (
         <>
-          ; this run was shown as <strong>{shownAs}</strong>, the other as{' '}
-          <strong>{shownAs === 'a' ? 'b' : 'a'}</strong>
+          ; this run was shown as <strong>{position}</strong>, the other as{' '}
+          <strong>{position === 'a' ? 'b' : 'a'}</strong>
         </>
       )}
       .

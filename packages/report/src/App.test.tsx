@@ -4,6 +4,8 @@ import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { App } from './App.js';
 import { loadResults, type ReportMode } from './data/load.js';
+import { runOrdinal } from './data/model.js';
+import { formatCurrency } from './format.js';
 import { fixture, fixtureText } from './testing/fixtures.js';
 
 function renderReport(name: 'rich' | 'minimal', hash = '#/', mode: ReportMode = 'report') {
@@ -200,7 +202,7 @@ describe('run detail', () => {
     expect(document.querySelector('.diff-path')?.textContent).toBe('src/billing/refund.ts');
   });
 
-  it('shows the judge reasoning, the comparison and the reviews', () => {
+  it('shows the judge reasoning and spend, and the reviews', () => {
     const reviewed = results.runs.find((candidate) =>
       candidate.grades.some((grade) => grade.kind === 'review'),
     )!;
@@ -208,8 +210,52 @@ describe('run detail', () => {
     expect(screen.getByText(/^Reviewed by /)).toBeDefined();
     expect(screen.getAllByText(/^Judged by claude-opus/).length).toBeGreaterThan(0);
     const judge = reviewed.grades.find((grade) => grade.detail.type === 'judge')!;
-    if (judge.detail.type === 'judge')
-      expect(screen.getByText(judge.detail.reasoning)).toBeDefined();
+    if (judge.detail.type !== 'judge') throw new Error('expected a judge grade');
+    expect(screen.getByText(judge.detail.reasoning)).toBeDefined();
+    const card = screen.getByText(judge.detail.reasoning).closest('article')!;
+    expect(within(card).getByText('Judge cost').nextSibling?.textContent).toBe(
+      formatCurrency(judge.detail.spend.costUsd),
+    );
+    expect(within(card).getByText('Judge calls').nextSibling?.textContent).toBe('1');
+  });
+
+  it('shows a comparison with its opponent, position, preference, reason and spend', () => {
+    const compared = results.runs.find((candidate) =>
+      candidate.grades.some((grade) => grade.detail.type === 'comparison'),
+    )!;
+    const detail = compared.grades.find((grade) => grade.detail.type === 'comparison')!.detail;
+    if (detail.type !== 'comparison') throw new Error('expected a comparison grade');
+    const opponent = results.runs.find((candidate) => candidate.id === detail.opponentRunId)!;
+    const ordinal = runOrdinal(opponent, results.runs);
+    renderReport('rich', `#/runs/${compared.id}`);
+    const card = screen.getByText(detail.reason).closest('article')!;
+    const other = detail.position === 'a' ? 'b' : 'a';
+    expect(card.querySelector('.opponent')?.textContent).toBe(
+      `Compared with run ${String(ordinal)} of control; this run was shown as ${detail.position}, the other as ${other}.`,
+    );
+    expect(card.querySelector('.opponent a')?.getAttribute('href')).toBe(
+      `#/runs/${detail.opponentRunId}`,
+    );
+    expect(
+      within(card).getByText(
+        detail.preferred ? 'The judge preferred this run.' : 'The judge preferred the other run.',
+      ),
+    ).toBeDefined();
+    expect(card.querySelector('.grade-score')?.textContent).toBe(detail.preferred ? 'won' : 'lost');
+    expect(within(card).getByText('Judge cost').nextSibling?.textContent).toBe(
+      formatCurrency(detail.spend.costUsd),
+    );
+  });
+
+  it('shows the message of a grader that could not score', () => {
+    const failed = results.runs.find((candidate) =>
+      candidate.grades.some((grade) => grade.detail.type === 'error'),
+    )!;
+    renderReport('rich', `#/runs/${failed.id}`);
+    const message = screen.getByText(
+      'The judge answer failed its schema: answers has 2 items, the checklist has 3.',
+    );
+    expect(message.closest('article')?.querySelector('.grade-score')?.textContent).toBe('error');
   });
 
   it('steps to the next and previous run within the filter', async () => {

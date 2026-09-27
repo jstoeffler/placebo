@@ -23,7 +23,8 @@ describe('fixtures', () => {
     expect(results.reviews.length).toBeGreaterThan(0);
     const details = results.runs.flatMap((run) => run.grades.map((grade) => grade.detail));
     expect(details.some((d) => d.type === 'judge' && d.answers !== undefined)).toBe(true);
-    expect(details.some((d) => d.type === 'judge' && d.opponentRunId !== undefined)).toBe(true);
+    expect(details.some((d) => d.type === 'comparison')).toBe(true);
+    expect(details.some((d) => d.type === 'error')).toBe(true);
     expect(details.some((d) => d.type === 'review')).toBe(true);
   });
 

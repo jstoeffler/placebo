@@ -142,6 +142,17 @@ function sha(rng: Rng) {
   return rng.hex(64);
 }
 
+/**
+ * What one judge call per repeat cost, derived from the text the judge read and wrote so the
+ * fixture stays deterministic without drawing from the seeded source.
+ */
+function judgeSpend(read: string, wrote: string, calls = 1): Json {
+  const input = calls * (1800 + read.length * 4);
+  const output = calls * (60 + Math.round(wrote.length / 3));
+  const costUsd = Math.round(((input * 5 + output * 25) / 1_000_000) * 10000) / 10000;
+  return { costUsd, tokens: { input, output, cacheRead: 0, cacheWrite: 0 }, calls };
+}
+
 function iso(ms: number) {
   return new Date(ms).toISOString();
 }
@@ -441,7 +452,17 @@ function buildRun(opts: {
   ];
 
   let checklist: number | undefined;
-  if (opts.withChecklist && !crashed) {
+  if (opts.withChecklist && crashed) {
+    grades.push({
+      grader: { type: 'checklist', index: 2 },
+      kind: 'judge',
+      score: 0,
+      detail: {
+        type: 'error',
+        message: 'The judge answer failed its schema: answers has 2 items, the checklist has 3.',
+      },
+    });
+  } else if (opts.withChecklist) {
     const answers = task.checklist.map((question, index) => {
       const yes = rng.next() < (passed ? 0.85 : 0.35) - index * 0.05;
       return {
@@ -453,6 +474,9 @@ function buildRun(opts: {
       };
     });
     checklist = answers.filter((answer) => answer.yes).length;
+    const reasoning = passed
+      ? 'The change converts to integer cents at the boundary and caps the refund with Math.min against the captured amount. Unrelated billing code is untouched. The new test covers the cap but not tax rounding.'
+      : 'The change moves to integer cents but does not cap the refund at the captured amount, so the over-refund remains for amounts with tax. The edit is otherwise contained to the refund module.';
     grades.push({
       grader: { type: 'checklist', index: 2 },
       kind: 'judge',
@@ -460,11 +484,10 @@ function buildRun(opts: {
       detail: {
         type: 'judge',
         model: JUDGE,
-        reasoning: passed
-          ? 'The change converts to integer cents at the boundary and caps the refund with Math.min against the captured amount. Unrelated billing code is untouched. The new test covers the cap but not tax rounding.'
-          : 'The change moves to integer cents but does not cap the refund at the captured amount, so the over-refund remains for amounts with tax. The edit is otherwise contained to the refund module.',
+        reasoning,
         raw: [{ answers: answers.map((answer) => answer.yes) }],
         answers,
+        spend: judgeSpend(change.diff, reasoning),
       },
     });
   }
@@ -654,22 +677,27 @@ function rich() {
     const opponent = rng.pick(opponents);
     const edge = (entry.metrics.passRate ?? 0) - (opponent.metrics.passRate ?? 0);
     const won = edge > 0 || (edge === 0 && rng.next() < (entry.arm === 'tests-first' ? 0.6 : 0.45));
-    const shownAs = rng.next() < 0.5 ? 'a' : 'b';
-    const other = shownAs === 'a' ? 'b' : 'a';
+    const position = rng.next() < 0.5 ? 'a' : 'b';
+    const other = position === 'a' ? 'b' : 'a';
+    const reason = won
+      ? `Result ${position} keeps the arithmetic in integer cents end to end and adds a focused test; result ${other} converts back to dollars mid-calculation, which reintroduces the rounding it set out to fix.`
+      : `Result ${other} is the smaller, more direct change and caps the refund explicitly; result ${position} also rewrites the tax helper without need, which widens the change for no gain.`;
+    const shown = (entry.run.change as { diff: string }).diff;
+    const opposed = (opponent.run.change as { diff: string }).diff;
     entry.metrics.winRate = won ? 1 : 0;
     (entry.run.grades as Json[]).push({
       grader: { type: 'comparison', index: 3 },
       kind: 'judge',
       score: won ? 1 : 0,
       detail: {
-        type: 'judge',
-        model: JUDGE,
-        reasoning: won
-          ? `Result ${shownAs} keeps the arithmetic in integer cents end to end and adds a focused test; result ${other} converts back to dollars mid-calculation, which reintroduces the rounding it set out to fix.`
-          : `Result ${other} is the smaller, more direct change and caps the refund explicitly; result ${shownAs} also rewrites the tax helper without need, which widens the change for no gain.`,
-        raw: [{ better: won ? shownAs : other }],
+        type: 'comparison',
         opponentRunId: opponent.run.id,
-        shownAs,
+        position,
+        preferred: won,
+        reason,
+        model: JUDGE,
+        raw: [{ better: won ? position : other, reason }],
+        spend: judgeSpend(shown + opposed, reason),
       },
     });
   }
