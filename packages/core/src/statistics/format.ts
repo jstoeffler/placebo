@@ -49,6 +49,18 @@ export function formatRunsNeeded(
 }
 
 /**
+ * The runs-needed note of a `no_evidence` row as the card prints it, `(≈12 runs/task to decide)`
+ * or `(more than 1000 runs/task)`; `undefined` wherever {@link formatRunsNeeded} is.
+ */
+export function formatRunsNeededNote(
+  row: Pick<MetricRow, 'verdict' | 'runsNeeded' | 'taskCount'>,
+): string | undefined {
+  const runs = formatRunsNeeded(row);
+  if (runs === undefined) return undefined;
+  return row.runsNeeded === undefined ? `(${runs} runs/task)` : `(≈${runs} runs/task to decide)`;
+}
+
+/**
  * A number with an explicit sign (`+` or `-`, none for zero) and a precision that suits its
  * unit: `pts` and `percent` are whole numbers, with one decimal below 10 in magnitude; `absolute`
  * keeps at most two decimals from 1 up, and two significant digits below 1. Trailing zeros are
@@ -70,4 +82,38 @@ function decimals(magnitude: number, unit: MetricUnit): number {
 
 function trimZeros(text: string): string {
   return text.includes('.') ? text.replace(/\.?0+$/, '') : text;
+}
+
+const DOLLARS = new Intl.NumberFormat('en-US', {
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+});
+const GROUPED = new Intl.NumberFormat('en-US', { maximumFractionDigits: 0 });
+
+/** US dollars with two decimals and comma grouping: `$0.42`, `$1,204.00`. */
+export function formatCurrency(usd: number): string {
+  return `$${DOLLARS.format(usd === 0 ? 0 : usd)}`;
+}
+
+/** A token count, rounded to a whole number, with comma grouping: `12,345`. */
+export function formatTokens(count: number): string {
+  return GROUPED.format(Math.round(count));
+}
+
+/**
+ * A duration in ms: seconds with one decimal under a minute (`0.8 s`, `12.3 s`), then minutes and
+ * padded seconds (`1 m 04 s`), then hours and padded minutes (`2 h 03 m`).
+ */
+export function formatDuration(ms: number): string {
+  const tenths = Math.round(ms / 100);
+  if (tenths < 600) return `${(tenths / 10).toFixed(1)} s`;
+  const seconds = Math.round(ms / 1000);
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  if (hours > 0) return `${String(hours)} h ${pad(minutes)} m`;
+  return `${String(minutes)} m ${pad(seconds % 60)} s`;
+}
+
+function pad(value: number): string {
+  return String(value).padStart(2, '0');
 }

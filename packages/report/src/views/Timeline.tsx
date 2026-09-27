@@ -1,6 +1,6 @@
 import type { RunnerEvent } from '@placebo-eval/core/results';
 import { OUTCOME_LABEL } from '../data/model.js';
-import { formatCount, formatCurrency, formatDuration } from '../format.js';
+import { formatCurrency, formatDuration, formatTokens } from '@placebo-eval/core/format';
 
 type EventOf<T extends RunnerEvent['type']> = Extract<RunnerEvent, { type: T }>;
 
@@ -180,8 +180,8 @@ function EventStep({ event, turn }: { readonly event: RunnerEvent; readonly turn
     case 'usage':
       return (
         <p className="step-meta usage">
-          Turn {turn}: {formatCount(event.input)} in, {formatCount(event.output)} out,{' '}
-          {formatCount(event.cacheRead)} cache read, {formatCount(event.cacheWrite)} cache write
+          Turn {turn}: {formatTokens(event.input)} in, {formatTokens(event.output)} out,{' '}
+          {formatTokens(event.cacheRead)} cache read, {formatTokens(event.cacheWrite)} cache write
         </p>
       );
     case 'result':

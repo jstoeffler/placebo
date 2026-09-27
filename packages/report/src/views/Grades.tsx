@@ -9,7 +9,7 @@ import type {
 } from '@placebo-eval/core/results';
 import { ArmLabel, useReport } from '../context.js';
 import { armName, graderLabel, runOrdinal, type RunFilter } from '../data/model.js';
-import { formatCount, formatCurrency, formatDuration } from '../format.js';
+import { formatCurrency, formatDuration, formatTokens } from '@placebo-eval/core/format';
 import { toHash } from '../route.js';
 
 type DetailOf<T extends GradeDetail['type']> = Extract<GradeDetail, { type: T }>;
@@ -177,8 +177,8 @@ function Spend({ spend }: { readonly spend: JudgeSpend }) {
       <div>
         <dt>Judge tokens</dt>
         <dd>
-          {formatCount(tokens.input + tokens.cacheRead + tokens.cacheWrite)} in,{' '}
-          {formatCount(tokens.output)} out
+          {formatTokens(tokens.input + tokens.cacheRead + tokens.cacheWrite)} in,{' '}
+          {formatTokens(tokens.output)} out
         </dd>
       </div>
       <div>

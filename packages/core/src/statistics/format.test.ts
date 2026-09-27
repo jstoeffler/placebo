@@ -1,10 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import type { Metric } from '../domain/metrics.js';
 import {
+  formatCurrency,
   formatDifference,
+  formatDuration,
   formatRange,
   formatRunsNeeded,
+  formatRunsNeededNote,
   formatSigned,
+  formatTokens,
   formatVerdict,
 } from './format.js';
 
@@ -66,5 +70,54 @@ describe('formatRunsNeeded', () => {
   it('prints nothing on decided rows and on rows without tasks', () => {
     expect(formatRunsNeeded({ verdict: 'helps', taskCount: 3 })).toBeUndefined();
     expect(formatRunsNeeded({ verdict: 'no_evidence', taskCount: 0 })).toBeUndefined();
+  });
+});
+
+describe('formatRunsNeededNote', () => {
+  it('prints the note of the card, or nothing where no estimate applies', () => {
+    expect(formatRunsNeededNote({ verdict: 'no_evidence', runsNeeded: 12, taskCount: 3 })).toBe(
+      '(≈12 runs/task to decide)',
+    );
+    expect(formatRunsNeededNote({ verdict: 'no_evidence', taskCount: 3 })).toBe(
+      '(more than 1000 runs/task)',
+    );
+    expect(formatRunsNeededNote({ verdict: 'placebo', taskCount: 3 })).toBeUndefined();
+  });
+});
+
+describe('formatCurrency', () => {
+  it('prints US dollars with two decimals and comma grouping', () => {
+    expect(formatCurrency(0.42)).toBe('$0.42');
+    expect(formatCurrency(1204)).toBe('$1,204.00');
+    expect(formatCurrency(0.005)).toBe('$0.01');
+    expect(formatCurrency(0)).toBe('$0.00');
+    expect(formatCurrency(-0)).toBe('$0.00');
+  });
+});
+
+describe('formatTokens', () => {
+  it('rounds to a whole number and groups with commas', () => {
+    expect(formatTokens(12345)).toBe('12,345');
+    expect(formatTokens(999.6)).toBe('1,000');
+    expect(formatTokens(0)).toBe('0');
+  });
+});
+
+describe('formatDuration', () => {
+  it('prints seconds with one decimal under a minute', () => {
+    expect(formatDuration(800)).toBe('0.8 s');
+    expect(formatDuration(12_300)).toBe('12.3 s');
+    expect(formatDuration(0)).toBe('0.0 s');
+  });
+
+  it('prints minutes and padded seconds up to an hour', () => {
+    expect(formatDuration(59_960)).toBe('1 m 00 s');
+    expect(formatDuration(64_000)).toBe('1 m 04 s');
+    expect(formatDuration(3_599_000)).toBe('59 m 59 s');
+  });
+
+  it('prints hours and padded minutes from an hour', () => {
+    expect(formatDuration(3_600_000)).toBe('1 h 00 m');
+    expect(formatDuration(7_380_000)).toBe('2 h 03 m');
   });
 });

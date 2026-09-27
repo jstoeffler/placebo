@@ -1,13 +1,8 @@
 import { METRICS, type Metric } from '@placebo-eval/core/results';
 import { ArmLabel, useReport } from '../context.js';
 import { METRIC_ORDER } from '../data/model.js';
-import {
-  formatCount,
-  formatCurrency,
-  formatDuration,
-  formatPlain,
-  formatShare,
-} from '../format.js';
+import { formatCurrency, formatDuration, formatTokens } from '@placebo-eval/core/format';
+import { formatPlain, formatShare } from '../format.js';
 import { toHash } from '../route.js';
 
 const DEAD_TASK_NOTE =
@@ -25,7 +20,7 @@ function formatMean(metric: Metric, value: number): string {
     case 'tokensOut':
     case 'cacheRead':
     case 'cacheWrite':
-      return formatCount(value);
+      return formatTokens(value);
     case 'durationMs':
       return formatDuration(value);
     case 'turns':

@@ -2,10 +2,10 @@
 import { cleanup, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { formatCurrency } from '@placebo-eval/core/format';
 import { App } from './App.js';
 import { loadResults, type ReportMode } from './data/load.js';
 import { runOrdinal } from './data/model.js';
-import { formatCurrency } from './format.js';
 import { fixture, fixtureText } from './testing/fixtures.js';
 
 function renderReport(name: 'rich' | 'minimal', hash = '#/', mode: ReportMode = 'report') {
@@ -43,12 +43,12 @@ describe('verdict card', () => {
       ['pass rate', '-25 pts', '[-60, +10]', 'no evidence', '(≈10 runs/task to decide)'],
       ['cost', '-25 %', '[-32, -21]', 'helps'],
       ['tokens in', '-11 %', '[-25, +7.6]', 'no evidence', '(≈11 runs/task to decide)'],
-      ['tokens out', '-7.0 %', '[-21, +12]', 'no evidence', '(≈27 runs/task to decide)'],
-      ['cache read', '-7.0 %', '[-20, +11]', 'no evidence', '(≈25 runs/task to decide)'],
+      ['tokens out', '-7 %', '[-21, +12]', 'no evidence', '(≈27 runs/task to decide)'],
+      ['cache read', '-7 %', '[-20, +11]', 'no evidence', '(≈25 runs/task to decide)'],
       ['cache write', '+0.6 %', '[-0.3, +1.5]', 'placebo'],
       ['turns', '-0.9', '[-2.5, +0.7]', 'no evidence', '(≈16 runs/task to decide)'],
       ['duration', '-19 %', '[-26, -9.9]', 'helps'],
-      ['checklist', '-0.69', '[-1.35, -0.09]', 'harms'],
+      ['checklist', '-0.69', '[-1.35, -0.088]', 'harms'],
       ['win rate', '-15 pts', '[-40, +10]', 'no evidence', '(≈14 runs/task to decide)'],
     ]);
   });
@@ -64,7 +64,7 @@ describe('verdict card', () => {
     renderReport('minimal');
     const card = screen.getByRole('region', { name: /^none vs control/ });
     expect(rowTexts(card)).toEqual([
-      ['pass rate', '0.0 pts', '[-100, +100]', 'no evidence', '(more than 1000 runs/task)'],
+      ['pass rate', '0 pts', '[-100, +100]', 'no evidence', '(more than 1000 runs/task)'],
       ['cost', '-21 %', '[-38, +4.6]', 'no evidence', '(≈9 runs/task to decide)'],
     ]);
   });

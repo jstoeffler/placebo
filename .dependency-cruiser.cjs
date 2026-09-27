@@ -148,10 +148,11 @@ module.exports = {
     },
     {
       name: 'report-imports-results-contract-only',
-      comment: 'report imports only @placebo-eval/core/results from the workspace.',
+      comment:
+        'report imports only @placebo-eval/core/results and @placebo-eval/core/format from the workspace.',
       severity: 'error',
       from: { path: '^packages/report/' },
-      to: { path: '^packages/(core|cli)/', pathNot: `${CORE}results\\.ts$` },
+      to: { path: '^packages/(core|cli)/', pathNot: `${CORE}(results|format)\\.ts$` },
     },
   ],
   options: {

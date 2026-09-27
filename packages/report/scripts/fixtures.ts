@@ -624,7 +624,9 @@ function metricRow(
   if (verdict === 'no_evidence') {
     const half = (hi - lo) / 2;
     const target = Math.max(Math.abs(difference), (margin ?? Math.abs(difference)) / 2, 1e-6);
-    row.runsNeeded = Math.max(runsPerTask + 1, Math.ceil(runsPerTask * (half / target) ** 2));
+    const needed = Math.max(runsPerTask + 1, Math.ceil(runsPerTask * (half / target) ** 2));
+    // Like core, an estimate above 1000 runs per task is left out ("more than 1000").
+    if (needed <= 1000) row.runsNeeded = needed;
   }
   return row;
 }
@@ -902,7 +904,6 @@ function minimal() {
             range: [-100, 100],
             verdict: 'no_evidence',
             margin: 5,
-            runsNeeded: 1600,
             taskCount: 1,
             runCount: 2,
           },

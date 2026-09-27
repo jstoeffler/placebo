@@ -9,7 +9,8 @@ import {
   runOrdinal,
   type RunFilter,
 } from '../data/model.js';
-import { formatCount, formatCurrency, formatDuration, formatTimestamp } from '../format.js';
+import { formatCurrency, formatDuration, formatTokens } from '@placebo-eval/core/format';
+import { formatTimestamp } from '../format.js';
 import { navigate, toHash } from '../route.js';
 import { ChangeView } from './ChangeView.js';
 import { Grades } from './Grades.js';
@@ -142,10 +143,10 @@ function RunFacts({ run }: { readonly run: Run }) {
     ['Cost', formatCurrency(m.costUsd)],
     ['Turns', String(m.turns)],
     ['Duration', formatDuration(m.durationMs)],
-    ['Tokens in', formatCount(m.tokens.input)],
-    ['Tokens out', formatCount(m.tokens.output)],
-    ['Cache read', formatCount(m.tokens.cacheRead)],
-    ['Cache write', formatCount(m.tokens.cacheWrite)],
+    ['Tokens in', formatTokens(m.tokens.input)],
+    ['Tokens out', formatTokens(m.tokens.output)],
+    ['Cache read', formatTokens(m.tokens.cacheRead)],
+    ['Cache write', formatTokens(m.tokens.cacheWrite)],
     ['Tool calls', String(m.toolCalls.total)],
     ['Files read', String(m.filesRead)],
     ['Files touched', String(m.filesTouched)],

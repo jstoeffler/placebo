@@ -2,19 +2,16 @@ import {
   METRICS,
   type MetricRow,
   type Results,
-  type Verdict,
   type VerdictCard as Card,
 } from '@placebo-eval/core/results';
 import { ArmLabel } from '../context.js';
 import { orderedRows } from '../data/model.js';
-import { formatDifference, formatRange, formatRunsNeeded } from '../format.js';
-
-const VERDICT_WORD: Readonly<Record<Verdict, string>> = {
-  helps: 'helps',
-  harms: 'harms',
-  placebo: 'placebo',
-  no_evidence: 'no evidence',
-};
+import {
+  formatDifference,
+  formatRange,
+  formatRunsNeededNote,
+  formatVerdict,
+} from '@placebo-eval/core/format';
 
 /** The header line of a card, as in brief §5. */
 function cardMeta(results: Results): string {
@@ -70,19 +67,15 @@ function MetricLine({ row }: { readonly row: MetricRow }) {
       <th scope="row" className="metric">
         {info.label}
       </th>
-      <td className="num difference">{formatDifference(row.difference, info.unit)}</td>
-      <td className="num range">{formatRange(row.range, info.unit)}</td>
+      <td className="num difference">{formatDifference(row)}</td>
+      <td className="num range">{formatRange(row)}</td>
       <td className="gauge-cell">
         <Gauge row={row} />
       </td>
       <td className="verdict">
-        <span className="verdict-word">{VERDICT_WORD[row.verdict]}</span>
+        <span className="verdict-word">{formatVerdict(row.verdict)}</span>
       </td>
-      <td className="runs-needed">
-        {row.verdict === 'no_evidence' && row.runsNeeded !== undefined
-          ? formatRunsNeeded(row.runsNeeded)
-          : null}
-      </td>
+      <td className="runs-needed">{formatRunsNeededNote(row)}</td>
     </tr>
   );
 }

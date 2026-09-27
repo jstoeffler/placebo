@@ -10,7 +10,7 @@ import {
   withFilter,
   type RunFilter,
 } from '../data/model.js';
-import { formatCurrency, formatDuration } from '../format.js';
+import { formatCurrency, formatDuration } from '@placebo-eval/core/format';
 import { navigate, toHash } from '../route.js';
 
 export function RunList({ filter }: { readonly filter: RunFilter }) {
