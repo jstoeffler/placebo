@@ -4,11 +4,12 @@ import type { HiddenFile } from '../ports/executor.js';
 import { gradeChecklist } from './checklist.js';
 import { gradeCommand } from './command.js';
 import type { GradingContext } from './context.js';
+import { evidenceOf } from './evidence.js';
 import { gradeFileExists } from './file-exists.js';
+import type { CommandEvidence } from './judge-prompts.js';
 import { gradeFileModified } from './file-modified.js';
 import { errorGrade, refOf } from './grades.js';
 import { messageOf } from './judge.js';
-import type { CommandEvidence } from './judge-prompts.js';
 import { gradeRegex } from './regex.js';
 import { gradeToolUsed } from './tool-used.js';
 
@@ -88,13 +89,4 @@ async function injectHiddenFiles(ctx: GradingContext): Promise<string | undefine
   } catch (error) {
     return `hidden files could not be injected: ${messageOf(error)}`;
   }
-}
-
-function evidenceOf(command: string, grade: Grade): CommandEvidence {
-  const { detail } = grade;
-  if (detail.type === 'command') {
-    return { command, exitCode: detail.exitCode, stdout: detail.stdout, stderr: detail.stderr };
-  }
-  const error = detail.type === 'error' ? detail.message : 'no result';
-  return { command, exitCode: undefined, stdout: '', stderr: '', error };
 }

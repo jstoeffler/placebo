@@ -23,14 +23,14 @@ export const AGENTIC_ADDENDUM =
 /** System prompt of a comparison judge. */
 export const COMPARISON_SYSTEM_PROMPT = [
   'You compare two attempts by a coding agent at the same task, labeled a and b.',
-  'Each attempt is shown as the change it made to the repository, as a unified diff.',
+  'Each attempt is shown as the change it made to the repository, as a unified diff, followed by the results of checks run afterwards when there were any.',
   'Decide which attempt better accomplishes the task: correctness first, then completeness, then code quality and staying within scope.',
   'You must choose a or b; ties are not allowed. The order of the attempts is random and means nothing.',
   'Give a one-sentence reason.',
   NO_SPECULATION,
 ].join('\n');
 
-/** The result of one command grader, as shown to a checklist judge. */
+/** The result of one command grader, as shown to a judge. */
 export interface CommandEvidence {
   readonly command: string;
   /** Null when killed by a signal; undefined when the command could not run at all. */
@@ -52,11 +52,7 @@ export function checklistPrompt(input: {
     section('Task given to the agent', input.taskPrompt.trim()),
     section('Change', changeBlock(input.diff)),
   ];
-  if (input.commands.length > 0) {
-    sections.push(
-      section('Checks run after the agent finished', input.commands.map(evidence).join('\n\n')),
-    );
-  }
+  if (input.commands.length > 0) sections.push(checksSection(input.commands, '##'));
   sections.push(
     section(
       'Questions',
@@ -73,19 +69,36 @@ export function checklistPrompt(input: {
 /** User prompt of a comparison judge. */
 export function comparisonPrompt(input: {
   readonly taskPrompt: string;
-  readonly diffA: string;
-  readonly diffB: string;
+  readonly a: ComparedAttempt;
+  readonly b: ComparedAttempt;
 }): string {
   return [
     section('Task given to the agent', input.taskPrompt.trim()),
-    section('Attempt a', changeBlock(input.diffA)),
-    section('Attempt b', changeBlock(input.diffB)),
+    section('Attempt a', attemptBody(input.a)),
+    section('Attempt b', attemptBody(input.b)),
     'Which attempt better accomplishes the task, a or b?',
   ].join('\n\n');
 }
 
-function section(title: string, body: string): string {
-  return `## ${title}\n\n${body}`;
+/** One attempt as a comparison judge sees it: its change and its command graders' results. */
+export interface ComparedAttempt {
+  readonly diff: string;
+  readonly commands: readonly CommandEvidence[];
+}
+
+function attemptBody(attempt: ComparedAttempt): string {
+  const change = changeBlock(attempt.diff);
+  return attempt.commands.length === 0
+    ? change
+    : `${change}\n\n${checksSection(attempt.commands, '###')}`;
+}
+
+function checksSection(commands: readonly CommandEvidence[], level: '##' | '###'): string {
+  return section('Checks run after the agent finished', commands.map(evidence).join('\n\n'), level);
+}
+
+function section(title: string, body: string, level: '##' | '###' = '##'): string {
+  return `${level} ${title}\n\n${body}`;
 }
 
 function changeBlock(diff: string): string {

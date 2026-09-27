@@ -173,6 +173,73 @@ describe('gradeComparisons', () => {
     }
   });
 
+  it("shows each attempt's check results from its stored grades, never its arm", async () => {
+    const checked = task({
+      graders: [
+        { type: 'command', run: 'pnpm test' },
+        { type: 'comparison' },
+        { type: 'command', run: 'pnpm lint' },
+      ],
+    });
+    const command = (index: number, run: string, exitCode: number, stdout: string) => ({
+      grader: { type: 'command', index },
+      kind: 'deterministic',
+      score: exitCode === 0 ? 1 : 0,
+      passed: exitCode === 0,
+      detail: { type: 'command', command: run, exitCode, stdout, stderr: '', durationMs: 5 },
+    });
+    const withGrades = (base: Run, grades: unknown[]) => Run.parse({ ...base, grades });
+    const control = withGrades(runs[0]!, [
+      command(0, 'pnpm test', 0, 'CONTROL-TESTS-PASS'),
+      command(2, 'pnpm lint', 0, 'CONTROL-LINT-CLEAN'),
+    ]);
+    const treatment = withGrades(runs[2]!, [
+      command(0, 'pnpm test', 1, 'TREATMENT-TESTS-FAIL'),
+      {
+        grader: { type: 'command', index: 2 },
+        kind: 'deterministic',
+        score: 0,
+        passed: false,
+        detail: { type: 'error', message: 'spawn sh ENOENT' },
+      },
+    ]);
+    const { input: i, runner } = input(() => pick('a'), {
+      task: checked,
+      runs: [control, treatment],
+    });
+    const [only] = await gradeComparisons(i);
+    if (only?.grade.detail.type !== 'comparison') throw new Error('expected a comparison detail');
+    const prompt = runner.requests[0]!.prompt;
+    const [, a = '', b = ''] = prompt.split(/^## Attempt [ab]$/m);
+    const [own, other] = only.grade.detail.position === 'a' ? [a, b] : [b, a];
+
+    for (const attempt of [own, other]) {
+      expect(attempt).toContain('### Checks run after the agent finished');
+      expect(attempt.indexOf('Command: pnpm test')).toBeLessThan(
+        attempt.indexOf('Command: pnpm lint'),
+      );
+    }
+    expect(own).toContain('Exit code: 1');
+    expect(own).toContain('TREATMENT-TESTS-FAIL');
+    expect(own).toContain('Command: pnpm lint\nCould not run: spawn sh ENOENT');
+    expect(own).not.toContain('CONTROL-');
+    expect(other).toContain('Exit code: 0');
+    expect(other).toContain('CONTROL-TESTS-PASS');
+    expect(other).toContain('CONTROL-LINT-CLEAN');
+    expect(other).not.toContain('TREATMENT-');
+    const everything = `${prompt}\n${runner.requests[0]!.systemPrompt ?? ''}`.toLowerCase();
+    for (const word of ['control ', 'treatment ', 'always-green', 'variant', ' arm']) {
+      expect(everything).not.toContain(word);
+    }
+  });
+
+  it('shows no checks section for attempts without command grades', async () => {
+    const ungraded = runs.slice(0, 3).map((r) => Run.parse({ ...r, grades: [] }));
+    const { input: i, runner } = input(() => pick('a'), { runs: ungraded });
+    await gradeComparisons(i);
+    expect(runner.requests[0]!.prompt).not.toContain('Checks run after the agent finished');
+  });
+
   it('averages repeats with one position per pairing', async () => {
     const { input: i, runner } = input(
       () => (runner.requests.length % 2 === 1 ? pick('a', 'first') : pick('b', 'second')),

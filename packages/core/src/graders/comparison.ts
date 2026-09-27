@@ -11,6 +11,7 @@ import type { RunId } from '../kernel/ids.js';
 import type { Random } from '../kernel/random.js';
 import { err, ok } from '../kernel/result.js';
 import type { JudgeContext } from './context.js';
+import { commandEvidence } from './evidence.js';
 import { errorGrade, refOf } from './grades.js';
 import { askJudge, inJudgeFolder, issuesText, type JudgeValidator } from './judge.js';
 import { COMPARISON_SYSTEM_PROMPT, comparisonPrompt } from './judge-prompts.js';
@@ -36,7 +37,8 @@ export interface ComparisonGrade {
 /**
  * Runs every `comparison` grader of `task`, once all runs of the experiment exist. For each
  * treatment run of the task, in the order given, draws a random control run of the same task and
- * a random position, shows the two changes to the judge as `a` and `b` with arms hidden, and asks
+ * a random position, shows the two changes, each with its stored command graders' results, to the
+ * judge as `a` and `b` with arms hidden, and asks
  * which is better. Returns one grade per treatment run and comparison grader, to store on the
  * treatment run: score is the fraction of repeats preferring the treatment run (1 or 0 with one
  * repeat), `preferred` is true when that fraction is above one half. All repeats of a pairing use
@@ -79,12 +81,13 @@ async function compareOne(
     return errorGrade(ref, 'judge', 'no control run of this task to compare with');
   }
   const position = input.random.next() < 0.5 ? 'a' : 'b';
-  const [diffA, diffB] =
-    position === 'a'
-      ? [run.change.diff, opponent.change.diff]
-      : [opponent.change.diff, run.change.diff];
+  const attempt = (of: Run) => ({
+    diff: of.change.diff,
+    commands: commandEvidence(input.task, of.grades),
+  });
+  const [a, b] = position === 'a' ? [run, opponent] : [opponent, run];
   const query = {
-    prompt: comparisonPrompt({ taskPrompt: input.task.prompt, diffA, diffB }),
+    prompt: comparisonPrompt({ taskPrompt: input.task.prompt, a: attempt(a), b: attempt(b) }),
     systemPrompt: COMPARISON_SYSTEM_PROMPT,
     outputSchema: COMPARISON_JUDGE_OUTPUT_SCHEMA,
   };
