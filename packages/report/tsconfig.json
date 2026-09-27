@@ -1,0 +1,12 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["es2025", "dom", "dom.iterable"],
+    "types": ["node"],
+    "jsx": "react-jsx",
+    "module": "preserve",
+    "moduleResolution": "bundler"
+  },
+  "include": ["src", "*.ts"],
+  "references": [{ "path": "../core" }]
+}
