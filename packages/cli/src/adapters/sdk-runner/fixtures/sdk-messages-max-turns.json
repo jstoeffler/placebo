@@ -1,0 +1,470 @@
+[
+  {
+    "type": "system",
+    "subtype": "init",
+    "cwd": "/tmp/placebo-smoke",
+    "session_id": "7e175a40-7f4b-4fd9-9d1d-d043e36b5e69",
+    "tools": [
+      "Task",
+      "Bash",
+      "CronCreate",
+      "CronDelete",
+      "CronList",
+      "DesignSync",
+      "Edit",
+      "EnterWorktree",
+      "ExitWorktree",
+      "ListAgents",
+      "Monitor",
+      "NotebookEdit",
+      "PushNotification",
+      "Read",
+      "RemoteTrigger",
+      "ReportFindings",
+      "ScheduleWakeup",
+      "SendMessage",
+      "Skill",
+      "TaskCreate",
+      "TaskGet",
+      "TaskList",
+      "TaskStop",
+      "TaskUpdate",
+      "ToolSearch",
+      "WebFetch",
+      "WebSearch",
+      "Workflow",
+      "Write"
+    ],
+    "mcp_servers": [],
+    "model": "claude-haiku-4-5-20251001",
+    "permissionMode": "bypassPermissions",
+    "slash_commands": [
+      "deep-research",
+      "design",
+      "design-sync",
+      "dataviz",
+      "update-config",
+      "verify",
+      "debug",
+      "code-review",
+      "simplify",
+      "batch",
+      "fewer-permission-prompts",
+      "doctor",
+      "loop",
+      "schedule",
+      "claude-api",
+      "workflow-authoring",
+      "run",
+      "run-skill-generator",
+      "advisor",
+      "agents",
+      "auto-mode-setup",
+      "autocompact",
+      "clear",
+      "color",
+      "compact",
+      "config",
+      "output-style",
+      "context",
+      "effort",
+      "fast",
+      "focus",
+      "heapdump",
+      "init",
+      "mcp",
+      "import",
+      "model",
+      "__remote-workflow",
+      "workflow-launch-exec",
+      "reload-plugins",
+      "reload-skills",
+      "rename",
+      "ultrareview",
+      "security-review",
+      "usage-credits",
+      "extra-usage",
+      "usage",
+      "insights",
+      "recap",
+      "skill-doctor",
+      "goal",
+      "design-consent",
+      "design-revoke",
+      "list-agents",
+      "team-onboarding"
+    ],
+    "terminal_slash_commands": ["doctor", "color", "focus", "reload-plugins"],
+    "apiKeySource": "none",
+    "claude_code_version": "2.1.283",
+    "output_style": "default",
+    "agents": ["claude", "Explore", "general-purpose", "Plan", "statusline-setup"],
+    "skills": [
+      "deep-research",
+      "design",
+      "design-sync",
+      "dataviz",
+      "update-config",
+      "verify",
+      "debug",
+      "code-review",
+      "simplify",
+      "batch",
+      "fewer-permission-prompts",
+      "doctor",
+      "loop",
+      "schedule",
+      "claude-api",
+      "workflow-authoring",
+      "run",
+      "run-skill-generator"
+    ],
+    "plugins": [
+      {
+        "name": "agents-md",
+        "path": "builtin",
+        "source": "agents-md@builtin"
+      },
+      {
+        "name": "telemetry",
+        "path": "builtin",
+        "source": "telemetry@builtin"
+      }
+    ],
+    "capabilities": [
+      "interrupt_receipt_v1",
+      "interrupt_cancel_queued_v1",
+      "msg_lifecycle_v1",
+      "mcp_read_resource_v1",
+      "mcp_tool_ui_meta_v1"
+    ],
+    "analytics_disabled": false,
+    "product_feedback_disabled": false,
+    "uuid": "72564275-919e-414c-b25c-50f48c662074",
+    "memory_paths": {
+      "auto": "/home/user/.claude/projects/-tmp-placebo-smoke/memory/"
+    },
+    "messaging_socket_path": "/tmp/cc-socks/15884.sock",
+    "fast_mode_state": "off",
+    "fast_mode_disabled_reason": "sdk_opt_in_required",
+    "per_turn_effort_active": false,
+    "view_mode": "default"
+  },
+  {
+    "type": "system",
+    "subtype": "status",
+    "status": "requesting",
+    "session_id": "7e175a40-7f4b-4fd9-9d1d-d043e36b5e69",
+    "uuid": "b7998572-9840-45b5-bd90-cb6af005d0ef"
+  },
+  {
+    "type": "rate_limit_event",
+    "rate_limit_info": {
+      "status": "allowed",
+      "resetsAt": 1790548200,
+      "rateLimitType": "five_hour",
+      "overageStatus": "rejected",
+      "overageDisabledReason": "out_of_credits",
+      "isUsingOverage": false,
+      "unifiedWindows": {
+        "five_hour": {
+          "utilization": 0.32,
+          "resetsAt": 1790548200
+        },
+        "seven_day": {
+          "utilization": 0.21,
+          "resetsAt": 1791039600
+        }
+      }
+    },
+    "uuid": "4278f9fe-4cd0-4bc2-8753-ddc865d8a26a",
+    "session_id": "7e175a40-7f4b-4fd9-9d1d-d043e36b5e69"
+  },
+  {
+    "type": "stream_event",
+    "event": {
+      "type": "message_start",
+      "message": {
+        "model": "claude-haiku-4-5-20251001",
+        "id": "msg_011CfUVXEUSkkT3gR6NBcATv",
+        "type": "message",
+        "role": "assistant",
+        "content": [],
+        "container": null,
+        "stop_reason": null,
+        "stop_sequence": null,
+        "stop_details": null,
+        "usage": {
+          "input_tokens": 10,
+          "cache_creation_input_tokens": 9019,
+          "cache_read_input_tokens": 13909,
+          "cache_creation": {
+            "ephemeral_5m_input_tokens": 0,
+            "ephemeral_1h_input_tokens": 9019
+          },
+          "output_tokens": 1,
+          "service_tier": "standard",
+          "inference_geo": "not_available"
+        },
+        "input_transformations": [],
+        "diagnostics": null,
+        "context_management": null
+      }
+    },
+    "session_id": "7e175a40-7f4b-4fd9-9d1d-d043e36b5e69",
+    "parent_tool_use_id": null,
+    "uuid": "9b51a900-6ab8-4d68-80eb-258ee0474e7d",
+    "ttft_ms": 617,
+    "thinking_display": "updates"
+  },
+  {
+    "type": "assistant",
+    "message": {
+      "model": "claude-haiku-4-5-20251001",
+      "id": "msg_011CfUVXEUSkkT3gR6NBcATv",
+      "type": "message",
+      "role": "assistant",
+      "content": [
+        {
+          "type": "thinking",
+          "thinking": "",
+          "signature": "EuEDCrIBCBIYAipARutLTl96YPfnrkBY2AwHG2Zh1z3Et2+7Ac+G/ndGkVatoTPeF/LpKYCshlFeEABv+NyXSRjSxbu4b15MmTul2zIZY2xhdWRlLWhhaWt1LTQtNS0yMDI1MTAwMTgAQgh0aGlua2luZ1okNWFjYTIyNTAtMDE1YS00NzA1LWIyMWQtNzk4Y2U1MjkxODMzchC8TScu+/6SODomOmNow4wkiAEBqAGq2+XVBrABAhIMBL2I2DxYTetkOmeFGgyI1Pscw53AbzmZPAIiMPTM9wr5mBTDJe7oqjhfVFDWT5yyMAYuNLvCtRseoMCgxmCFivUF1snhxhOWf6HooyrbAY6zVQqBay/MY+KhLHoBrU6X9r6It1H+6OA1hbrDJWfty95IvWhkCZuyDYl87WN/+eEePDdTtBVpsusOKttEx2uImG9Mr9lJsdAxoC28TNUjrFD80Q36A8pACAzg4WE2WPUuCmYvnH+2UIkgkkpUvfHqd1VSBPpIoFGPc7dgD6FcW0GfeDLJC1Jaf746qbhiseaYScI5+8nzG07t+TuKGZ0RS76HTxeU5txug4CIaJrwRpW+IJEqUp49Wyr5G8LPEKNvYwtj46B6i16IZerA7umelBxlgX48OuS8UhgB"
+        }
+      ],
+      "container": null,
+      "stop_reason": null,
+      "stop_sequence": null,
+      "stop_details": null,
+      "usage": {
+        "input_tokens": 10,
+        "cache_creation_input_tokens": 9019,
+        "cache_read_input_tokens": 13909,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 9019
+        },
+        "output_tokens": 1,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "input_transformations": [],
+      "diagnostics": null,
+      "context_management": null
+    },
+    "parent_tool_use_id": null,
+    "session_id": "7e175a40-7f4b-4fd9-9d1d-d043e36b5e69",
+    "uuid": "88d945ae-fd86-421f-a0f6-9b0b843cf588",
+    "timestamp": "2026-09-27T19:25:30.151Z",
+    "request_id": "req_011CfUVXE9brsuPbshHzL8qi"
+  },
+  {
+    "type": "assistant",
+    "message": {
+      "model": "claude-haiku-4-5-20251001",
+      "id": "msg_011CfUVXEUSkkT3gR6NBcATv",
+      "type": "message",
+      "role": "assistant",
+      "content": [
+        {
+          "type": "tool_use",
+          "id": "toolu_01U8TFQ1ChfZuwokBFw5963s",
+          "name": "Read",
+          "input": {
+            "file_path": "/tmp/placebo-smoke/hello.txt"
+          },
+          "caller": {
+            "type": "direct"
+          }
+        }
+      ],
+      "container": null,
+      "stop_reason": null,
+      "stop_sequence": null,
+      "stop_details": null,
+      "usage": {
+        "input_tokens": 10,
+        "cache_creation_input_tokens": 9019,
+        "cache_read_input_tokens": 13909,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 9019
+        },
+        "output_tokens": 1,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "input_transformations": [],
+      "diagnostics": null,
+      "context_management": null
+    },
+    "parent_tool_use_id": null,
+    "session_id": "7e175a40-7f4b-4fd9-9d1d-d043e36b5e69",
+    "uuid": "c5d33ad5-ab4e-4f11-8e16-7b29755d90e9",
+    "timestamp": "2026-09-27T19:25:30.657Z",
+    "request_id": "req_011CfUVXE9brsuPbshHzL8qi",
+    "wire_tool_inputs": {
+      "toolu_01U8TFQ1ChfZuwokBFw5963s": {
+        "file_path": "/tmp/placebo-smoke/hello.txt"
+      }
+    }
+  },
+  {
+    "type": "user",
+    "message": {
+      "role": "user",
+      "content": [
+        {
+          "tool_use_id": "toolu_01U8TFQ1ChfZuwokBFw5963s",
+          "type": "tool_result",
+          "content": "1\thello\n2\t"
+        }
+      ]
+    },
+    "parent_tool_use_id": null,
+    "session_id": "7e175a40-7f4b-4fd9-9d1d-d043e36b5e69",
+    "uuid": "faa47c9c-0f41-4378-8d08-327f20a9fd86",
+    "timestamp": "2026-09-27T19:25:30.668Z",
+    "tool_use_result": {
+      "type": "text",
+      "file": {
+        "filePath": "/tmp/placebo-smoke/hello.txt",
+        "content": "hello\n",
+        "numLines": 2,
+        "startLine": 1,
+        "totalLines": 2
+      }
+    }
+  },
+  {
+    "type": "stream_event",
+    "event": {
+      "type": "message_delta",
+      "delta": {
+        "stop_reason": "tool_use",
+        "stop_sequence": null,
+        "stop_details": null,
+        "container": null
+      },
+      "usage": {
+        "input_tokens": 10,
+        "cache_creation_input_tokens": 9019,
+        "cache_read_input_tokens": 13909,
+        "output_tokens": 161,
+        "output_tokens_details": {
+          "thinking_tokens": 59
+        },
+        "iterations": [
+          {
+            "input_tokens": 10,
+            "output_tokens": 161,
+            "cache_read_input_tokens": 13909,
+            "cache_creation_input_tokens": 9019,
+            "cache_creation": {
+              "ephemeral_5m_input_tokens": 0,
+              "ephemeral_1h_input_tokens": 9019
+            },
+            "type": "message"
+          }
+        ]
+      },
+      "context_management": {
+        "applied_edits": []
+      }
+    },
+    "session_id": "7e175a40-7f4b-4fd9-9d1d-d043e36b5e69",
+    "parent_tool_use_id": null,
+    "uuid": "5ceb69bd-5b77-4613-b203-4190aaaf1fcd"
+  },
+  {
+    "duration_api_ms": 2487,
+    "stop_reason": "tool_use",
+    "session_id": "7e175a40-7f4b-4fd9-9d1d-d043e36b5e69",
+    "total_cost_usd": 0.021213899999999997,
+    "usage": {
+      "input_tokens": 10,
+      "cache_creation_input_tokens": 9019,
+      "cache_read_input_tokens": 13909,
+      "output_tokens": 161,
+      "output_tokens_details": {
+        "thinking_tokens": 59
+      },
+      "server_tool_use": {
+        "web_search_requests": 0,
+        "web_fetch_requests": 0
+      },
+      "service_tier": "standard",
+      "cache_creation": {
+        "ephemeral_1h_input_tokens": 9019,
+        "ephemeral_5m_input_tokens": 0
+      },
+      "inference_geo": "not_available",
+      "iterations": [
+        {
+          "input_tokens": 10,
+          "output_tokens": 161,
+          "cache_read_input_tokens": 13909,
+          "cache_creation_input_tokens": 9019,
+          "cache_creation": {
+            "ephemeral_5m_input_tokens": 0,
+            "ephemeral_1h_input_tokens": 9019
+          },
+          "type": "message"
+        }
+      ],
+      "speed": "standard"
+    },
+    "modelUsage": {
+      "claude-haiku-4-5-20251001": {
+        "inputTokens": 920,
+        "outputTokens": 173,
+        "cacheReadInputTokens": 13909,
+        "cacheCreationInputTokens": 9019,
+        "webSearchRequests": 0,
+        "costUSD": 0.021213899999999997,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000,
+        "thinkingTokens": 59,
+        "canonicalModel": "claude-haiku-4-5",
+        "provider": "firstParty",
+        "costBasis": "list"
+      }
+    },
+    "permission_denials": [],
+    "terminal_reason": "max_turns",
+    "fast_mode_state": "off",
+    "fast_mode_disabled_reason": "sdk_opt_in_required",
+    "subagent_stats": {
+      "spawned": 0,
+      "requested": {
+        "background": 0,
+        "foreground": 0,
+        "unset": 0
+      },
+      "started_in_background": 0,
+      "max_depth": 0,
+      "spawned_by_subagents": 0,
+      "completed": 0,
+      "failed": 0,
+      "killed": {
+        "parent": 0,
+        "user": 0,
+        "system": 0
+      },
+      "refused": {
+        "depth_limit": 0,
+        "concurrency_limit": 0,
+        "budget": 0
+      },
+      "by_type": {}
+    },
+    "is_error": true,
+    "num_turns": 2,
+    "subtype": "error_max_turns",
+    "errors": ["Reached maximum number of turns (1)"],
+    "type": "result",
+    "duration_ms": 1917,
+    "uuid": "4f6b5df0-e976-47f1-b32e-b8784e2f2e84",
+    "queued_turn_count": 0,
+    "result_index": 0
+  }
+]
