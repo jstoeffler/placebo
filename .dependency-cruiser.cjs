@@ -125,10 +125,19 @@ module.exports = {
     },
     {
       name: 'cli-uses-core-public-entry-points',
-      comment: 'cli imports core only through @placebo-eval/core and @placebo-eval/core/results.',
+      comment:
+        'cli imports core only through @placebo-eval/core and @placebo-eval/core/results (and its tests through @placebo-eval/core/testing).',
       severity: 'error',
       from: { path: '^packages/cli/' },
-      to: { path: CORE, pathNot: `${CORE}(index|results)\\.ts$` },
+      to: { path: CORE, pathNot: `${CORE}(index|results|testing/index)\\.ts$` },
+    },
+    {
+      name: 'only-tests-import-core-testing',
+      comment:
+        'Only *.test.ts files import @placebo-eval/core/testing (fixtures and contract suites).',
+      severity: 'error',
+      from: { path: '^packages/', pathNot: TESTS },
+      to: { path: `${CORE}testing/` },
     },
     {
       name: 'cli-does-not-import-report-code',
