@@ -30,6 +30,7 @@ export * from './ports/executor.js';
 export * from './ports/reporter.js';
 export * from './ports/run-store.js';
 export * from './ports/runner.js';
+export * from './ports/suite-source.js';
 
 // statistics
 export * from './statistics/format.js';
@@ -47,10 +48,14 @@ export * from './graders/judge-prompts.js';
 export * from './graders/questions.js';
 export * from './graders/transcript.js';
 
+// commands
+export * from './commands/load-suite.js';
+
 // adapters
 export * from './adapters/fake-executor/fake-executor.js';
 export * from './adapters/fake-runner/fake-runner.js';
 export * from './adapters/local-executor/executor-error.js';
 export * from './adapters/local-executor/local-executor.js';
 export * from './adapters/local-executor/process.js';
+export * from './adapters/local-suite/file-suite-source.js';
 export * from './adapters/memory-store/memory-run-store.js';
