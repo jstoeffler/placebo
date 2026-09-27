@@ -1,0 +1,244 @@
+name: Claude Code Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, ready_for_review]
+
+# A newer push supersedes the review of the older one.
+concurrency:
+  group: claude-review-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  claude-review:
+    # Skipped: drafts (reviewed on ready_for_review), Dependabot (its runs read the
+    # Dependabot secret store, so the token arrives empty), and the changesets
+    # "chore: version packages" PR (generated version bump and changelog only).
+    if: >-
+      github.event.pull_request.draft == false &&
+      github.actor != 'dependabot[bot]' &&
+      github.event.pull_request.user.login != 'dependabot[bot]' &&
+      github.event.pull_request.user.login != 'github-actions[bot]' &&
+      !startsWith(github.event.pull_request.title, 'chore: version packages')
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: write
+      id-token: write
+      # Lets the action's github_ci MCP server read CI status and job logs through the
+      # workflow token; the Claude app token needs no extra permission for it.
+      actions: read
+
+    # Single home for the prompt and CLI args: the retry step re-runs the same review.
+    env:
+      # Model pinned so a new release cannot change the reviewer without a commit.
+      # Task is allowlisted so subagent fan-out on large diffs is not permission-denied.
+      # The read-only git/gh commands are unioned with the action's own allowlist.
+      # The inner quotes are load-bearing: the action tokenizes with shell-quote.
+      REVIEW_CLAUDE_ARGS: '--model claude-opus-5-5 --effort high --allowedTools "Task,Bash(git diff:*),Bash(git log:*),Bash(git show:*),Bash(git blame:*),Bash(gh pr diff:*),Bash(gh pr view:*)"'
+      REVIEW_PROMPT: |
+        Environment: read-only review. No dependency install; do not run or attempt
+        build, lint, typecheck or tests, and do not caveat findings with "I couldn't
+        run the tests". CI runs `pnpm check` on this PR; read its status and job logs
+        through the github_ci MCP tools when a finding depends on it.
+
+        If, and only if, this PR's diff touches any file under `.claude/`: the checkout
+        has those files reverted to their base-branch content (a prompt-injection
+        guard, so a PR cannot rewrite the instructions you run under). Your `Read` tool
+        therefore shows the OLD file, not what the PR proposes. Review those paths via
+        `git show HEAD:<path>` instead, and say in your review that you did. This
+        applies to `.claude/**` only; every other path is the PR's real content.
+
+        Read first: `AGENTS.md` (architecture, dependency rules, testing rules,
+        conventions, ADR trigger), `CONTEXT.md` (the vocabulary), and any ADR in
+        `docs/adr/` that the diff touches the subject of. `docs/brief.md` is the source
+        of truth for behaviour.
+
+        Map the context before judging:
+        -   Start from the diff and map the blast radius: callers, importers, dependents.
+        -   Trace data flows: where input comes from and who consumes the output.
+        -   Find the cousins: similar code elsewhere solving the same problem, to catch
+            duplication or divergence from an established pattern.
+        -   Check the contracts touched: port doc comments, Zod schemas, the results
+            contract and its schema version, CLI flags and output.
+
+        Then review as a pragmatic staff engineer, on substance, not trivia:
+        -   Bugs and logic errors, error handling, security, performance, API and
+            contract changes.
+        -   Vocabulary: flag every word `CONTEXT.md` lists under _Avoid_ that appears in
+            code, identifiers, comments, docs, CLI output or report text the PR adds.
+        -   Dependency rules from `AGENTS.md`: a layer importing what it must not, core
+            reaching for the Agent SDK, SQLite or React, cli or report reaching past
+            core's public entry points, production code importing test code, cycles.
+        -   Tests spend zero tokens: any test path that could reach a real model or the
+            real SDK runner is a 🔴 bug.
+        -   Never a number without its range: any user-facing number (CLI output,
+            report, results) shown without its range.
+        -   Never a default limit (ADR 0008): any turn, cost or time limit, cap or
+            timeout on the agent that is on by default rather than an opt-in suite
+            setting.
+        -   ADR trigger: does the change make a decision that is hard to reverse,
+            surprising, or a real trade-off with no ADR? Does it contradict an
+            accepted ADR without superseding it?
+        -   Test quality: tests assert behaviour and contracts, not that mocks were
+            called; schema tests assert the exact issue path and message; randomness
+            is seeded and time comes from a fixed clock; new behaviour is tested.
+
+        On large diffs you may fan out read-only subagents (Task) to cover areas in
+        parallel. Subagents only report back to you: synthesize their findings and post
+        the final review yourself; never end the run with the progress checklist open.
+
+        ## Output rules
+
+        Open every comment you post with the literal line `**[REVIEW]**`, then a blank
+        line, then the body. The workflow greps the PR for that literal to confirm a
+        review landed. Every rule below describes that body.
+
+        The comment IS the review: text you output without posting it is discarded.
+        Your last action MUST be updating the comment with the complete final body;
+        never end the run while it still shows a placeholder or spinner.
+
+        Use the fewest words possible. Only flag problems: no praise, no summary of
+        what the PR does. If nothing to flag, the body is exactly: ✅ LGTM
+
+        Format: `<file>:L<line>: <problem>. <fix>.`
+
+        Severity prefix (optional, when mixed):
+        - 🔴 bug: broken behaviour, will cause an incident
+        - 🟡 risk: works but fragile (race, missing check, swallowed error)
+        - 🔵 nit: style, naming, micro-optimisation. Author can ignore
+        - ❓ q: genuine question, not a suggestion
+
+        Drop:
+        - "I noticed that...", "It seems like...", "You might want to consider..."
+        - "This is just a suggestion but..." (use nit: instead)
+        - "Great work!", "Looks good overall but..."
+        - Restating what the line does
+        - Hedging ("perhaps", "maybe", "I think"); if unsure use q:
+        - On re-review: recaps of resolved items, "verified", "✅ resolved", "safe to
+          merge", per-commit changelogs. Output only what is still open. If everything
+          prior is resolved and nothing new is flagged, the body is exactly: ✅ LGTM
+
+        Keep:
+        - Exact line numbers
+        - Exact symbol names in backticks
+        - A concrete fix, not "consider refactoring this"
+        - The why, when the fix is not obvious from the problem
+
+        Drop terse mode for security findings and architectural disagreements: write a
+        normal paragraph with the rationale, then resume terse for the rest.
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 1
+
+      - name: Run Claude Code Review
+        id: claude-review
+        uses: anthropics/claude-code-action@756cc22e19660d20e8cc9496b4f242475a7f7790 # v1.0.235
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          track_progress: true
+          # Findings are pasted into other agents; a "Fix this" link reads to them as an
+          # instruction to act.
+          include_fix_links: 'false'
+          claude_args: ${{ env.REVIEW_CLAUDE_ARGS }}
+          prompt: ${{ env.REVIEW_PROMPT }}
+
+      # A transient API-side rejection of the first model request costs nothing and
+      # usually clears on a re-run. Its signature in the execution log's final result:
+      # is_error true, at most one turn, zero cost. A genuine failure spends budget and
+      # takes turns, so it is not retried and stays red.
+      - name: Detect retryable transient rejection
+        id: retry-gate
+        env:
+          EXEC_FILE: ${{ steps.claude-review.outputs.execution_file }}
+        run: |
+          retry=false
+          if [[ -n "$EXEC_FILE" && -s "$EXEC_FILE" ]]; then
+            signature=$(jq -r 'map(select(.type == "result")) | last
+              | (.is_error == true and (.num_turns // 0) <= 1 and (.total_cost_usd // 0) == 0)' "$EXEC_FILE")
+            if [[ "$signature" == "true" ]]; then
+              echo "First attempt was a zero-cost, one-turn transient rejection; retrying once."
+              retry=true
+            fi
+          fi
+          echo "retry=$retry" >> "$GITHUB_OUTPUT"
+
+      - name: Run Claude Code Review (retry)
+        id: claude-review-retry
+        if: steps.retry-gate.outputs.retry == 'true'
+        uses: anthropics/claude-code-action@756cc22e19660d20e8cc9496b4f242475a7f7790 # v1.0.235
+        # Identical to the first attempt; keep these inputs in sync with it.
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          anthropic_api_key: ${{ secrets.ANTHROPIC_API_KEY }}
+          track_progress: true
+          include_fix_links: 'false'
+          claude_args: ${{ env.REVIEW_CLAUDE_ARGS }}
+          prompt: ${{ env.REVIEW_PROMPT }}
+
+      # The action exits green whenever the model produces a result, even one with
+      # is_error true (bad token, usage limit), and a clean result can still come from a
+      # run that abandoned its review. Fail the check unless a finished [REVIEW] comment
+      # exists. A missing execution file means the action skipped the PR on purpose
+      # (it does so for PRs that modify a workflow file), which is not a failure.
+      - name: Fail the check unless a review was posted
+        env:
+          EXEC_FILE: ${{ steps.claude-review-retry.outputs.execution_file || steps.claude-review.outputs.execution_file }}
+          GH_TOKEN: ${{ github.token }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+        run: |
+          if [[ -z "$EXEC_FILE" || ! -s "$EXEC_FILE" ]]; then
+            echo "No execution output: the review was skipped, not run. Nothing to verify."
+            exit 0
+          fi
+          is_error=$(jq -r 'map(select(.type == "result")) | last | .is_error' "$EXEC_FILE")
+          if [[ "$is_error" != "false" ]]; then
+            echo "::error::Claude review did not complete (is_error=$is_error), likely a rejected model call (auth or usage limit). No review was posted."
+            jq -c 'map(select(.type == "result")) | last' "$EXEC_FILE" || true
+            exit 1
+          fi
+
+          # A read failure means "could not verify", not "review missing": retry the read,
+          # and report the two cases differently. --slurp cannot combine with --jq, so jq
+          # runs as its own process.
+          comments_json="$(mktemp)"
+          fetched=false
+          for attempt in 1 2 3; do
+            if gh api "repos/$REPO/issues/$PR_NUMBER/comments" --paginate --slurp >"$comments_json" 2>/tmp/gh-comments-err; then
+              fetched=true
+              break
+            fi
+            echo "Comment read attempt $attempt failed:"
+            cat /tmp/gh-comments-err || true
+            sleep "$((attempt * 3))"
+          done
+          if [[ "$fetched" != "true" ]]; then
+            echo "::error::Could not read the PR's comments to verify the review (GitHub API error after 3 attempts). Re-run to retry."
+            exit 1
+          fi
+
+          # REST returns the app's login as "claude[bot]"; GraphQL as "claude".
+          body=$(jq -r '[.[][] | select(.user.login == "claude[bot]" or .user.login == "claude") | select(.body | contains("**[REVIEW]**"))] | last | .body // ""' "$comments_json")
+          if [[ -z "$body" ]]; then
+            echo "::error::Review ran (is_error=false) but no [REVIEW] comment exists on the PR."
+            exit 1
+          fi
+          if grep -qF -- '- [ ]' <<<"$body"; then
+            denials=$(jq -r 'map(select(.type == "result")) | last | .permission_denials_count // 0' "$EXEC_FILE")
+            echo "::error::Review comment still has unchecked progress boxes: abandoned before a verdict (permission_denials=$denials)."
+            exit 1
+          fi
+          # The action stamps in-progress comments with its spinner image; a finished run
+          # whose comment still carries it posted a placeholder, not a review.
+          if grep -qF -- '5ac382c7-e004-429b-8e35-7feb3e8f9c6f' <<<"$body"; then
+            echo "::error::Review comment is still an in-progress placeholder (spinner present); the verdict was never posted."
+            exit 1
+          fi
+          echo "Claude review completed cleanly."
