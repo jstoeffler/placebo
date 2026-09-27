@@ -15,5 +15,5 @@ export default defineConfig({
   clean: true,
   define: { __PLACEBO_VERSION__: JSON.stringify(pkg.version) },
   // Core (and its zod/yaml) is bundled; runtime dependencies of placebo-eval stay external.
-  copy: [{ from: '../report/dist/report.html', to: 'dist' }],
+  copy: [{ from: '../report/dist/report.html', to: 'dist' }, '../../LICENSE'],
 });
