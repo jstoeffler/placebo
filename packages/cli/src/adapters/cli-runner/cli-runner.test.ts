@@ -199,6 +199,20 @@ describe('CliRunner translation', () => {
     });
   });
 
+  it('sums per-turn usage to the main-loop usage the result reports', async () => {
+    for (const scenario of ['subject', 'judge', 'read-only-judge', 'max-turns'] as const) {
+      const raw = cliMessages(scenario).find((message) => message.type === 'result')
+        ?.usage as Record<string, number>;
+      const { result } = await runRecorded(scenario);
+      expect(result.usage).toEqual({
+        input: raw.input_tokens,
+        output: raw.output_tokens,
+        cacheRead: raw.cache_read_input_tokens,
+        cacheWrite: raw.cache_creation_input_tokens,
+      });
+    }
+  });
+
   it('carries the structured output of a recorded judge', async () => {
     const { result } = await runRecorded('judge', JUDGE_REQUEST);
     expect(result.result.structuredOutput).toEqual({
