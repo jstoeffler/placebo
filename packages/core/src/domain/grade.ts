@@ -33,9 +33,6 @@ export const GradeDetail = z.discriminatedUnion('type', [
     raw: z.array(z.unknown()),
     /** Checklist judges: the final answer per question. */
     answers: z.array(ChecklistAnswer).optional(),
-    /** Comparison judges: the run this run was compared with, and this run's blinded label. */
-    opponentRunId: RunId.optional(),
-    shownAs: z.enum(['a', 'b']).optional(),
   }),
   /**
    * A comparison judge's verdict for the run the grade is stored on (always a treatment run):

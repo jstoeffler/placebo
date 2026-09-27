@@ -272,12 +272,13 @@ export function comparisonGrade(won: boolean): unknown {
     kind: 'judge',
     score: won ? 1 : 0,
     detail: {
-      type: 'judge',
-      model: 'claude-opus-5-5',
-      reasoning: won ? 'This one is better.' : 'The other one is better.',
-      raw: [{ winner: won ? 'a' : 'b' }],
+      type: 'comparison',
       opponentRunId: 'run-0',
-      shownAs: 'a',
+      position: 'a',
+      preferred: won,
+      reason: won ? 'This one is better.' : 'The other one is better.',
+      model: 'claude-opus-5-5',
+      raw: [{ better: won ? 'a' : 'b', reason: 'Clearer.' }],
     },
   };
 }

@@ -239,6 +239,12 @@ describe('Grade', () => {
     ]);
   });
 
+  it('keeps comparison fields off the judge detail, which only checklist judges produce', () => {
+    const judge = sampleGrades[1]!;
+    const withOpponent = { ...judge, detail: { ...judge.detail, opponentRunId: 'run-2' } };
+    expect(issuesOf(Grade, withOpponent)).toEqual(['detail: Unrecognized key: "opponentRunId"']);
+  });
+
   it('rejects an unknown detail type', () => {
     expect(issuesOf(Grade, withPath(sampleGrades[0]!, ['detail', 'type'], 'stdout'))).toEqual([
       "detail.type: Invalid discriminator value. Expected 'command' | 'check' | 'judge' | 'comparison' | 'error' | 'review'",
