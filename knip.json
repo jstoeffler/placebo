@@ -7,7 +7,7 @@
     },
     "packages/core": {},
     "packages/cli": {
-      "ignoreDependencies": ["@placebo-eval/core", "@placebo-eval/report"]
+      "ignoreDependencies": ["@placebo-eval/report"]
     },
     "packages/report": {
       "entry": ["src/main.tsx"]
