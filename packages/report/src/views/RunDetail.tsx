@@ -1,7 +1,14 @@
 import type { Run } from '@placebo-eval/core/results';
 import { useEffect, useRef } from 'react';
 import { ArmLabel, useReport } from '../context.js';
-import { armName, filterRuns, OUTCOME_LABEL, runOrdinal, type RunFilter } from '../data/model.js';
+import {
+  armName,
+  filterRuns,
+  OUTCOME_LABEL,
+  OUTCOMES,
+  runOrdinal,
+  type RunFilter,
+} from '../data/model.js';
 import { formatCount, formatCurrency, formatDuration, formatTimestamp } from '../format.js';
 import { navigate, toHash } from '../route.js';
 import { ChangeView } from './ChangeView.js';
@@ -119,9 +126,12 @@ export function RunDetail({
 }
 
 function describeFilter(filter: RunFilter): string {
-  const parts = [filter.task, filter.arm, filter.outcome].filter(
-    (part): part is string => part !== undefined,
-  );
+  const outcome = OUTCOMES.find((candidate) => candidate === filter.outcome);
+  const parts = [
+    filter.task,
+    filter.arm,
+    outcome === undefined ? undefined : OUTCOME_LABEL[outcome],
+  ].filter((part): part is string => part !== undefined);
   return parts.length === 0 ? '' : ` (${parts.join(', ')})`;
 }
 
