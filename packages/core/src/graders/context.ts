@@ -16,7 +16,7 @@ export interface GradingContext {
   /** Known to the caller for bookkeeping; never shown to a judge (blinding). */
   readonly arm: Arm;
   readonly runFolder: RunFolder;
-  readonly executor: Pick<Executor, 'exec' | 'injectHidden'>;
+  readonly executor: Pick<Executor, 'exec' | 'injectHidden' | 'createJudgeFolder' | 'remove'>;
   readonly runner: Runner;
   /** Full model ID of the judge. */
   readonly judgeModel: string;
@@ -24,16 +24,15 @@ export interface GradingContext {
   readonly events: readonly RunnerEvent[];
   readonly outcome: Outcome;
   readonly suiteFiles: SuiteFileReader;
-  /**
-   * Creates a fresh, empty temporary directory and returns its absolute path. One-turn judges
-   * run there, never in the run folder, so the variant's files cannot influence its own
-   * evaluation (brief §13 item 8). Graders may not touch the filesystem themselves, so the
-   * caller provides this; the caller also owns cleanup.
-   */
-  readonly createEmptyDir: () => Promise<string>;
   readonly random: Random;
   readonly clock: Clock;
 }
 
-/** The parts of a `GradingContext` a judge call needs. */
-export type JudgeContext = Pick<GradingContext, 'runner' | 'judgeModel' | 'createEmptyDir'>;
+/**
+ * The parts of a `GradingContext` a judge call needs. Judges never run in the run folder: the
+ * executor gives each judge grade its own judge folder, so the variant's files cannot influence
+ * its own evaluation (brief §13 item 8), and removes it afterwards.
+ */
+export interface JudgeContext extends Pick<GradingContext, 'runner' | 'judgeModel'> {
+  readonly executor: Pick<Executor, 'createJudgeFolder' | 'remove'>;
+}

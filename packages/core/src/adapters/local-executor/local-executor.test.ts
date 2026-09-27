@@ -579,6 +579,82 @@ describe('LocalExecutor run folders', () => {
     expect(await exists(snapshot.path)).toBe(true);
   });
 
+  it('creates an empty judge folder that is not listed and can be removed', async () => {
+    await mkdir(root, { recursive: true });
+    const judge = await ex.createJudgeFolder();
+    expect(judge).toEqual({ path: join(root, 'folders', 'run-1'), snapshotId: '' });
+    expect(await readdir(judge.path)).toEqual([]);
+    expect(JSON.parse(await readFile(`${judge.path}.json`, 'utf8'))).toMatchObject({
+      kind: 'judge',
+    });
+    expect(await ex.listRunFolders()).toEqual([]);
+    await ex.remove(judge);
+    expect(await exists(judge.path)).toBe(false);
+    expect(await exists(`${judge.path}.json`)).toBe(false);
+  });
+
+  it(
+    'copies a run folder for a judge without any configuration surface',
+    { timeout: TIMEOUT },
+    async () => {
+      const folder = await ex.createRunFolder(snapshot, await variant());
+      await put(folder.path, {
+        'src/a.ts': 'three\nfixed by the agent\n',
+        'src/new.ts': 'new\n',
+        'CLAUDE.local.md': 'local\n',
+        'AGENTS.md': 'agents\n',
+        '.mcp.json': '{}\n',
+        'packages/x/CLAUDE.md': 'nested\n',
+        'packages/x/AGENTS.md': 'nested\n',
+        'packages/x/.claude/settings.json': '{}\n',
+        'packages/x/keep.md': 'keep\n',
+        'node_modules/pkg/.claude/rules.md': 'ignored but still a surface\n',
+        'node_modules/pkg/CLAUDE.md': 'ignored, not listed by git\n',
+      });
+      const judge = await ex.createJudgeFolder(folder);
+      const cwd = judge.path;
+      expect(judge).toMatchObject({ snapshotId: snapshot.id });
+      expect(judge.path).not.toBe(folder.path);
+      if (process.platform === 'darwin') expect(judge.copyMethod).toBe('clonefile');
+
+      for (const gone of [
+        'CLAUDE.md',
+        'CLAUDE.local.md',
+        'AGENTS.md',
+        '.mcp.json',
+        '.claude',
+        'packages/x/CLAUDE.md',
+        'packages/x/AGENTS.md',
+        'packages/x/.claude',
+        'node_modules/pkg/.claude',
+      ]) {
+        expect(await exists(join(cwd, gone)), gone).toBe(false);
+      }
+      expect(await readFile(join(cwd, 'src/a.ts'), 'utf8')).toBe('three\nfixed by the agent\n');
+      expect(await readFile(join(cwd, 'src/new.ts'), 'utf8')).toBe('new\n');
+      expect(await readFile(join(cwd, 'README.md'), 'utf8')).toBe('readme\n');
+      expect(await readFile(join(cwd, 'packages/x/keep.md'), 'utf8')).toBe('keep\n');
+      expect(await exists(join(cwd, 'src/b.ts'))).toBe(false);
+      expect(await exists(join(cwd, 'node_modules/pkg/CLAUDE.md'))).toBe(true);
+      expect(git(cwd, ['rev-list', '--all', '--count']).trim()).toBe('1');
+      expect(git(cwd, ['rev-parse', 'HEAD'])).toBe(git(folder.path, ['rev-parse', 'HEAD']));
+
+      expect(await readFile(join(folder.path, 'CLAUDE.md'), 'utf8')).toBe('# Rules\nuse spaces\n');
+      expect(await ex.listRunFolders()).toEqual([folder]);
+      await ex.remove(judge);
+      expect(await exists(cwd)).toBe(false);
+      expect(await ex.listRunFolders()).toEqual([folder]);
+    },
+  );
+
+  it('removes a failed judge copy', { timeout: TIMEOUT }, async () => {
+    const error = await rejection(
+      ex.createJudgeFolder({ path: join(temp, 'missing-run-folder'), snapshotId: 'x' }),
+    );
+    expect(error.reason).toBe('copy_failed');
+    expect(await readdir(join(root, 'folders'))).toEqual([]);
+  });
+
   it('lists nothing before any run folder exists', async () => {
     expect(await executor().listRunFolders()).toEqual([]);
   });

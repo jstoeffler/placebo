@@ -52,6 +52,14 @@ export interface HiddenFile {
  *   variant's own files.
  * - `injectHidden` writes hidden files after the agent finished, before graders run.
  * - `exec` runs a shell command in the run folder with no time limit (ADR 0008).
+ * - `createJudgeFolder` gives a judge somewhere to run (ADR 0007). With no argument it is a fresh
+ *   empty directory under the executor's folders root. With a run folder it is a copy of it (the
+ *   same copy-on-write path as `createRunFolder`) with every configuration-surface path removed:
+ *   `CLAUDE.md`, `CLAUDE.local.md`, `AGENTS.md`, `.claude/` and `.mcp.json` at the root, every
+ *   nested `CLAUDE.md` and `AGENTS.md` that is tracked or untracked (ignored ones stay), and every
+ *   `.claude/` directory at any depth. Everything else stays, the agent's change and the single
+ *   commit included.
+ * - `remove` deletes a run folder or a judge folder; `listRunFolders` lists run folders only.
  */
 export interface Executor {
   prepareSnapshot(input: {
@@ -64,6 +72,8 @@ export interface Executor {
   computeChange(runFolder: RunFolder): Promise<Change>;
   injectHidden(runFolder: RunFolder, files: readonly HiddenFile[]): Promise<void>;
   exec(runFolder: RunFolder, command: string): Promise<ExecResult>;
+  /** Omit `runFolder` for an empty directory; pass one for its config-stripped copy. */
+  createJudgeFolder(runFolder?: RunFolder): Promise<RunFolder>;
   remove(runFolder: RunFolder): Promise<void>;
   listRunFolders(): Promise<RunFolder[]>;
 }

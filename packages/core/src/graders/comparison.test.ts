@@ -1,4 +1,4 @@
-import { afterEach, describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { FakeRunner, type FakePlan } from '../adapters/fake-runner/fake-runner.js';
 import { COMPARISON_JUDGE_OUTPUT_SCHEMA, Grade } from '../domain/grade.js';
 import { Run } from '../domain/run.js';
@@ -6,14 +6,9 @@ import { ArmName } from '../domain/arm.js';
 import { createSeededRandom } from '../kernel/random.js';
 import { RunnerInfraError, type RunRequest } from '../ports/runner.js';
 import { sampleRun } from '../testing/fixtures.js';
-import { fixedClock, task, TempDirs } from '../testing/grading.js';
+import { fixedClock, stubExecutor, task, type StubExecutor } from '../testing/grading.js';
 import { gradeComparisons, type ComparisonInput } from './comparison.js';
 import { COMPARISON_SYSTEM_PROMPT } from './judge-prompts.js';
-
-const dirs = new TempDirs();
-afterEach(async () => {
-  await dirs.cleanup();
-});
 
 const TREATMENT = {
   kind: 'treatment',
@@ -55,17 +50,19 @@ const comparisonTask = (grader: Record<string, unknown> = {}) =>
 function input(
   plan: (request: RunRequest) => FakePlan,
   over: Partial<ComparisonInput> = {},
-): { input: ComparisonInput; runner: FakeRunner } {
+): { input: ComparisonInput; runner: FakeRunner; executor: StubExecutor } {
   const runner = new FakeRunner({ clock: fixedClock, plan });
+  const executor = stubExecutor();
   return {
     runner,
+    executor,
     input: {
       runs,
       task: comparisonTask(),
       treatment: ArmName.parse('always-green'),
       runner,
       judgeModel: 'claude-opus-5-5',
-      createEmptyDir: () => dirs.create('placebo-judge-'),
+      executor,
       random: createSeededRandom(7),
       ...over,
     },
@@ -132,11 +129,22 @@ describe('gradeComparisons', () => {
     expect([...opponents].sort()).toEqual(['c1', 'c2']);
   });
 
-  it('asks a blinded, one-turn, tool-less judge in an empty directory', async () => {
-    const { input: i, runner } = input(() => pick('a'), {
+  it('asks a blinded, one-turn, tool-less judge in an empty judge folder', async () => {
+    const {
+      input: i,
+      runner,
+      executor,
+    } = input(() => pick('a'), {
       task: comparisonTask({ agentic: true }),
     });
     await gradeComparisons(i);
+    expect(executor.calls).toEqual(
+      runner.requests.flatMap((request) => [
+        { type: 'judge_folder', path: request.cwd },
+        { type: 'remove', path: request.cwd },
+      ]),
+    );
+    expect(executor.openJudgeFolders.size).toBe(0);
     for (const request of runner.requests) {
       expect(request).toMatchObject({
         tools: 'none',
@@ -219,12 +227,26 @@ describe('gradeComparisons', () => {
   });
 
   it('gives an error grade for an invalid answer without repeats', async () => {
-    const { input: i } = input(() => ({}), { runs: runs.slice(0, 3) });
+    const { input: i, executor } = input(() => ({}), { runs: runs.slice(0, 3) });
     const [only] = await gradeComparisons(i);
     expect(only?.grade.detail).toEqual({
       type: 'error',
       message: 'judge returned no structured output',
     });
+    expect(executor.openJudgeFolders.size).toBe(0);
+  });
+
+  it('gives an error grade when the judge folder cannot be created', async () => {
+    const { input: i, runner } = input(() => pick('a'), {
+      runs: runs.slice(0, 3),
+      executor: stubExecutor({ failJudgeFolder: new Error('disk full') }),
+    });
+    const [only] = await gradeComparisons(i);
+    expect(only?.grade.detail).toEqual({
+      type: 'error',
+      message: 'judge folder could not be created: disk full',
+    });
+    expect(runner.requests).toHaveLength(0);
   });
 
   it('does nothing for a task without comparison graders', async () => {
@@ -236,7 +258,9 @@ describe('gradeComparisons', () => {
 
   it('lets RunnerInfraError propagate', async () => {
     const error = new RunnerInfraError('network', 'offline');
-    const { input: i } = input(() => ({ infraError: error }));
+    const { input: i, executor } = input(() => ({ infraError: error }));
     await expect(gradeComparisons(i)).rejects.toBe(error);
+    expect(executor.calls.filter((call) => call.type === 'remove')).toHaveLength(1);
+    expect(executor.openJudgeFolders.size).toBe(0);
   });
 });

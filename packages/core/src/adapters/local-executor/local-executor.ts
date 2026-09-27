@@ -26,7 +26,7 @@ import type {
   Snapshot,
 } from '../../ports/executor.js';
 import { ExecutorError, type ExecutorErrorReason } from './executor-error.js';
-import { patchPaths } from './patch-paths.js';
+import { isConfigurationSurface, patchPaths } from './patch-paths.js';
 import { spawnProcess, type ProcessOutput, type ProcessRunner } from './process.js';
 
 export interface LocalExecutorOptions {
@@ -53,12 +53,26 @@ interface SnapshotMarker {
 
 /** Written next to a run folder, outside it so the agent never sees it. */
 interface RunFolderRecord {
+  readonly kind: 'run';
   readonly snapshotId: string;
   /** The single commit after the amend: the base `computeChange` diffs against. */
   readonly baseCommit: string;
   readonly copyMethod: CopyMethod;
   readonly createdAt: string;
 }
+
+/** Written next to a judge folder; marks it as one so `listRunFolders` leaves it out. */
+interface JudgeFolderRecord {
+  readonly kind: 'judge';
+  /** The snapshot of the run folder it copies; empty for an empty judge folder. */
+  readonly snapshotId: string;
+  /** The run folder it copies, if any. */
+  readonly source?: string;
+  readonly copyMethod?: CopyMethod;
+  readonly createdAt: string;
+}
+
+type FolderRecord = RunFolderRecord | JudgeFolderRecord;
 
 /** Makes shell commands behave the same in every run and never wait on colors or prompts. */
 const COMMAND_ENV = { CI: '1', FORCE_COLOR: '0', NO_COLOR: '1' } as const;
@@ -79,6 +93,15 @@ const GIT_SETTINGS = [
   'diff.mnemonicPrefix=false',
 ].flatMap((setting) => ['-c', setting]);
 
+/** Root configuration-surface paths, removed from judge copies even when git ignores them. */
+const ROOT_CONFIGURATION_SURFACE = [
+  'CLAUDE.md',
+  'CLAUDE.local.md',
+  'AGENTS.md',
+  '.claude',
+  '.mcp.json',
+];
+
 const FULL_COMMIT = /^(?:[0-9a-f]{40}|[0-9a-f]{64})$/;
 
 /**
@@ -88,6 +111,7 @@ const FULL_COMMIT = /^(?:[0-9a-f]{40}|[0-9a-f]{64})$/;
  * - `snapshots/<commit>-<setup hash>/`: the sealed repo; `snapshots/<id>.json` marks it complete.
  * - `folders/<run folder id>/`: one run folder; `folders/<id>.json` records its snapshot, base
  *   commit and copy method.
+ * - `folders/<judge folder id>/`: one judge folder; `folders/<id>.json` records it as such.
  *
  * Marker and record sit next to their directory, not inside, so they never enter a commit or the
  * agent's view.
@@ -170,6 +194,7 @@ export class LocalExecutor implements Executor {
       await this.amendKeepingIdentity(path);
       await this.expectOneCommit(path);
       const record: RunFolderRecord = {
+        kind: 'run',
         snapshotId: snapshot.id,
         baseCommit: (await this.git(path, ['rev-parse', 'HEAD'])).trim(),
         copyMethod,
@@ -245,6 +270,39 @@ export class LocalExecutor implements Executor {
     return this.shell(runFolder.path, command);
   }
 
+  async createJudgeFolder(runFolder?: RunFolder): Promise<RunFolder> {
+    const path = join(this.foldersDir, this.newId());
+    const recordPath = `${path}.json`;
+    await mkdir(this.foldersDir, { recursive: true });
+    try {
+      let folder: RunFolder;
+      let record: JudgeFolderRecord;
+      const createdAt = this.clock.now().toISOString();
+      if (runFolder === undefined) {
+        await mkdir(path);
+        folder = { path, snapshotId: '' };
+        record = { kind: 'judge', snapshotId: '', createdAt };
+      } else {
+        const copyMethod = await this.copyTree(resolve(runFolder.path), path);
+        await this.stripConfigurationSurface(path);
+        folder = { path, snapshotId: runFolder.snapshotId, copyMethod };
+        record = {
+          kind: 'judge',
+          snapshotId: runFolder.snapshotId,
+          source: resolve(runFolder.path),
+          copyMethod,
+          createdAt,
+        };
+      }
+      await writeFile(recordPath, `${JSON.stringify(record, null, 2)}\n`);
+      return folder;
+    } catch (error) {
+      await rm(path, { recursive: true, force: true });
+      await rm(recordPath, { force: true });
+      throw error;
+    }
+  }
+
   async remove(runFolder: RunFolder): Promise<void> {
     const path = resolve(runFolder.path);
     if (dirname(path) !== this.foldersDir) {
@@ -259,12 +317,15 @@ export class LocalExecutor implements Executor {
     return Promise.all(
       names.map(async (name) => {
         const path = join(this.foldersDir, name);
-        const record = await readJson<RunFolderRecord>(`${path}.json`);
-        return record === undefined
-          ? { path, snapshotId: '' }
-          : { path, snapshotId: record.snapshotId, copyMethod: record.copyMethod };
+        const record = await readJson<FolderRecord>(`${path}.json`);
+        if (record?.kind === 'judge') return undefined;
+        const folder: RunFolder =
+          record === undefined
+            ? { path, snapshotId: '' }
+            : { path, snapshotId: record.snapshotId, copyMethod: record.copyMethod };
+        return folder;
       }),
-    );
+    ).then((folders) => folders.filter((folder) => folder !== undefined));
   }
 
   /** Complete snapshots, by id. Incomplete directories are left out. */
@@ -451,6 +512,24 @@ export class LocalExecutor implements Executor {
     return 'node_copy';
   }
 
+  /**
+   * Removes every configuration-surface path from a judge's copy: tracked and untracked files
+   * (as git lists them) matching the surface, the root surface files even when ignored, and every
+   * `.claude/` directory found by walking, since directories are not files.
+   */
+  private async stripConfigurationSurface(cwd: string): Promise<void> {
+    const listed = [
+      ...(await this.git(cwd, ['ls-files', '-z'])).split('\0'),
+      ...(await this.git(cwd, ['ls-files', '-z', '--others', '--exclude-standard'])).split('\0'),
+    ];
+    const paths = new Set([
+      ...ROOT_CONFIGURATION_SURFACE,
+      ...listed.filter(isConfigurationSurface),
+    ]);
+    for (const path of paths) await rm(join(cwd, path), { recursive: true, force: true });
+    for (const dir of await claudeDirectories(cwd)) await rm(dir, { recursive: true, force: true });
+  }
+
   private async applyPatch(cwd: string, patch: string): Promise<void> {
     const scratch = await mkdtemp(join(tmpdir(), 'placebo-patch-'));
     try {
@@ -506,8 +585,8 @@ export class LocalExecutor implements Executor {
   }
 
   private async baseCommit(runFolder: RunFolder): Promise<string> {
-    const record = await readJson<RunFolderRecord>(`${resolve(runFolder.path)}.json`);
-    if (record !== undefined) return record.baseCommit;
+    const record = await readJson<FolderRecord>(`${resolve(runFolder.path)}.json`);
+    if (record?.kind === 'run') return record.baseCommit;
     // Without a record the base is the root commit: the run folder starts with exactly one.
     const roots = lines(await this.git(runFolder.path, ['rev-list', '--max-parents=0', 'HEAD']));
     return roots.at(-1) ?? 'HEAD';
@@ -582,6 +661,22 @@ async function exists(path: string): Promise<boolean> {
     () => true,
     () => false,
   );
+}
+
+/** Every `.claude` directory under `root`, outside `.git`, without following symbolic links. */
+async function claudeDirectories(root: string): Promise<string[]> {
+  const found: string[] = [];
+  const pending = [root];
+  for (let dir = pending.pop(); dir !== undefined; dir = pending.pop()) {
+    const entries = await readdir(dir, { withFileTypes: true }).catch(() => []);
+    for (const entry of entries) {
+      if (!entry.isDirectory()) continue;
+      const path = join(dir, entry.name);
+      if (entry.name === '.claude') found.push(path);
+      else if (!(dir === root && entry.name === '.git')) pending.push(path);
+    }
+  }
+  return found;
 }
 
 async function directoriesIn(path: string): Promise<string[]> {

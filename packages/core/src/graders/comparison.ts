@@ -12,7 +12,7 @@ import type { Random } from '../kernel/random.js';
 import { err, ok } from '../kernel/result.js';
 import type { JudgeContext } from './context.js';
 import { errorGrade, refOf } from './grades.js';
-import { askJudge, issuesText, type JudgeValidator } from './judge.js';
+import { askJudge, inJudgeFolder, issuesText, type JudgeValidator } from './judge.js';
 import { COMPARISON_SYSTEM_PROMPT, comparisonPrompt } from './judge-prompts.js';
 
 type ComparisonSpec = Extract<GraderSpec, { type: 'comparison' }>;
@@ -42,8 +42,9 @@ export interface ComparisonGrade {
  * repeat), `preferred` is true when that fraction is above one half. All repeats of a pairing use
  * the same position.
  *
- * `agentic` is ignored for comparisons: the judge always runs one turn, tool-less, in a fresh
- * empty directory, because an agentic judge would need to read two run folders at once.
+ * `agentic` is ignored for comparisons: the judge always runs one turn, tool-less, in an empty
+ * judge folder from `executor`, because an agentic judge would need to read two run folders at
+ * once. The folder is removed once the judge finishes, also on failure.
  *
  * A pairing whose judge fails, or a treatment run with no control run to face, yields an error
  * grade scored 0. `RunnerInfraError` propagates.
@@ -91,17 +92,22 @@ async function compareOne(
   const raw: unknown[] = [];
   const reasons: string[] = [];
   let wins = 0;
-  for (let repeat = 1; repeat <= spec.repeats; repeat++) {
-    const answer = await askJudge(input, query, validateComparison);
-    if (!answer.ok) {
-      const which =
-        spec.repeats > 1 ? ` (repeat ${String(repeat)} of ${String(spec.repeats)})` : '';
-      return errorGrade(ref, 'judge', `${answer.error}${which}`);
+  const asked = await inJudgeFolder(input, undefined, async (folder) => {
+    for (let repeat = 1; repeat <= spec.repeats; repeat++) {
+      const answer = await askJudge(input, query, folder, validateComparison);
+      if (!answer.ok) {
+        const which =
+          spec.repeats > 1 ? ` (repeat ${String(repeat)} of ${String(spec.repeats)})` : '';
+        return `${answer.error}${which}`;
+      }
+      raw.push(answer.value.raw);
+      reasons.push(answer.value.value.reason);
+      if (answer.value.value.better === position) wins += 1;
     }
-    raw.push(answer.value.raw);
-    reasons.push(answer.value.value.reason);
-    if (answer.value.value.better === position) wins += 1;
-  }
+    return undefined;
+  });
+  const failure = asked.ok ? asked.value : asked.error;
+  if (failure !== undefined) return errorGrade(ref, 'judge', failure);
 
   const score = wins / spec.repeats;
   return {

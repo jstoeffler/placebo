@@ -60,7 +60,6 @@ function setup(
   const built = gradingContext({
     task: task({ graders }),
     runFolder,
-    dirs,
     diff: DIFF,
     changedFiles: ['src/money.ts'],
     events: RunnerEvent.array().parse(sampleEvents),
@@ -275,7 +274,7 @@ describe('gradeRun: checklist judge', () => {
 
   it('asks the judge tool-less, one turn, isolated, and scores the count of yes', async () => {
     let judgeDirWasEmpty = false;
-    const { ctx, runner } = setup(graders, {
+    const { ctx, runner, executor } = setup(graders, {
       plan: (request) => {
         judgeDirWasEmpty = readdirSync(request.cwd).length === 0;
         return answers(true, false);
@@ -297,6 +296,14 @@ describe('gradeRun: checklist judge', () => {
     });
     expect(relative(runFolder, request.cwd).startsWith('..')).toBe(true);
     expect(judgeDirWasEmpty).toBe(true);
+    const judgeCalls = executor.calls.filter(
+      (c) => c.type === 'judge_folder' || c.type === 'remove',
+    );
+    expect(judgeCalls).toEqual([
+      { type: 'judge_folder', path: request.cwd },
+      { type: 'remove', path: request.cwd },
+    ]);
+    expect(existsSync(request.cwd)).toBe(false);
 
     expect(grades[0]).toEqual({
       grader: { type: 'checklist', index: 0 },
@@ -348,8 +355,7 @@ describe('gradeRun: checklist judge', () => {
     const executor = stubExecutor();
     const { ctx } = setup(graders, {
       executor: {
-        calls: executor.calls,
-        injectHidden: executor.injectHidden,
+        ...executor,
         exec: (folder, command) => {
           order.push('exec');
           return executor.exec(folder, command);
@@ -389,9 +395,9 @@ describe('gradeRun: checklist judge', () => {
     ]);
   });
 
-  it('lets an agentic judge read the run folder, hidden files included', async () => {
+  it('lets an agentic judge read a copy of the run folder, hidden files included', async () => {
     let hiddenPresent = false;
-    const { ctx, runner } = setup(
+    const { ctx, runner, executor } = setup(
       [
         { type: 'command', run: 'true', hidden: ['tests/h.sh'] },
         { type: 'checklist', questions: QUESTIONS_PATH, agentic: true },
@@ -407,7 +413,14 @@ describe('gradeRun: checklist judge', () => {
     const grades = await gradeRun(ctx);
     const [request] = runner.requests as [RunRequest];
     expect(request.tools).toBe('read_only');
-    expect(request.cwd).toBe(runFolder);
+    expect(request.cwd).not.toBe(runFolder);
+    expect(executor.calls).toContainEqual({
+      type: 'judge_folder',
+      path: request.cwd,
+      from: runFolder,
+    });
+    expect(executor.openJudgeFolders.size).toBe(0);
+    expect(existsSync(request.cwd)).toBe(false);
     expect(request).not.toHaveProperty('maxTurns');
     expect(request.settingSources).toEqual([]);
     expect(request.systemPrompt).toContain('current directory');
@@ -446,7 +459,7 @@ describe('gradeRun: checklist judge', () => {
       'judge could not run: unexpected',
     ],
   ])('scores 0 with an error detail for %s', async (_, plan, message) => {
-    const { ctx } = setup([{ type: 'checklist', questions: QUESTIONS_PATH }], { plan });
+    const { ctx, executor } = setup([{ type: 'checklist', questions: QUESTIONS_PATH }], { plan });
     expect(await gradeRun(ctx)).toEqual([
       {
         grader: { type: 'checklist', index: 0 },
@@ -455,6 +468,20 @@ describe('gradeRun: checklist judge', () => {
         detail: { type: 'error', message },
       },
     ]);
+    expect(executor.calls.filter((c) => c.type === 'remove')).toHaveLength(1);
+    expect(executor.openJudgeFolders.size).toBe(0);
+  });
+
+  it('scores 0 without asking the judge when its folder cannot be created', async () => {
+    const { ctx, runner } = setup([{ type: 'checklist', questions: QUESTIONS_PATH }], {
+      executor: stubExecutor({ failJudgeFolder: new Error('disk full') }),
+    });
+    const [grade] = await gradeRun(ctx);
+    expect(grade?.detail).toEqual({
+      type: 'error',
+      message: 'judge folder could not be created: disk full',
+    });
+    expect(runner.requests).toHaveLength(0);
   });
 
   it('names the failing repeat', async () => {
@@ -501,12 +528,14 @@ describe('gradeRun: checklist judge', () => {
     expect(judged.requests).toHaveLength(1);
   });
 
-  it('lets RunnerInfraError propagate', async () => {
+  it('lets RunnerInfraError propagate, after removing the judge folder', async () => {
     const error = new RunnerInfraError('rate_limited', 'slow down');
-    const { ctx } = setup([{ type: 'checklist', questions: QUESTIONS_PATH }], {
+    const { ctx, executor } = setup([{ type: 'checklist', questions: QUESTIONS_PATH }], {
       plan: () => ({ infraError: error }),
     });
     await expect(gradeRun(ctx)).rejects.toBe(error);
+    expect(executor.calls.filter((c) => c.type === 'remove')).toHaveLength(1);
+    expect(executor.openJudgeFolders.size).toBe(0);
   });
 });
 
@@ -533,8 +562,7 @@ describe('gradeRun: prompt formatting', () => {
       {
         diff: '',
         executor: {
-          calls: executor.calls,
-          injectHidden: executor.injectHidden,
+          ...executor,
           exec: (_folder, command) => {
             calls += 1;
             if (command === 'broken') return Promise.reject(new Error('ENOENT'));

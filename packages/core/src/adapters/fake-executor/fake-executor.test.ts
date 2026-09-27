@@ -99,4 +99,28 @@ describe('FakeExecutor', () => {
     expect(await isDirectory(two.path)).toBe(false);
     expect(await executor.listRunFolders()).toEqual([]);
   });
+
+  it('creates judge folders that are never listed and can be removed', async () => {
+    const executor = new FakeExecutor();
+    const snapshot = await executor.prepareSnapshot({ repo: '.', commit: COMMIT });
+    const run = await executor.createRunFolder(snapshot);
+    const empty = await executor.createJudgeFolder();
+    const copy = await executor.createJudgeFolder(run);
+    expect(empty).toEqual({ path: '/placebo-fake/folders/judge-1', snapshotId: '' });
+    expect(copy).toEqual({ path: '/placebo-fake/folders/judge-2', snapshotId: snapshot.id });
+    expect(await executor.listRunFolders()).toEqual([run]);
+    expect(executor.openJudgeFolders).toEqual([empty, copy]);
+    expect(executor.calls.filter((call) => call.method === 'createJudgeFolder')).toEqual([
+      { method: 'createJudgeFolder' },
+      { method: 'createJudgeFolder', from: run.path },
+    ]);
+    await executor.remove(empty);
+    expect(executor.openJudgeFolders).toEqual([copy]);
+
+    const real = new FakeExecutor({ realDirs: true });
+    const judge = await real.createJudgeFolder();
+    expect(await isDirectory(judge.path)).toBe(true);
+    await real.cleanup();
+    expect(await isDirectory(judge.path)).toBe(false);
+  });
 });

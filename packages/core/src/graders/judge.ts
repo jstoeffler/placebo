@@ -1,5 +1,6 @@
 import type { ResultEvent } from '../domain/events.js';
 import { err, ok, type Result } from '../kernel/result.js';
+import type { RunFolder } from '../ports/executor.js';
 import { RunnerInfraError, type RunRequest } from '../ports/runner.js';
 import type { JudgeContext } from './context.js';
 
@@ -9,10 +10,11 @@ export interface JudgeQuery {
   readonly systemPrompt: string;
   readonly outputSchema: Readonly<Record<string, unknown>>;
   /**
-   * Opt-in. When set, the judge runs in this folder with read-only tools and no turn cap; by
-   * default it runs one turn, tool-less, in a fresh empty directory.
+   * Opt-in. When true, the judge explores its judge folder (a config-stripped copy of the run
+   * folder) with read-only tools and no turn cap; by default it runs one turn, tool-less, in an
+   * empty judge folder.
    */
-  readonly agenticCwd?: string;
+  readonly agentic?: boolean;
 }
 
 /** A judge answer that passed validation, with the structured output verbatim. */
@@ -42,7 +44,7 @@ export function issuesText(issues: readonly Issue[]): string {
  * settings, so neither arm's configuration reaches the judge), strict MCP config, no OS sandbox
  * (a tool-less or read-only judge needs none), no limits beyond one turn for the default judge.
  */
-async function judgeRequest(ctx: JudgeContext, query: JudgeQuery): Promise<RunRequest> {
+function judgeRequest(ctx: JudgeContext, query: JudgeQuery, folder: RunFolder): RunRequest {
   const base = {
     prompt: query.prompt,
     model: ctx.judgeModel,
@@ -53,25 +55,47 @@ async function judgeRequest(ctx: JudgeContext, query: JudgeQuery): Promise<RunRe
     outputSchema: query.outputSchema,
     systemPrompt: query.systemPrompt,
   } as const;
-  if (query.agenticCwd !== undefined) {
-    return { ...base, cwd: query.agenticCwd, tools: 'read_only' };
-  }
-  return { ...base, cwd: await ctx.createEmptyDir(), tools: 'none', maxTurns: 1 };
+  if (query.agentic === true) return { ...base, cwd: folder.path, tools: 'read_only' };
+  return { ...base, cwd: folder.path, tools: 'none', maxTurns: 1 };
 }
 
 /**
- * Runs one judge query and validates its structured output. Returns an error message for
+ * Creates a judge folder (empty, or a config-stripped copy of `source`), hands it to `use`, and
+ * removes it afterwards, also when `use` throws. A folder that cannot be created is an error
+ * message for the grade detail.
+ */
+export async function inJudgeFolder<T>(
+  ctx: JudgeContext,
+  source: RunFolder | undefined,
+  use: (folder: RunFolder) => Promise<T>,
+): Promise<Result<T, string>> {
+  let folder: RunFolder;
+  try {
+    folder = await ctx.executor.createJudgeFolder(source);
+  } catch (error) {
+    return err(`judge folder could not be created: ${messageOf(error)}`);
+  }
+  try {
+    return ok(await use(folder));
+  } finally {
+    await ctx.executor.remove(folder);
+  }
+}
+
+/**
+ * Runs one judge query in `folder` and validates its structured output. Returns an error message for
  * anything the judge got wrong (bad outcome, missing or invalid answer) and for a runner that
  * failed for another reason; rethrows `RunnerInfraError` so the caller can retry.
  */
 export async function askJudge<T>(
   ctx: JudgeContext,
   query: JudgeQuery,
+  folder: RunFolder,
   validate: JudgeValidator<T>,
 ): Promise<Result<JudgeAnswer<T>, string>> {
   let result: ResultEvent;
   try {
-    ({ result } = await ctx.runner.run(await judgeRequest(ctx, query), () => undefined));
+    ({ result } = await ctx.runner.run(judgeRequest(ctx, query, folder), () => undefined));
   } catch (error) {
     if (error instanceof RunnerInfraError) throw error;
     return err(`judge could not run: ${messageOf(error)}`);

@@ -1,8 +1,8 @@
 // Test support for graders: a tiny local `Executor` stub and a `GradingContext` builder over real
-// temporary directories. Not the local executor adapter; just enough to run commands and inject
-// hidden files.
+// temporary directories. Not the local executor adapter; just enough to run commands, inject
+// hidden files and give judges real folders (copies are plain, not config-stripped).
 import { spawn } from 'node:child_process';
-import { mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
+import { cp, mkdir, mkdtemp, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { dirname, join } from 'node:path';
 import { FakeRunner, type FakePlan } from '../adapters/fake-runner/fake-runner.js';
@@ -20,17 +20,48 @@ export const fixedClock: Clock = { now: () => new Date('2026-09-27T10:00:00.000Z
 /** Every call the stub executor received, in order. */
 type ExecutorCall =
   | { readonly type: 'inject'; readonly files: readonly HiddenFile[] }
-  | { readonly type: 'exec'; readonly command: string };
+  | { readonly type: 'exec'; readonly command: string }
+  | { readonly type: 'judge_folder'; readonly path: string; readonly from?: string }
+  | { readonly type: 'remove'; readonly path: string };
 
-export interface StubExecutor extends Pick<Executor, 'exec' | 'injectHidden'> {
+export interface StubExecutor extends Pick<
+  Executor,
+  'exec' | 'injectHidden' | 'createJudgeFolder' | 'remove'
+> {
   readonly calls: ExecutorCall[];
+  /** Judge folders created and not yet removed. */
+  readonly openJudgeFolders: Set<string>;
 }
 
-/** Runs commands with `sh -c` in the run folder and writes hidden files with `fs`. */
-export function stubExecutor(options: { failExec?: Error; failInject?: Error } = {}): StubExecutor {
+/**
+ * Runs commands with `sh -c` in the run folder, writes hidden files with `fs`, and creates judge
+ * folders as temporary directories (a plain copy when given a run folder).
+ */
+export function stubExecutor(
+  options: { failExec?: Error; failInject?: Error; failJudgeFolder?: Error } = {},
+): StubExecutor {
   const calls: ExecutorCall[] = [];
+  const openJudgeFolders = new Set<string>();
   return {
     calls,
+    openJudgeFolders,
+    async createJudgeFolder(runFolder?: RunFolder): Promise<RunFolder> {
+      if (options.failJudgeFolder) throw options.failJudgeFolder;
+      const path = await mkdtemp(join(tmpdir(), 'placebo-judge-'));
+      if (runFolder !== undefined) await cp(runFolder.path, path, { recursive: true });
+      calls.push({
+        type: 'judge_folder',
+        path,
+        ...(runFolder === undefined ? {} : { from: runFolder.path }),
+      });
+      openJudgeFolders.add(path);
+      return { path, snapshotId: runFolder?.snapshotId ?? '' };
+    },
+    async remove(folder: RunFolder): Promise<void> {
+      calls.push({ type: 'remove', path: folder.path });
+      openJudgeFolders.delete(folder.path);
+      await rm(folder.path, { recursive: true, force: true });
+    },
     async injectHidden(runFolder: RunFolder, files: readonly HiddenFile[]): Promise<void> {
       calls.push({ type: 'inject', files });
       if (options.failInject) throw options.failInject;
@@ -90,7 +121,6 @@ export function task(input: {
 export interface ContextOptions {
   readonly task: TaskType;
   readonly runFolder: string;
-  readonly dirs: TempDirs;
   readonly executor?: StubExecutor;
   readonly plan?: (request: RunRequest) => FakePlan;
   readonly files?: Readonly<Record<string, string>>;
@@ -127,7 +157,6 @@ export function gradingContext(options: ContextOptions): {
         ? Promise.reject(new Error(`ENOENT: ${path}`))
         : Promise.resolve(content);
     },
-    createEmptyDir: () => options.dirs.create('placebo-judge-'),
     random: createSeededRandom(1),
     clock: fixedClock,
   };

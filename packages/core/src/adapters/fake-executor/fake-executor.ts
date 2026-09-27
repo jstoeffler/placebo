@@ -15,7 +15,10 @@ import type {
 export interface FakeExecutorOptions {
   /** Virtual root for snapshot and run folder paths. Defaults to `/placebo-fake`. */
   readonly root?: string;
-  /** Create each run folder as a real empty temp directory, so a fake runner can write files. */
+  /**
+   * Create each run folder and judge folder as a real empty temp directory, so a fake runner can
+   * write files. Judge folders are always empty: the fake copies nothing.
+   */
   readonly realDirs?: boolean;
   /** What `computeChange` returns; an empty change by default. */
   readonly change?: Change | ((runFolder: RunFolder) => Change);
@@ -36,6 +39,7 @@ export type FakeExecutorCall =
       readonly setup?: string;
     }
   | { readonly method: 'createRunFolder'; readonly snapshotId: string; readonly patch?: string }
+  | { readonly method: 'createJudgeFolder'; readonly from?: string }
   | { readonly method: 'computeChange'; readonly path: string }
   | {
       readonly method: 'injectHidden';
@@ -57,7 +61,9 @@ export class FakeExecutor implements Executor {
   private readonly root: string;
   private readonly options: FakeExecutorOptions;
   private readonly folders: RunFolder[] = [];
+  private readonly judgeFolders: RunFolder[] = [];
   private created = 0;
+  private judgesCreated = 0;
 
   constructor(options: FakeExecutorOptions = {}) {
     this.options = options;
@@ -93,6 +99,22 @@ export class FakeExecutor implements Executor {
     return folder;
   }
 
+  /** A numbered judge folder (a real empty temp directory with `realDirs`), never listed. */
+  async createJudgeFolder(runFolder?: RunFolder): Promise<RunFolder> {
+    this.calls.push({
+      method: 'createJudgeFolder',
+      ...(runFolder === undefined ? {} : { from: runFolder.path }),
+    });
+    this.judgesCreated++;
+    const path =
+      this.options.realDirs === true
+        ? await mkdtemp(join(tmpdir(), 'placebo-fake-judge-'))
+        : join(this.root, 'folders', `judge-${String(this.judgesCreated)}`);
+    const folder = { path, snapshotId: runFolder?.snapshotId ?? '' };
+    this.judgeFolders.push(folder);
+    return folder;
+  }
+
   computeChange(runFolder: RunFolder): Promise<Change> {
     this.calls.push({ method: 'computeChange', path: runFolder.path });
     const change = this.options.change ?? EMPTY_CHANGE;
@@ -113,8 +135,10 @@ export class FakeExecutor implements Executor {
 
   async remove(runFolder: RunFolder): Promise<void> {
     this.calls.push({ method: 'remove', path: runFolder.path });
-    const index = this.folders.findIndex((folder) => folder.path === runFolder.path);
-    if (index !== -1) this.folders.splice(index, 1);
+    for (const list of [this.folders, this.judgeFolders]) {
+      const index = list.findIndex((folder) => folder.path === runFolder.path);
+      if (index !== -1) list.splice(index, 1);
+    }
     if (this.options.realDirs === true) await rm(runFolder.path, { recursive: true, force: true });
   }
 
@@ -122,8 +146,13 @@ export class FakeExecutor implements Executor {
     return Promise.resolve([...this.folders]);
   }
 
-  /** Deletes every real directory still listed; call it in `afterEach` when using `realDirs`. */
+  /** Judge folders created and not yet removed. */
+  get openJudgeFolders(): readonly RunFolder[] {
+    return [...this.judgeFolders];
+  }
+
+  /** Deletes every real directory not yet removed; call it in `afterEach` when using `realDirs`. */
   async cleanup(): Promise<void> {
-    for (const folder of [...this.folders]) await this.remove(folder);
+    for (const folder of [...this.folders, ...this.judgeFolders]) await this.remove(folder);
   }
 }

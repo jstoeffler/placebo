@@ -9,7 +9,7 @@ import type { GraderSpec } from '../domain/suite.js';
 import { err, ok } from '../kernel/result.js';
 import type { GradingContext } from './context.js';
 import { errorGrade } from './grades.js';
-import { askJudge, issuesText, type JudgeValidator, messageOf } from './judge.js';
+import { askJudge, inJudgeFolder, issuesText, type JudgeValidator, messageOf } from './judge.js';
 import {
   AGENTIC_ADDENDUM,
   CHECKLIST_SYSTEM_PROMPT,
@@ -29,9 +29,10 @@ type ChecklistSpec = Extract<GraderSpec, { type: 'checklist' }>;
  * per question the majority over repeats (yes only if more than half said yes), and `raw` holds
  * every repeat's answer verbatim.
  *
- * `agentic: true` (opt-in) runs the judge in the run folder with read-only tools and no turn cap.
- * Hidden files are already present there by then. No setting sources load, so the variant's
- * `CLAUDE.md` and settings do not reach the judge, but its files remain readable in the folder.
+ * `agentic: true` (opt-in) runs the judge with read-only tools and no turn cap in a copy of the run
+ * folder stripped of every configuration-surface path (brief §9, ADR 0007), made after hidden
+ * files entered the run folder. Otherwise it runs one turn, tool-less, in an empty judge folder.
+ * Either folder is removed once the judge finishes, also on failure. No setting sources load.
  *
  * Any repeat failing (no answer, invalid answer, wrong question count) makes the whole grade an
  * error grade scored 0; `RunnerInfraError` propagates.
@@ -41,7 +42,7 @@ export async function gradeChecklist(
   ref: GraderRef,
   ctx: Pick<
     GradingContext,
-    'task' | 'change' | 'suiteFiles' | 'runFolder' | 'runner' | 'judgeModel' | 'createEmptyDir'
+    'task' | 'change' | 'suiteFiles' | 'runFolder' | 'runner' | 'judgeModel' | 'executor'
   >,
   commands: readonly CommandEvidence[],
 ): Promise<Grade> {
@@ -68,7 +69,7 @@ export async function gradeChecklist(
       ? `${CHECKLIST_SYSTEM_PROMPT}\n${AGENTIC_ADDENDUM}`
       : CHECKLIST_SYSTEM_PROMPT,
     outputSchema: CHECKLIST_JUDGE_OUTPUT_SCHEMA,
-    ...(spec.agentic ? { agenticCwd: ctx.runFolder.path } : {}),
+    agentic: spec.agentic,
   };
   const validate: JudgeValidator<ChecklistJudgeOutput> = (raw) => {
     const parsed = ChecklistJudgeOutput.safeParse(raw);
@@ -83,16 +84,25 @@ export async function gradeChecklist(
 
   const repeats: ChecklistJudgeOutput[] = [];
   const raw: unknown[] = [];
-  for (let repeat = 1; repeat <= spec.repeats; repeat++) {
-    const answer = await askJudge(ctx, query, validate);
-    if (!answer.ok) {
-      const which =
-        spec.repeats > 1 ? ` (repeat ${String(repeat)} of ${String(spec.repeats)})` : '';
-      return errorGrade(ref, 'judge', `${answer.error}${which}`);
-    }
-    repeats.push(answer.value.value);
-    raw.push(answer.value.raw);
-  }
+  const asked = await inJudgeFolder(
+    ctx,
+    spec.agentic ? ctx.runFolder : undefined,
+    async (folder) => {
+      for (let repeat = 1; repeat <= spec.repeats; repeat++) {
+        const answer = await askJudge(ctx, query, folder, validate);
+        if (!answer.ok) {
+          const which =
+            spec.repeats > 1 ? ` (repeat ${String(repeat)} of ${String(spec.repeats)})` : '';
+          return `${answer.error}${which}`;
+        }
+        repeats.push(answer.value.value);
+        raw.push(answer.value.raw);
+      }
+      return undefined;
+    },
+  );
+  const failure = asked.ok ? asked.value : asked.error;
+  if (failure !== undefined) return errorGrade(ref, 'judge', failure);
 
   const answers: ChecklistAnswer[] = questions.map((question, i) => {
     const given = repeats.flatMap((output) => output.answers.slice(i, i + 1));
