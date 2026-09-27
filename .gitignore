@@ -5,6 +5,7 @@ coverage/
 *.tsbuildinfo
 .placebo/runs/
 .placebo/snapshots/
+.placebo/folders/
 report.html
 !packages/report/report.html
 results.json
