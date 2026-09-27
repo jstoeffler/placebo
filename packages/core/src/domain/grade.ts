@@ -77,3 +77,23 @@ export const Grade = z.strictObject({
   detail: GradeDetail,
 });
 export type Grade = z.infer<typeof Grade>;
+
+/**
+ * The schema-enforced answer of a checklist judge: one entry per question, in order. Validated
+ * at the edge; `CHECKLIST_JUDGE_OUTPUT_SCHEMA` is the same shape as JSON Schema for the runner.
+ */
+export const ChecklistJudgeOutput = z.strictObject({
+  answers: z.array(z.strictObject({ question: z.string(), yes: z.boolean(), reason: z.string() })),
+});
+export type ChecklistJudgeOutput = z.infer<typeof ChecklistJudgeOutput>;
+export const CHECKLIST_JUDGE_OUTPUT_SCHEMA: Readonly<Record<string, unknown>> =
+  z.toJSONSchema(ChecklistJudgeOutput);
+
+/** The schema-enforced answer of a comparison judge. `better` has no tie option. */
+export const ComparisonJudgeOutput = z.strictObject({
+  better: z.enum(['a', 'b']),
+  reason: z.string(),
+});
+export type ComparisonJudgeOutput = z.infer<typeof ComparisonJudgeOutput>;
+export const COMPARISON_JUDGE_OUTPUT_SCHEMA: Readonly<Record<string, unknown>> =
+  z.toJSONSchema(ComparisonJudgeOutput);

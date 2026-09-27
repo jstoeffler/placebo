@@ -241,7 +241,7 @@ describe('Grade', () => {
 
   it('rejects an unknown detail type', () => {
     expect(issuesOf(Grade, withPath(sampleGrades[0]!, ['detail', 'type'], 'stdout'))).toEqual([
-      "detail.type: Invalid discriminator value. Expected 'command' | 'check' | 'judge' | 'review'",
+      "detail.type: Invalid discriminator value. Expected 'command' | 'check' | 'judge' | 'comparison' | 'error' | 'review'",
     ]);
   });
 });
