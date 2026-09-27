@@ -11,6 +11,7 @@ concurrency:
 permissions:
   contents: write
   pull-requests: write
+  # Trusted Publishing: npm exchanges the workflow's OIDC token for a publish token.
   id-token: write
 
 jobs:
@@ -23,18 +24,48 @@ jobs:
         with:
           node-version-file: .node-version
           cache: pnpm
+          # Writes the .npmrc entry that reads NODE_AUTH_TOKEN; the token path needs it.
           registry-url: https://registry.npmjs.org
+
       - run: pnpm install --frozen-lockfile
       - run: pnpm check
+
+      # Trusted Publishing needs npm 11.5.1 or later; pnpm 10 publishes through npm.
+      - name: Ensure npm supports Trusted Publishing
+        run: |
+          current="$(npm --version)"
+          if node -e 'const [a,b,c]=process.argv[1].split(".").map(Number); process.exit(a>11||(a===11&&(b>5||(b===5&&c>=1)))?0:1)' "$current"; then
+            echo "npm $current supports Trusted Publishing."
+          else
+            echo "npm $current is too old for Trusted Publishing; upgrading."
+            npm install -g npm@latest
+            npm --version
+          fi
+
+      # With the NPM_TOKEN secret set, publish with it (provenance requested explicitly).
+      # Without it, write no token: npm authenticates through OIDC, which requires a
+      # trusted publisher configured on npmjs.com, and adds provenance automatically.
+      - name: Choose npm authentication
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
+        run: |
+          if [[ -n "$NPM_TOKEN" ]]; then
+            echo "NPM_TOKEN is set: publishing with the token."
+            {
+              echo "NODE_AUTH_TOKEN=$NPM_TOKEN"
+              echo "NPM_CONFIG_PROVENANCE=true"
+            } >> "$GITHUB_ENV"
+          else
+            echo "NPM_TOKEN is not set: publishing through Trusted Publishing (OIDC)."
+          fi
+
+      # changesets/action v2 inputs are kebab-case; it passes its github-token to the
+      # version and publish scripts as GITHUB_TOKEN itself.
       - name: Open the Version Packages PR, or publish placebo-eval when it is merged
         uses: changesets/action@v2
         with:
-          version: pnpm changeset version
-          publish: pnpm release
-          commit: 'chore: version packages'
-          title: 'chore: version packages'
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-          NPM_CONFIG_PROVENANCE: 'true'
+          version-script: pnpm changeset version
+          publish-script: pnpm release
+          commit-message: 'chore: version packages'
+          pr-title: 'chore: version packages'
+          create-github-releases: true
