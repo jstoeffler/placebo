@@ -1,0 +1,16 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+  "workspaces": {
+    ".": {
+      "entry": ["scripts/*.ts"],
+      "ignoreDependencies": ["placebo-eval"]
+    },
+    "packages/core": {},
+    "packages/cli": {
+      "ignoreDependencies": ["@placebo-eval/core", "@placebo-eval/report"]
+    },
+    "packages/report": {
+      "entry": ["src/main.tsx"]
+    }
+  }
+}

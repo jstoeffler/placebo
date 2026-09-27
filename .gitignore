@@ -1,0 +1,12 @@
+node_modules/
+dist/
+coverage/
+.tsbuild/
+*.tsbuildinfo
+.placebo/runs/
+.placebo/snapshots/
+report.html
+!packages/report/report.html
+results.json
+.DS_Store
+.vitest/

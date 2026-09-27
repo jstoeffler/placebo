@@ -1,0 +1,42 @@
+{
+  "name": "placebo-workspace",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@10.11.1",
+  "engines": {
+    "node": ">=26"
+  },
+  "scripts": {
+    "check": "pnpm lint && pnpm typecheck && pnpm depcruise && pnpm knip && pnpm test:coverage",
+    "lint": "eslint --max-warnings=0 . && prettier --check .",
+    "lint:fix": "eslint --fix .",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "typecheck": "tsc -b",
+    "depcruise": "depcruise packages --config .dependency-cruiser.cjs",
+    "knip": "knip",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "build": "pnpm -r build",
+    "changeset": "changeset",
+    "release": "pnpm build && changeset publish"
+  },
+  "devDependencies": {
+    "@changesets/changelog-github": "^1.0.1",
+    "@changesets/cli": "^3.0.3",
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^26.6.3",
+    "@vitest/coverage-v8": "^5.0.2",
+    "dependency-cruiser": "^18.4.0",
+    "eslint": "^10.11.0",
+    "eslint-config-prettier": "^10.1.8",
+    "globals": "^17.12.0",
+    "jiti": "^2.7.0",
+    "knip": "^6.38.0",
+    "placebo-eval": "workspace:*",
+    "prettier": "^3.9.9",
+    "typescript": "6.0.3",
+    "typescript-eslint": "^8.70.1",
+    "vitest": "^5.0.2"
+  }
+}
