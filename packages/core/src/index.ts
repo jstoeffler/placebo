@@ -34,3 +34,10 @@ export * from './statistics/format.js';
 export * from './statistics/metric-row.js';
 export * from './statistics/values.js';
 export * from './statistics/verdict-card.js';
+
+// adapters
+export * from './adapters/fake-executor/fake-executor.js';
+export * from './adapters/local-executor/executor-error.js';
+export * from './adapters/local-executor/local-executor.js';
+export * from './adapters/local-executor/patch-paths.js';
+export * from './adapters/local-executor/process.js';
