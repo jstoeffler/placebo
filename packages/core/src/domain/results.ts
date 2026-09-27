@@ -30,6 +30,11 @@ export const TaskArmBreakdown = z.strictObject({
   taskId: TaskId,
   arm: ArmName,
   runCount: z.int().nonnegative(),
+  /**
+   * Per metric, in the unit of a single run rather than the unit of its difference: pass rate
+   * and win rate are shares in [0, 1], cost is USD, durations are ms, tokens and turns are counts,
+   * checklist is a count of yes.
+   */
   means: z.partialRecord(Metric, z.number().nullable()),
 });
 export type TaskArmBreakdown = z.infer<typeof TaskArmBreakdown>;
