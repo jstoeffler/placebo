@@ -9,9 +9,18 @@ export interface Snapshot {
   readonly commit: CommitSha;
 }
 
+/**
+ * How a run folder was copied from its snapshot: `clonefile` is `cp -Rc` on macOS (APFS clones),
+ * `reflink_auto` is `cp -a --reflink=auto` on Linux (a clone on Btrfs or XFS, a full copy on
+ * ext4), `node_copy` is the full-copy fallback `fs.cp`.
+ */
+export type CopyMethod = 'clonefile' | 'reflink_auto' | 'node_copy';
+
 export interface RunFolder {
   readonly path: string;
   readonly snapshotId: string;
+  /** How the snapshot was copied; absent when the executor does not know. */
+  readonly copyMethod?: CopyMethod;
 }
 
 export interface ExecResult {
@@ -38,7 +47,7 @@ export interface HiddenFile {
  * - `createRunFolder` copies the snapshot (copy-on-write where the filesystem supports it),
  *   applies the variant patch if given, then amends it into the single commit so the run folder
  *   has exactly one commit with the original message and dates (ADR 0012). The control arm goes
- *   through the same amend with no patch.
+ *   through the same amend with no patch. The folder it returns says how it was copied.
  * - `computeChange` is `git diff HEAD` plus untracked files: the agent's work only, never the
  *   variant's own files.
  * - `injectHidden` writes hidden files after the agent finished, before graders run.

@@ -382,7 +382,10 @@ describe('LocalExecutor run folders', () => {
     'applies the variant patch and amends it into the single commit',
     async () => {
       const folder = await ex.createRunFolder(snapshot, await variant());
-      expect(folder).toEqual({ path: join(root, 'folders', 'run-1'), snapshotId: snapshot.id });
+      expect(folder).toMatchObject({
+        path: join(root, 'folders', 'run-1'),
+        snapshotId: snapshot.id,
+      });
       const cwd = folder.path;
       expect(await readFile(join(cwd, 'CLAUDE.md'), 'utf8')).toBe('# Rules\nuse spaces\n');
       expect(await readFile(join(cwd, '.claude/rules/style.md'), 'utf8')).toBe('be brief\n');
@@ -394,10 +397,8 @@ describe('LocalExecutor run folders', () => {
       );
       expect(git(cwd, ['rev-parse', 'HEAD'])).not.toBe(git(snapshot.path, ['rev-parse', 'HEAD']));
       expect(git(cwd, ['reflog']).trim()).toBe('');
-      if (process.platform === 'darwin') {
-        expect(ex.lastCopyMethod).toBe('clonefile');
-        expect(await ex.copyMethodOf(folder)).toBe('clonefile');
-      }
+      if (process.platform === 'darwin') expect(folder.copyMethod).toBe('clonefile');
+      expect(await ex.listRunFolders()).toEqual([folder]);
     },
     TIMEOUT,
   );
@@ -481,7 +482,6 @@ describe('LocalExecutor run folders', () => {
       await rm(`${folder.path}.json`);
       expect(await ex.computeChange(folder)).toEqual(change);
       expect(await ex.listRunFolders()).toEqual([{ path: folder.path, snapshotId: '' }]);
-      expect(await ex.copyMethodOf(folder)).toBeUndefined();
     },
     TIMEOUT,
   );
@@ -586,18 +586,17 @@ describe('LocalExecutor run folders', () => {
   it('falls back to a full copy when the native copy fails', { timeout: TIMEOUT }, async () => {
     const other = executor({ platform: 'win32' });
     const folder = await other.createRunFolder(snapshot);
-    expect(other.lastCopyMethod).toBe('node_copy');
+    expect(folder.copyMethod).toBe('node_copy');
     expect(git(folder.path, ['rev-list', '--all', '--count']).trim()).toBe('1');
 
     const failing: ProcessRunner = (file, args, options) =>
       file === 'cp' ? Promise.reject(new Error('no cp')) : spawnProcess(file, args, options);
     const fallback = executor({ platform: 'linux', run: failing });
-    await fallback.createRunFolder(snapshot);
-    expect(fallback.lastCopyMethod).toBe('node_copy');
+    expect((await fallback.createRunFolder(snapshot)).copyMethod).toBe('node_copy');
 
     const linux = executor({ platform: 'linux' });
-    await linux.createRunFolder(snapshot);
-    expect(['reflink_auto', 'node_copy']).toContain(linux.lastCopyMethod);
+    const copied = await linux.createRunFolder(snapshot);
+    expect(['reflink_auto', 'node_copy']).toContain(copied.copyMethod);
 
     const error = await rejection(
       other.createRunFolder({ ...snapshot, path: join(temp, 'missing-snapshot') }),

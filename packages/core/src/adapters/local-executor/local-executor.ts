@@ -18,6 +18,7 @@ import { systemClock, type Clock } from '../../kernel/clock.js';
 import { sha256 } from '../../kernel/hash.js';
 import type { CommitSha } from '../../kernel/ids.js';
 import type {
+  CopyMethod,
   ExecResult,
   Executor,
   HiddenFile,
@@ -27,13 +28,6 @@ import type {
 import { ExecutorError, type ExecutorErrorReason } from './executor-error.js';
 import { patchPaths } from './patch-paths.js';
 import { spawnProcess, type ProcessOutput, type ProcessRunner } from './process.js';
-
-/**
- * How a run folder was copied from its snapshot: `clonefile` is `cp -Rc` on macOS (APFS clones),
- * `reflink_auto` is `cp -a --reflink=auto` on Linux (a clone on Btrfs or XFS, a full copy on
- * ext4), `node_copy` is the full-copy fallback `fs.cp`.
- */
-export type CopyMethod = 'clonefile' | 'reflink_auto' | 'node_copy';
 
 export interface LocalExecutorOptions {
   /** Where snapshots and run folders live. Defaults to `.placebo` in the current directory. */
@@ -100,8 +94,6 @@ const FULL_COMMIT = /^(?:[0-9a-f]{40}|[0-9a-f]{64})$/;
  */
 export class LocalExecutor implements Executor {
   readonly root: string;
-  /** How the last `createRunFolder` copied the snapshot. */
-  lastCopyMethod: CopyMethod | undefined;
 
   private readonly clock: Clock;
   private readonly run: ProcessRunner;
@@ -184,8 +176,7 @@ export class LocalExecutor implements Executor {
         createdAt: this.clock.now().toISOString(),
       };
       await writeFile(recordPath, `${JSON.stringify(record, null, 2)}\n`);
-      this.lastCopyMethod = copyMethod;
-      return { path, snapshotId: snapshot.id };
+      return { path, snapshotId: snapshot.id, copyMethod };
     } catch (error) {
       await rm(path, { recursive: true, force: true });
       await rm(recordPath, { force: true });
@@ -269,14 +260,11 @@ export class LocalExecutor implements Executor {
       names.map(async (name) => {
         const path = join(this.foldersDir, name);
         const record = await readJson<RunFolderRecord>(`${path}.json`);
-        return { path, snapshotId: record?.snapshotId ?? '' };
+        return record === undefined
+          ? { path, snapshotId: '' }
+          : { path, snapshotId: record.snapshotId, copyMethod: record.copyMethod };
       }),
     );
-  }
-
-  /** How a run folder was copied, from its record; undefined when the record is gone. */
-  async copyMethodOf(runFolder: RunFolder): Promise<CopyMethod | undefined> {
-    return (await readJson<RunFolderRecord>(`${resolve(runFolder.path)}.json`))?.copyMethod;
   }
 
   /** Complete snapshots, by id. Incomplete directories are left out. */
