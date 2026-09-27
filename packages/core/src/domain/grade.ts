@@ -37,6 +37,23 @@ export const GradeDetail = z.discriminatedUnion('type', [
     opponentRunId: RunId.optional(),
     shownAs: z.enum(['a', 'b']).optional(),
   }),
+  /**
+   * A comparison judge's verdict for the run the grade is stored on (always a treatment run):
+   * which run it was compared with, the blinded label it was shown under, and whether the judge
+   * preferred it. With repeats, `preferred` is the majority and `reason` joins every repeat's.
+   */
+  z.strictObject({
+    type: z.literal('comparison'),
+    opponentRunId: RunId,
+    position: z.enum(['a', 'b']),
+    preferred: z.boolean(),
+    reason: z.string(),
+    model: z.string(),
+    /** The schema-enforced answer of each repeat, verbatim. */
+    raw: z.array(z.unknown()),
+  }),
+  /** The grader could not produce a score (command failed to spawn, judge answer invalid, ...); scored 0. */
+  z.strictObject({ type: z.literal('error'), message: z.string() }),
   z.strictObject({
     type: z.literal('review'),
     reviewId: ReviewId,
