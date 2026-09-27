@@ -117,18 +117,23 @@ export class SdkRunner implements Runner {
   }
 
   async run(request: RunRequest, onEvent: (event: RunnerEvent) => void): Promise<RunnerResult> {
+    const { signal } = request;
+    if (signal?.aborted === true) throw signal.reason;
     const translator = new StreamTranslator(this.#clock, onEvent);
     const { maxDurationMs } = request.limits;
-    const controller = maxDurationMs === undefined ? undefined : new AbortController();
-    // An object, not a `let`: the timer callback mutates it, which flow analysis cannot see.
+    const controller =
+      maxDurationMs === undefined && signal === undefined ? undefined : new AbortController();
+    // An object, not a `let`: the timer and abort callbacks mutate it, which flow analysis cannot
+    // see. A run cut short by the time limit or by `signal` is `failed`.
     const deadline = { timedOut: false };
-    const timer =
-      controller === undefined
-        ? undefined
-        : setTimeout(() => {
-            deadline.timedOut = true;
-            controller.abort();
-          }, maxDurationMs);
+    const cutShort = (): void => {
+      deadline.timedOut = true;
+      controller?.abort();
+    };
+    const timer = maxDurationMs === undefined ? undefined : setTimeout(cutShort, maxDurationMs);
+    signal?.addEventListener('abort', cutShort, { once: true });
+    const notStarted = (error: unknown): unknown =>
+      signal?.aborted === true ? signal.reason : classifyThrown(error);
     const options = sdkOptions(request, childEnv(this.#env), controller);
     try {
       for await (const message of this.#query({ prompt: request.prompt, options })) {
@@ -138,7 +143,7 @@ export class SdkRunner implements Runner {
       if (error instanceof StreamProtocolError) throw error;
       // The SDK throws after yielding an error result; that result is the outcome.
       if (!translator.hasResult) {
-        if (!translator.started) throw classifyThrown(error);
+        if (!translator.started) throw notStarted(error);
         if (!deadline.timedOut) {
           const text = error instanceof Error ? error.message : String(error);
           const retry = translator.lastRetryDelayMs;
@@ -152,8 +157,9 @@ export class SdkRunner implements Runner {
       }
     } finally {
       clearTimeout(timer);
+      signal?.removeEventListener('abort', cutShort);
     }
-    if (!translator.started) throw classifyThrown(new Error('Claude Code exited with no output'));
+    if (!translator.started) throw notStarted(new Error('Claude Code exited with no output'));
     if (!translator.hasResult)
       return translator.synthesize(deadline.timedOut ? 'failed' : 'crashed');
     return translator.finish({ timedOut: deadline.timedOut });

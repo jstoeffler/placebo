@@ -293,6 +293,39 @@ describe('CliRunner outcomes and infrastructure errors', () => {
     const result = await runner.run(request, () => undefined);
     expect(result.result.outcome).toBe('failed');
   });
+  it('kills claude when request.signal fires and records a failed run', async () => {
+    const { runner, dir } = setup({ stream: started, hang: true });
+    const controller = new AbortController();
+    const running = runner.run(
+      { ...SUBJECT_REQUEST, cwd: dir, signal: controller.signal },
+      () => undefined,
+    );
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    controller.abort();
+    expect((await running).result.outcome).toBe('failed');
+  });
+
+  it('rejects with the signal reason when aborted before claude started', async () => {
+    const early = setup({ stream: started });
+    const controller = new AbortController();
+    controller.abort(new Error('stopped early'));
+    await expect(
+      early.runner.run(
+        { ...SUBJECT_REQUEST, cwd: early.dir, signal: controller.signal },
+        () => undefined,
+      ),
+    ).rejects.toThrow('stopped early');
+
+    const silent = setup({ hang: true });
+    const late = new AbortController();
+    const running = silent.runner.run(
+      { ...SUBJECT_REQUEST, cwd: silent.dir, signal: late.signal },
+      () => undefined,
+    );
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    late.abort(new Error('stopped before init'));
+    await expect(running).rejects.toThrow('stopped before init');
+  });
 });
 
 describe('CliRunner version', () => {

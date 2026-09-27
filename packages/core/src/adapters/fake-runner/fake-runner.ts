@@ -31,7 +31,9 @@ export type FakeStep =
   /** Deletes a file under `request.cwd` (no event). */
   | { readonly delete: string }
   /** A `usage` event: the tokens of one assistant turn. */
-  | { readonly usage: TokenUsage };
+  | { readonly usage: TokenUsage }
+  /** Waits (no event) until the promise settles or `request.signal` aborts, whichever is first. */
+  | { readonly wait: () => Promise<unknown> };
 
 /** The final `result` event; every field defaults to a successful, free, instant run. */
 export interface FakeResult {
@@ -80,6 +82,10 @@ const ONE_TURN: TokenUsage = { input: 100, output: 20, cacheRead: 0, cacheWrite:
  * steps really mutate files under `request.cwd`, `system_init` comes first and `result` last,
  * and every timestamp comes from the injected clock. `requests` logs every request received,
  * including ones that threw.
+ *
+ * `request.signal` is honoured like the real runners: aborted before the run starts, `run`
+ * rejects with `signal.reason`; aborted later, the remaining steps are skipped and the run
+ * resolves with a `failed` result and no cost.
  */
 export class FakeRunner implements Runner {
   /** Ready-made plans. */
@@ -131,6 +137,11 @@ export class FakeRunner implements Runner {
       throw new RunnerInfraError('rate_limited', `fake rate limit on attempt ${String(attempt)}`);
     }
 
+    const { signal } = request;
+    // A function, not the property: flow analysis would pin `aborted` to its first reading.
+    const aborted = (): boolean => signal?.aborted === true;
+    if (aborted()) throw signal?.reason;
+
     const now = (): string => this.#clock.now().toISOString();
     const model = plan.model ?? request.model;
     const usage: TokenUsage = { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 };
@@ -146,7 +157,10 @@ export class FakeRunner implements Runner {
     });
 
     for (const step of plan.steps ?? []) {
-      if ('text' in step) {
+      if (aborted()) break;
+      if ('wait' in step) {
+        await untilAborted(step.wait(), signal);
+      } else if ('text' in step) {
         onEvent({ type: 'assistant_text', timestamp: now(), text: step.text });
       } else if ('tool' in step) {
         callCount += 1;
@@ -175,7 +189,9 @@ export class FakeRunner implements Runner {
       }
     }
 
-    const scripted = plan.result ?? {};
+    const scripted: FakeResult = aborted()
+      ? { outcome: 'failed', turns, stopReason: null }
+      : (plan.result ?? {});
     const result: ResultEvent = {
       type: 'result',
       timestamp: now(),
@@ -190,6 +206,27 @@ export class FakeRunner implements Runner {
     };
     onEvent(result);
     return { result, usage, model, claudeCodeVersion: this.#version };
+  }
+}
+
+/** Settles when `work` settles or `signal` aborts, whichever comes first. */
+async function untilAborted(
+  work: Promise<unknown>,
+  signal: AbortSignal | undefined,
+): Promise<void> {
+  if (signal === undefined) {
+    await work;
+    return;
+  }
+  let onAbort = (): void => undefined;
+  const aborted = new Promise<void>((resolve) => {
+    onAbort = resolve;
+    signal.addEventListener('abort', onAbort, { once: true });
+  });
+  try {
+    await Promise.race([work, aborted]);
+  } finally {
+    signal.removeEventListener('abort', onAbort);
   }
 }
 

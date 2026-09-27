@@ -128,8 +128,13 @@ export class CliRunner implements Runner {
   }
 
   async run(request: RunRequest, onEvent: (event: RunnerEvent) => void): Promise<RunnerResult> {
+    const { signal } = request;
+    // A function, not the property: flow analysis would pin `aborted` to its first reading.
+    const aborted = (): boolean => signal?.aborted === true;
+    if (aborted()) throw signal?.reason;
     const translator = new StreamTranslator(this.#clock, onEvent);
-    // Objects, not `let`s: callbacks mutate them, which flow analysis cannot see.
+    // Objects, not `let`s: callbacks mutate them, which flow analysis cannot see. A run cut short
+    // by the time limit or by `signal` is `failed`.
     const failure: { error?: Error } = {};
     const deadline = { timedOut: false };
     const exit = await this.#exec(
@@ -149,6 +154,7 @@ export class CliRunner implements Runner {
         }
       },
       () => (deadline.timedOut = true),
+      signal,
     );
     if (failure.error !== undefined) throw failure.error;
     if (exit.spawnError !== undefined) {
@@ -159,6 +165,7 @@ export class CliRunner implements Runner {
       );
     }
     if (translator.hasResult) return translator.finish({ timedOut: deadline.timedOut });
+    if (!translator.started && aborted()) throw signal?.reason;
     if (!deadline.timedOut) {
       const infra = infraErrorFrom(exit.stderr);
       if (infra !== undefined) throw infra;
@@ -172,13 +179,17 @@ export class CliRunner implements Runner {
     return translator.synthesize(deadline.timedOut ? 'failed' : 'crashed');
   }
 
-  /** Spawns the executable and feeds each stdout line to `onLine`; never rejects. */
+  /**
+   * Spawns the executable and feeds each stdout line to `onLine`; never rejects. The time limit
+   * and `signal` both call `onTimeout` and kill the child.
+   */
   #exec(
     args: readonly string[],
     cwd: string,
     maxDurationMs: number | undefined,
     onLine: (line: string, kill: () => void) => void,
     onTimeout?: () => void,
+    signal?: AbortSignal,
   ): Promise<Exit> {
     return new Promise((resolve) => {
       let stderr = '';
@@ -197,13 +208,12 @@ export class CliRunner implements Runner {
       const kill = (): void => {
         child.kill('SIGTERM');
       };
-      const timer =
-        maxDurationMs === undefined
-          ? undefined
-          : setTimeout(() => {
-              onTimeout?.();
-              kill();
-            }, maxDurationMs);
+      const cutShort = (): void => {
+        onTimeout?.();
+        kill();
+      };
+      const timer = maxDurationMs === undefined ? undefined : setTimeout(cutShort, maxDurationMs);
+      signal?.addEventListener('abort', cutShort, { once: true });
       child.stderr.setEncoding('utf8');
       child.stderr.on('data', (chunk: string) => {
         stderr = (stderr + chunk).slice(-STDERR_TAIL_BYTES);
@@ -217,6 +227,7 @@ export class CliRunner implements Runner {
       });
       child.on('close', (code) => {
         clearTimeout(timer);
+        signal?.removeEventListener('abort', cutShort);
         resolve({ code, spawnError, stderr });
       });
     });

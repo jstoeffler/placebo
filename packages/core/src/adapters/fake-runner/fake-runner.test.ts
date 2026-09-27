@@ -171,4 +171,60 @@ describe('FakeRunner', () => {
       'fake runner: path "../escape.txt" is outside the run folder',
     );
   });
+
+  describe('signal', () => {
+    it('rejects with the reason when aborted before the run starts', async () => {
+      const runner = new FakeRunner({ clock: tickingClock(), plan: () => ({}) });
+      const controller = new AbortController();
+      controller.abort(new Error('stopped'));
+      const events: RunnerEvent[] = [];
+      await expect(
+        runner.run(request({ signal: controller.signal }), (event) => events.push(event)),
+      ).rejects.toThrow('stopped');
+      expect(events).toEqual([]);
+    });
+
+    it('stops at the abort and resolves failed, skipping the remaining steps', async () => {
+      const controller = new AbortController();
+      const runner = new FakeRunner({
+        clock: tickingClock(),
+        plan: () => ({
+          steps: [
+            { usage: { input: 1, output: 1, cacheRead: 0, cacheWrite: 0 } },
+            { wait: () => new Promise(() => undefined) },
+            { write: { path: 'late.txt', content: 'x' } },
+          ],
+          result: { costUsd: 3 },
+        }),
+      });
+      const events: RunnerEvent[] = [];
+      const running = runner.run(request({ signal: controller.signal }), (event) =>
+        events.push(event),
+      );
+      await new Promise((resolve) => setTimeout(resolve, 5));
+      controller.abort();
+      const result = await running;
+      expect(result.result).toMatchObject({ outcome: 'failed', costUsd: 0, turns: 1 });
+      expect(events.map((event) => event.type)).toEqual(['system_init', 'usage', 'result']);
+      await expect(readFile(join(cwd, 'late.txt'), 'utf8')).rejects.toThrow();
+    });
+
+    it('waits for a wait step to settle when never aborted', async () => {
+      const controller = new AbortController();
+      let release = (): void => undefined;
+      const gate = new Promise<void>((resolve) => (release = resolve));
+      const runner = new FakeRunner({
+        clock: tickingClock(),
+        plan: () => ({ steps: [{ wait: () => gate }, { text: 'after' }] }),
+      });
+      const running = runner.run(request({ signal: controller.signal }), () => undefined);
+      release();
+      expect((await running).result.outcome).toBe('completed');
+      const plain = new FakeRunner({
+        clock: tickingClock(),
+        plan: () => ({ steps: [{ wait: () => Promise.resolve() }] }),
+      });
+      expect((await plain.run(request(), () => undefined)).result.outcome).toBe('completed');
+    });
+  });
 });

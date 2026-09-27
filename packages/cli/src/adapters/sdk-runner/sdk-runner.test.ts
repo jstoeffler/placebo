@@ -260,6 +260,45 @@ describe('SdkRunner outcomes and infrastructure errors', () => {
     expect(result.result.outcome).toBe('failed');
   });
 
+  it('aborts the query when request.signal fires and records a failed run', async () => {
+    const controller = new AbortController();
+    const fake = fakeQuery(withoutResult(sdkMessages('timeout')), { hang: true });
+    const runner = new SdkRunner({ query: fake.query, clock: steppingClock() });
+    const events: RunnerEvent[] = [];
+    const running = runner.run({ ...SUBJECT_REQUEST, signal: controller.signal }, (event) =>
+      events.push(event),
+    );
+    await new Promise((resolve) => setTimeout(resolve, 10));
+    controller.abort();
+    const result = await running;
+    expect(fake.calls[0]?.options.abortController?.signal.aborted).toBe(true);
+    expect(result.result).toMatchObject({ outcome: 'failed', costUsd: 0, stopReason: null });
+    expect(events.at(-1)).toEqual(result.result);
+  });
+
+  it('rejects with the signal reason when aborted before Claude Code started', async () => {
+    const early = new AbortController();
+    early.abort(new Error('stopped early'));
+    const idle = fakeQuery([]);
+    await expect(
+      new SdkRunner({ query: idle.query }).run(
+        { ...SUBJECT_REQUEST, signal: early.signal },
+        () => undefined,
+      ),
+    ).rejects.toThrow('stopped early');
+    expect(idle.calls).toHaveLength(0);
+
+    const late = new AbortController();
+    const hanging = fakeQuery([], { hang: true });
+    const running = new SdkRunner({ query: hanging.query }).run(
+      { ...SUBJECT_REQUEST, signal: late.signal },
+      () => undefined,
+    );
+    await new Promise((resolve) => setTimeout(resolve, 10));
+    late.abort(new Error('stopped before init'));
+    await expect(running).rejects.toThrow('stopped before init');
+  });
+
   it('records a crash when the process dies after starting', async () => {
     const { result } = await runWith(withoutResult(subject), SUBJECT_REQUEST, {
       thenThrow: new Error('Claude Code process exited with code 1'),

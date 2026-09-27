@@ -31,6 +31,12 @@ export interface RunRequest {
   readonly outputSchema?: Readonly<Record<string, unknown>>;
   /** Appended to Claude Code's system prompt; judges only. Subject runs never set it. */
   readonly systemPrompt?: string;
+  /**
+   * Stops the agent when aborted, e.g. on Ctrl-C. The run then resolves with outcome `failed`,
+   * like a run cut short by `limits.maxDurationMs`; aborted before the agent started, it rejects
+   * with `signal.reason` instead.
+   */
+  readonly signal?: AbortSignal;
 }
 
 export interface RunnerResult {
@@ -55,6 +61,9 @@ export interface RunnerResult {
  * - Throws `RunnerInfraError` only for infrastructure problems (spawn failure, rate limit,
  *   network) that justify a retry. It never retries on its own.
  * - Applies no limits beyond `request.limits` and `request.maxTurns`.
+ * - Honours `request.signal`: once it aborts, the agent is stopped and the run resolves with
+ *   outcome `failed`; if the agent had not started (no `system_init` yet), it rejects with
+ *   `signal.reason`, which is not a `RunnerInfraError` and must not be retried.
  */
 export interface Runner {
   run(request: RunRequest, onEvent: (event: RunnerEvent) => void): Promise<RunnerResult>;
