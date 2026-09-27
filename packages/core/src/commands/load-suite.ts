@@ -1,5 +1,5 @@
 import { formatSuiteIssues, parseSuite, type SuiteIssue } from '../domain/parse-suite.js';
-import { hashSuite, hiddenFileSource, type SuiteFiles } from '../domain/run-key.js';
+import { hashSuite, hiddenFileSource } from '../domain/run-key.js';
 import type { Suite } from '../domain/suite.js';
 import type { Sha256 } from '../kernel/ids.js';
 import { err, ok, type Result } from '../kernel/result.js';
@@ -9,7 +9,7 @@ import { SUITE_FILE, type SuiteSource } from '../ports/suite-source.js';
 export interface LoadedSuite {
   readonly suite: Suite;
   /** Every variant patch and task file, as bytes, keyed by path relative to `.placebo/`. */
-  readonly files: SuiteFiles;
+  readonly files: ReadonlyMap<string, Uint8Array>;
   readonly suiteHash: Sha256;
 }
 

@@ -50,6 +50,10 @@ export * from './graders/transcript.js';
 
 // commands
 export * from './commands/load-suite.js';
+export * from './commands/run/assemble-results.js';
+export * from './commands/run/experiment-error.js';
+export * from './commands/run/run-experiment.js';
+export { type KeepRunFolders, type Sleep } from './commands/run/perform-run.js';
 
 // adapters
 export * from './adapters/fake-executor/fake-executor.js';

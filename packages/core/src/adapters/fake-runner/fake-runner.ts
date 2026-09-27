@@ -222,6 +222,8 @@ async function untilAborted(
   const aborted = new Promise<void>((resolve) => {
     onAbort = resolve;
     signal.addEventListener('abort', onAbort, { once: true });
+    // `work` may itself have aborted the signal before the listener existed.
+    if (signal.aborted) resolve();
   });
   try {
     await Promise.race([work, aborted]);
