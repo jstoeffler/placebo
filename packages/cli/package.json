@@ -13,9 +13,10 @@
   "license": "MIT",
   "type": "module",
   "bin": {
-    "placebo": "./dist/index.js"
+    "placebo": "./bin/placebo.js"
   },
   "files": [
+    "bin",
     "dist"
   ],
   "engines": {
