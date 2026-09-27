@@ -19,6 +19,8 @@ export interface RunFilter {
  * - Reads return data that passed the domain schemas; a corrupt file is an error, not a skip.
  * - `list` returns runs in `startedAt` order.
  * - Reviews are stored separately from runs and never modify a run's grades.
+ * - `saveReview` rejects a review whose run is not in the store.
+ * - `listReviews` returns reviews in `createdAt` order.
  */
 export interface RunStore {
   save(run: Run): Promise<void>;

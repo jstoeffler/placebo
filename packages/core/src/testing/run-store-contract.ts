@@ -220,6 +220,22 @@ export function runStoreContractTests(
         expect(await store.listReviews({ runId: RunId.parse('missing') })).toStrictEqual([]);
       });
 
+      it('lists reviews in createdAt order', async () => {
+        const late = makeReview({ id: 'late', createdAt: '2026-09-27T12:00:00.000Z' });
+        const early = makeReview({ id: 'early', createdAt: '2026-09-27T09:00:00Z' });
+        const middle = makeReview({
+          id: 'middle',
+          runId: 'run-2',
+          createdAt: '2026-09-27T10:30:00Z',
+        });
+        for (const review of [late, early, middle]) await store.saveReview(review);
+        expect(ids(await store.listReviews())).toEqual(['early', 'middle', 'late']);
+        expect(ids(await store.listReviews({ runId: RunId.parse('run-1') }))).toEqual([
+          'early',
+          'late',
+        ]);
+      });
+
       it('replaces a review saved again with the same id', async () => {
         await store.saveReview(makeReview());
         const replacement = makeReview({ reviewer: 'ana' });
