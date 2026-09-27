@@ -28,3 +28,9 @@ export * from './ports/executor.js';
 export * from './ports/reporter.js';
 export * from './ports/run-store.js';
 export * from './ports/runner.js';
+
+// statistics
+export * from './statistics/format.js';
+export * from './statistics/metric-row.js';
+export * from './statistics/values.js';
+export * from './statistics/verdict-card.js';

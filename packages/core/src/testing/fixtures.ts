@@ -1,6 +1,8 @@
 // Valid sample values of every domain type, as plain input objects. Tests start from these and
 // change one field, so each test shows exactly what it is about.
 
+import { Run } from '../domain/run.js';
+
 const T0 = '2026-09-27T10:00:00.000Z';
 const T1 = '2026-09-27T10:05:00.000Z';
 const SHA_A = 'a'.repeat(64);
@@ -183,3 +185,67 @@ export const sampleResults = {
   warnings: [{ type: 'few_tasks', taskCount: 1, threshold: 5 }],
   reviews: [sampleReview],
 };
+
+let runCounter = 0;
+
+export interface MakeRunInput {
+  /** `control` or a variant name. Defaults to `control`. */
+  readonly arm?: string;
+  readonly taskId?: string;
+  readonly outcome?: string;
+  /** Shallow overrides of `sampleMeasurements`; `tokens` is merged too. */
+  readonly measurements?: Partial<Omit<typeof sampleMeasurements, 'tokens'>> & {
+    readonly tokens?: Partial<typeof sampleMeasurements.tokens>;
+  };
+  /** Defaults to no grades. */
+  readonly grades?: readonly unknown[];
+}
+
+/** A parsed `Run` built from `sampleRun`, with a fresh id. */
+export function makeRun(input: MakeRunInput = {}): Run {
+  runCounter += 1;
+  const arm = input.arm ?? 'control';
+  return Run.parse({
+    ...sampleRun,
+    id: `run-${String(runCounter)}`,
+    taskId: input.taskId ?? sampleRun.taskId,
+    arm:
+      arm === 'control'
+        ? { kind: 'control' }
+        : { kind: 'treatment', variant: arm, patch: `variants/${arm}.patch` },
+    outcome: input.outcome ?? 'completed',
+    measurements: {
+      ...sampleMeasurements,
+      ...input.measurements,
+      tokens: { ...sampleMeasurements.tokens, ...input.measurements?.tokens },
+    },
+    grades: input.grades ?? [],
+  });
+}
+
+/** A deterministic `command` grade. */
+export function commandGrade(passed: boolean): unknown {
+  return { ...sampleGrades[0], score: passed ? 1 : 0, passed };
+}
+
+/** A checklist judge grade scoring `score` yes answers. */
+export function checklistGrade(score: number): unknown {
+  return { ...sampleGrades[1], score };
+}
+
+/** A comparison judge grade: score 1 when this run won, 0 when it lost. */
+export function comparisonGrade(won: boolean): unknown {
+  return {
+    grader: { type: 'comparison', index: 3 },
+    kind: 'judge',
+    score: won ? 1 : 0,
+    detail: {
+      type: 'judge',
+      model: 'claude-opus-5-5',
+      reasoning: won ? 'This one is better.' : 'The other one is better.',
+      raw: [{ winner: won ? 'a' : 'b' }],
+      opponentRunId: 'run-0',
+      shownAs: 'a',
+    },
+  };
+}
