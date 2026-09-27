@@ -10,3 +10,4 @@ report.html
 results.json
 .DS_Store
 .vitest/
+.claude/worktrees/

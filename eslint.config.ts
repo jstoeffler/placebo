@@ -6,7 +6,7 @@ import tseslint from 'typescript-eslint';
 
 export default defineConfig(
   {
-    ignores: ['**/dist/**', '**/coverage/**', '**/.tsbuild/**', '.dependency-cruiser.cjs'],
+    ignores: ['**/dist/**', '**/coverage/**', '**/.tsbuild/**', '.claude/worktrees/**', '.dependency-cruiser.cjs'],
   },
   {
     files: ['**/*.{ts,tsx}'],
