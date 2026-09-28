@@ -162,6 +162,7 @@ export async function runExperiment(
     subjectModel: suite.model,
     judgeModel: suite.judgeModel,
     sandbox: suite.sandbox,
+    backgroundWork: suite.backgroundWork,
     limits: suite.limits ?? {},
     tasks: new Map(tasks.value.map((task) => [task.id, task])),
     taskHashes: new Map(tasks.value.map((task) => [task.id, hashTask(task, input.files)])),

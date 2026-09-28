@@ -36,10 +36,25 @@ describe('upfrontWarnings', () => {
       }),
     ).toEqual([{ type: 'patch_outside_surface', variant: 'a', paths: ['src/app.ts'] }]);
   });
+
+  it('warns that background work is unmeasured when the suite allows it', () => {
+    expect(
+      upfrontWarnings({
+        suite: { model: 'm', judgeModel: 'j', backgroundWork: true },
+        arms: [CONTROL],
+        taskCount: 5,
+        patchText: () => '',
+      }),
+    ).toEqual([{ type: 'background_work_unmeasured' }]);
+  });
 });
 
 describe('describeWarning', () => {
   it.each<[Warning, string]>([
+    [
+      { type: 'background_work_unmeasured' },
+      'background_work is on: work still running when Claude Code exits is not measured, and cost after its last result is estimated',
+    ],
     [
       { type: 'few_tasks', taskCount: 1, threshold: 5 },
       'only 1 task (fewer than 5): results describe these tasks, not the repo in general',

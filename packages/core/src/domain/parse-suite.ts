@@ -14,7 +14,7 @@ export interface SuiteIssue {
 
 /** YAML keys that differ from the camelCase field names, by parent path. */
 const SNAKE_TO_CAMEL: Readonly<Record<string, Readonly<Record<string, string>>>> = {
-  '': { judge_model: 'judgeModel' },
+  '': { judge_model: 'judgeModel', background_work: 'backgroundWork' },
   limits: {
     max_turns: 'maxTurns',
     max_budget_usd: 'maxBudgetUsd',

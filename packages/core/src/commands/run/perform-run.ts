@@ -38,6 +38,8 @@ export interface RunContext {
   readonly subjectModel: string;
   readonly judgeModel: string;
   readonly sandbox: boolean;
+  /** The suite's `background_work`. */
+  readonly backgroundWork: boolean;
   readonly limits: Limits;
   readonly tasks: ReadonlyMap<string, Task>;
   /** Task hash per task id. */
@@ -101,9 +103,12 @@ function keepsRunFolder(policy: KeepRunFolders, task: Task): boolean {
   );
 }
 
-/** The request for a subject run: the bare prompt, project settings only, every tool (brief §7). */
+/**
+ * The request for a subject run: the bare prompt, project settings only, every tool whose work
+ * stays measurable (brief §7).
+ */
 function subjectRequest(
-  ctx: Pick<RunContext, 'subjectModel' | 'sandbox' | 'limits' | 'signal'>,
+  ctx: Pick<RunContext, 'subjectModel' | 'sandbox' | 'backgroundWork' | 'limits' | 'signal'>,
   task: Task,
   folder: RunFolder,
 ): RunRequest {
@@ -115,7 +120,8 @@ function subjectRequest(
     sandbox: ctx.sandbox,
     strictMcpConfig: true,
     limits: ctx.limits,
-    tools: 'all',
+    tools: 'subject',
+    backgroundWork: ctx.backgroundWork,
     ...(ctx.signal === undefined ? {} : { signal: ctx.signal }),
   };
 }

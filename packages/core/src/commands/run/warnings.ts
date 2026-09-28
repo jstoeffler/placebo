@@ -7,10 +7,10 @@ import { judgeEqualsSubject } from '../../graders/judge-equals-subject.js';
 /**
  * The warnings known before anything is spent (brief §13): the judge model equals the subject
  * model, a variant patch touches paths outside the configuration surface, fewer tasks than
- * `FEW_TASKS_THRESHOLD`.
+ * `FEW_TASKS_THRESHOLD`, background work allowed.
  */
 export function upfrontWarnings(input: {
-  readonly suite: Pick<Suite, 'model' | 'judgeModel'>;
+  readonly suite: Pick<Suite, 'model' | 'judgeModel'> & Partial<Pick<Suite, 'backgroundWork'>>;
   readonly arms: readonly Arm[];
   readonly taskCount: number;
   /** Decoded variant patch of every treatment, by patch path. */
@@ -26,6 +26,7 @@ export function upfrontWarnings(input: {
       warnings.push({ type: 'patch_outside_surface', variant: arm.variant, paths });
     }
   }
+  if (input.suite.backgroundWork === true) warnings.push({ type: 'background_work_unmeasured' });
   if (input.taskCount < FEW_TASKS_THRESHOLD) {
     warnings.push({
       type: 'few_tasks',
@@ -51,6 +52,8 @@ export function describeWarning(warning: Warning): string {
       return `configuration outside the project can still reach runs: ${warning.sources.join(', ')}`;
     case 'ancestor_configuration':
       return `Claude Code loads configuration from above the run folders into every arm: ${warning.paths.join(', ')}`;
+    case 'background_work_unmeasured':
+      return 'background_work is on: work still running when Claude Code exits is not measured, and cost after its last result is estimated';
   }
 }
 

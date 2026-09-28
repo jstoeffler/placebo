@@ -119,7 +119,13 @@ export const Margins = z.strictObject({
 export type Margins = z.infer<typeof Margins>;
 export type MarginKey = keyof Margins;
 
-export const SUITE_DEFAULTS = { repo: '.', runs: 5, parallelism: 4, sandbox: true } as const;
+export const SUITE_DEFAULTS = {
+  repo: '.',
+  runs: 5,
+  parallelism: 4,
+  sandbox: true,
+  backgroundWork: false,
+} as const;
 
 /**
  * A parsed suite, camelCase. `suite.yaml` itself is snake_case; use `parseSuite` to read it.
@@ -140,6 +146,12 @@ export const Suite = z
     parallelism: z.int().positive().default(SUITE_DEFAULTS.parallelism),
     setup: z.string().min(1).optional(),
     sandbox: z.boolean().default(SUITE_DEFAULTS.sandbox),
+    /**
+     * Lets subject runs start background work (`Agent` and `Bash` with `run_in_background`).
+     * Off by default so every unit of work the agent causes is measured; on, it raises the
+     * `background_work_unmeasured` warning.
+     */
+    backgroundWork: z.boolean().default(SUITE_DEFAULTS.backgroundWork),
     limits: Limits.optional(),
     margins: Margins.prefault({}),
     variants: z

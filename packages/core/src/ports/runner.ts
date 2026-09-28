@@ -23,8 +23,19 @@ export interface RunRequest {
   readonly strictMcpConfig: boolean;
   /** The suite's opt-in limits; empty by default (ADR 0008). */
   readonly limits: Limits;
-  /** `none` for one-turn judges (ADR 0007); `read_only` (Read, Glob, Grep only) for agentic judges exploring a run folder. */
-  readonly tools: 'all' | 'read_only' | 'none';
+  /**
+   * `subject` for subject runs: every tool except those whose effects escape the run folder or
+   * the measurement (scheduling, notifications, remote triggers, worktrees, workflows, other
+   * sessions), with background execution off unless `backgroundWork`. `none` for one-turn judges
+   * (ADR 0007); `read_only` (Read, Glob, Grep only) for agentic judges exploring a run folder;
+   * `all` for every tool Claude Code offers.
+   */
+  readonly tools: 'all' | 'subject' | 'read_only' | 'none';
+  /**
+   * `subject` runs only: lets `Agent` and `Bash` run in the background (the suite's
+   * `background_work`). Off, every unit of work ends before Claude Code exits and is measured.
+   */
+  readonly backgroundWork?: boolean;
   /** Overrides `limits.maxTurns`; judges pass 1. */
   readonly maxTurns?: number;
   /** JSON Schema enforcing the final answer; the result carries `structuredOutput`. */
@@ -55,7 +66,11 @@ export interface RunnerResult {
  *
  * Contract:
  * - Emits normalized `RunnerEvent`s in order through `onEvent`; the first is `system_init`, the
- *   last is `result`. Resolves with the same `result` once the agent stops.
+ *   last is `result`. Resolves with the same `result` once Claude Code exits, which may be after
+ *   its first result message when background work is still running; everything streamed until
+ *   then is part of the run, subagent events carrying `parentToolUseId`.
+ * - `result.durationMs` is wall clock, from starting Claude Code to its exit; `result.costUsd`
+ *   covers every model call, estimated for usage reported after the last result message.
  * - Everything the agent does, including failing, crashing or being stopped by a permission
  *   denial, is an `Outcome` in the result, never a rejection.
  * - Throws `RunnerInfraError` only for infrastructure problems: spawn failure, rate limit and

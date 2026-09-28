@@ -148,7 +148,13 @@ describe('Suite', () => {
   };
 
   it('applies defaults', () => {
-    expect(Suite.parse(suite)).toMatchObject({ repo: '.', runs: 5, parallelism: 4, sandbox: true });
+    expect(Suite.parse(suite)).toMatchObject({
+      repo: '.',
+      runs: 5,
+      parallelism: 4,
+      sandbox: true,
+      backgroundWork: false,
+    });
   });
 
   it('requires at least one variant and one task, and a hex commit', () => {
@@ -200,6 +206,45 @@ describe('RunnerEvent', () => {
   it('accepts structured output on the result event', () => {
     const result = { ...sampleEvents.at(-1)!, structuredOutput: { winner: 'a' } };
     expect(RunnerEvent.parse(result)).toEqual(result);
+  });
+
+  it('accepts subagent attribution, a remainder and the reported cost and duration', () => {
+    const nested = [
+      {
+        type: 'assistant_text',
+        timestamp: sampleEvents[0]!.timestamp,
+        text: 'hi',
+        parentToolUseId: 'toolu_a',
+      },
+      {
+        type: 'tool_call',
+        timestamp: sampleEvents[0]!.timestamp,
+        id: 'x',
+        name: 'Read',
+        input: {},
+        parentToolUseId: 'a',
+      },
+      {
+        type: 'tool_result',
+        timestamp: sampleEvents[0]!.timestamp,
+        id: 'x',
+        output: '',
+        isError: false,
+        parentToolUseId: 'a',
+      },
+      { ...sampleEvents[4]!, parentToolUseId: 'a' },
+      { ...sampleEvents[4]!, remainder: true },
+      {
+        ...sampleEvents.at(-1)!,
+        reportedCostUsd: 0.1,
+        costEstimated: true,
+        reportedDurationMs: 900,
+      },
+    ];
+    for (const event of nested) expect(RunnerEvent.parse(event)).toEqual(event);
+    expect(issuesOf(RunnerEvent, { ...sampleEvents[4]!, remainder: false })).toEqual([
+      'remainder: Invalid input: expected true',
+    ]);
   });
 
   it('requires a timestamp and rejects negative usage', () => {
@@ -396,6 +441,7 @@ describe('Warning', () => {
     { type: 'dead_task', taskId: 't' },
     { type: 'isolation_residual', sources: ['global_config'] },
     { type: 'ancestor_configuration', paths: ['/Users/ada/CLAUDE.md'] },
+    { type: 'background_work_unmeasured' },
   ])('accepts %o', (warning) => {
     expect(Warning.parse(warning)).toEqual(warning);
   });

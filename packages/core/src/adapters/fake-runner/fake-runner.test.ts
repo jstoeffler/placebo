@@ -90,6 +90,64 @@ describe('FakeRunner', () => {
     expect(await readFile(join(cwd, 'src/a.ts'), 'utf8')).toBe('export const a = 1;\n');
   });
 
+  it('plays a subagent call with nested steps under the call id', async () => {
+    const plan: FakePlan = {
+      steps: [
+        { usage: { input: 10, output: 1, cacheRead: 0, cacheWrite: 0 } },
+        {
+          subagent: {
+            input: { description: 'fix it', prompt: 'Fix a.ts.' },
+            output: 'Fixed.',
+            steps: [
+              { tool: 'Read', input: { file_path: 'a.ts' }, output: 'x' },
+              { usage: { input: 5, output: 2, cacheRead: 0, cacheWrite: 0 } },
+              { subagent: { steps: [{ text: 'deeper' }] } },
+              { write: { path: 'a.ts', content: 'y' } },
+            ],
+          },
+        },
+      ],
+      result: { costUsd: 0.2, durationMs: 5000, reportedDurationMs: 3000 },
+    };
+    const runner = new FakeRunner({ clock: tickingClock(), plan: () => plan });
+    const { events, result } = await collect(runner, request({ tools: 'subject' }));
+
+    expect(RunnerEvent.array().parse(events)).toEqual(events);
+    expect(events[0]).toMatchObject({
+      tools: ['Agent', 'Bash', 'Edit', 'Glob', 'Grep', 'Read', 'Write'],
+    });
+    expect(
+      events
+        .slice(1, -1)
+        .map((event) => [
+          event.type,
+          'parentToolUseId' in event ? event.parentToolUseId : undefined,
+        ]),
+    ).toEqual([
+      ['usage', undefined],
+      ['tool_call', undefined],
+      ['tool_call', 'fake-tool-1'],
+      ['tool_result', 'fake-tool-1'],
+      ['usage', 'fake-tool-1'],
+      ['tool_call', 'fake-tool-1'],
+      ['assistant_text', 'fake-tool-3'],
+      ['tool_result', 'fake-tool-1'],
+      ['tool_result', undefined],
+    ]);
+    expect(events[2]).toMatchObject({ name: 'Agent', id: 'fake-tool-1' });
+    expect(events.at(-2)).toMatchObject({ id: 'fake-tool-1', output: 'Fixed.' });
+    expect(result.result).toMatchObject({
+      turns: 1,
+      costUsd: 0.2,
+      reportedCostUsd: 0.2,
+      costEstimated: false,
+      durationMs: 5000,
+      reportedDurationMs: 3000,
+    });
+    expect(result.usage).toEqual({ input: 15, output: 3, cacheRead: 0, cacheWrite: 0 });
+    expect(await readFile(join(cwd, 'a.ts'), 'utf8')).toBe('y');
+  });
+
   it('deletes files, honors scripted results and reports its version', async () => {
     await writeFile(join(cwd, 'old.txt'), 'x');
     const plan: FakePlan = {

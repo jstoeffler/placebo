@@ -32,6 +32,17 @@ export type FakeStep =
   | { readonly delete: string }
   /** A `usage` event: the tokens of one assistant turn. */
   | { readonly usage: TokenUsage }
+  /**
+   * An `Agent` tool call whose subagent plays `steps`: their events carry the call's id as
+   * `parentToolUseId`, then the call's `tool_result` (output defaults to `''`) follows.
+   */
+  | {
+      readonly subagent: {
+        readonly input?: unknown;
+        readonly steps: readonly FakeStep[];
+        readonly output?: string;
+      };
+    }
   /** Waits (no event) until the promise settles or `request.signal` aborts, whichever is first. */
   | { readonly wait: () => Promise<unknown> };
 
@@ -39,9 +50,14 @@ export type FakeStep =
 export interface FakeResult {
   readonly outcome?: Outcome;
   readonly costUsd?: number;
-  /** Defaults to the number of `usage` steps, at least 1. */
+  /** Defaults to `costUsd`. */
+  readonly reportedCostUsd?: number;
+  readonly costEstimated?: boolean;
+  /** Defaults to the number of main-loop `usage` steps, at least 1. */
   readonly turns?: number;
   readonly durationMs?: number;
+  /** Defaults to `durationMs`. */
+  readonly reportedDurationMs?: number;
   readonly apiDurationMs?: number;
   readonly stopReason?: string | null;
   readonly permissionDenials?: readonly PermissionDenial[];
@@ -70,6 +86,7 @@ export interface FakeRunnerOptions {
 
 const TOOLS_BY_MODE: Record<RunRequest['tools'], readonly string[]> = {
   all: ['Bash', 'Edit', 'Glob', 'Grep', 'Read', 'Write'],
+  subject: ['Agent', 'Bash', 'Edit', 'Glob', 'Grep', 'Read', 'Write'],
   read_only: ['Glob', 'Grep', 'Read'],
   none: [],
 };
@@ -156,49 +173,63 @@ export class FakeRunner implements Runner {
       tools: [...TOOLS_BY_MODE[request.tools]],
     });
 
-    for (const step of plan.steps ?? []) {
-      if (aborted()) break;
-      if ('wait' in step) {
-        await untilAborted(step.wait(), signal);
-      } else if ('text' in step) {
-        onEvent({ type: 'assistant_text', timestamp: now(), text: step.text });
-      } else if ('tool' in step) {
-        callCount += 1;
-        const id = `fake-tool-${String(callCount)}`;
-        onEvent({ type: 'tool_call', timestamp: now(), id, name: step.tool, input: step.input });
-        onEvent({
-          type: 'tool_result',
-          timestamp: now(),
-          id,
-          output: step.output ?? '',
-          isError: step.isError ?? false,
-        });
-      } else if ('write' in step) {
-        const target = inside(request.cwd, step.write.path);
-        await mkdir(dirname(target), { recursive: true });
-        await writeFile(target, step.write.content);
-      } else if ('delete' in step) {
-        await rm(inside(request.cwd, step.delete), { force: true, recursive: true });
-      } else {
-        turns += 1;
-        usage.input += step.usage.input;
-        usage.output += step.usage.output;
-        usage.cacheRead += step.usage.cacheRead;
-        usage.cacheWrite += step.usage.cacheWrite;
-        onEvent({ type: 'usage', timestamp: now(), ...step.usage });
+    const play = async (steps: readonly FakeStep[], parent: string | undefined): Promise<void> => {
+      const nested = parent === undefined ? {} : { parentToolUseId: parent };
+      for (const step of steps) {
+        if (aborted()) return;
+        if ('wait' in step) {
+          await untilAborted(step.wait(), signal);
+        } else if ('text' in step) {
+          onEvent({ type: 'assistant_text', timestamp: now(), text: step.text, ...nested });
+        } else if ('tool' in step || 'subagent' in step) {
+          callCount += 1;
+          const id = `fake-tool-${String(callCount)}`;
+          const [name, input] =
+            'tool' in step ? [step.tool, step.input] : ['Agent', step.subagent.input ?? {}];
+          onEvent({ type: 'tool_call', timestamp: now(), id, name, input, ...nested });
+          if ('subagent' in step) await play(step.subagent.steps, id);
+          const output = 'tool' in step ? step.output : step.subagent.output;
+          onEvent({
+            type: 'tool_result',
+            timestamp: now(),
+            id,
+            output: output ?? '',
+            isError: 'tool' in step ? (step.isError ?? false) : false,
+            ...nested,
+          });
+        } else if ('write' in step) {
+          const target = inside(request.cwd, step.write.path);
+          await mkdir(dirname(target), { recursive: true });
+          await writeFile(target, step.write.content);
+        } else if ('delete' in step) {
+          await rm(inside(request.cwd, step.delete), { force: true, recursive: true });
+        } else {
+          if (parent === undefined) turns += 1;
+          usage.input += step.usage.input;
+          usage.output += step.usage.output;
+          usage.cacheRead += step.usage.cacheRead;
+          usage.cacheWrite += step.usage.cacheWrite;
+          onEvent({ type: 'usage', timestamp: now(), ...step.usage, ...nested });
+        }
       }
-    }
+    };
+    await play(plan.steps ?? [], undefined);
 
     const scripted: FakeResult = aborted()
       ? { outcome: 'failed', turns, stopReason: null }
       : (plan.result ?? {});
+    const costUsd = scripted.costUsd ?? 0;
+    const durationMs = scripted.durationMs ?? 0;
     const result: ResultEvent = {
       type: 'result',
       timestamp: now(),
       outcome: scripted.outcome ?? 'completed',
-      costUsd: scripted.costUsd ?? 0,
+      costUsd,
+      reportedCostUsd: scripted.reportedCostUsd ?? costUsd,
+      costEstimated: scripted.costEstimated ?? false,
       turns: scripted.turns ?? Math.max(turns, 1),
-      durationMs: scripted.durationMs ?? 0,
+      durationMs,
+      reportedDurationMs: scripted.reportedDurationMs ?? durationMs,
       apiDurationMs: scripted.apiDurationMs ?? 0,
       stopReason: scripted.stopReason === undefined ? 'end_turn' : scripted.stopReason,
       permissionDenials: [...(scripted.permissionDenials ?? [])],

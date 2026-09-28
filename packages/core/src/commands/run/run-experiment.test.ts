@@ -144,13 +144,26 @@ describe('runExperiment', () => {
       sandbox: false,
       strictMcpConfig: true,
       limits: { maxTurns: 30 },
-      tools: 'all',
+      tools: 'subject',
+      backgroundWork: false,
       signal: controller.signal,
     });
     const patches = h.executor.calls.flatMap((call) =>
       call.method === 'createRunFolder' ? [call.patch] : [],
     );
     expect(patches.sort()).toEqual([RULES_PATCH, undefined]);
+  });
+
+  it("passes the suite's background_work to subject runs only", async () => {
+    const h = setup({ suite: { runs: 1, backgroundWork: true } });
+    const result = await runExperiment(h.input);
+    expect(result.ok).toBe(true);
+    const subject = h.runner.requests.filter(isSubject);
+    expect(subject.map((request) => [request.tools, request.backgroundWork])).toEqual(
+      subject.map(() => ['subject', true]),
+    );
+    const judges = h.runner.requests.filter((request) => !isSubject(request));
+    for (const judge of judges) expect(judge.backgroundWork).toBeUndefined();
   });
 
   it('interleaves arms in an order fixed by the seed', async () => {

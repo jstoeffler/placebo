@@ -32,6 +32,11 @@ export const Warning = z.discriminatedUnion('type', [
      */
     paths: z.array(z.string()).min(1),
   }),
+  /**
+   * The suite lets subject runs work in the background (`background_work: true`); work still
+   * running when Claude Code exits is not measured, and cost after its last result is estimated.
+   */
+  z.strictObject({ type: z.literal('background_work_unmeasured') }),
 ]);
 export type Warning = z.infer<typeof Warning>;
 export type WarningType = Warning['type'];

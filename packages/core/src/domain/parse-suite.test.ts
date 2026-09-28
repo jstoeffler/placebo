@@ -61,6 +61,7 @@ describe('parseSuite', () => {
       parallelism: 4,
       setup: 'pnpm install --frozen-lockfile',
       sandbox: true,
+      backgroundWork: false,
       margins: { passRate: 5, cost: 10, tokens: 10, duration: 15 },
       variants: {
         none: { patch: 'variants/none.patch' },
@@ -100,6 +101,7 @@ describe('parseSuite', () => {
       runs: 5,
       parallelism: 4,
       sandbox: true,
+      backgroundWork: false,
       margins: { passRate: 5, cost: 10, tokens: 10, duration: 15 },
     });
     expect(result.ok && 'setup' in result.value).toBe(false);
@@ -114,6 +116,18 @@ describe('parseSuite', () => {
       limits: { maxTurns: 40, maxBudgetUsd: 2.5, maxDurationMs: 600000 },
       margins: { passRate: 10, cost: 10, tokens: 10, duration: 15 },
     });
+  });
+
+  it('maps background_work', () => {
+    const result = parseSuite(`${MINIMAL}background_work: true\n`);
+    expect(result.ok && result.value.backgroundWork).toBe(true);
+    expect(issues(`${MINIMAL}background_work: yes please\n`)).toEqual([
+      {
+        path: 'background_work',
+        line: 11,
+        message: 'Invalid input: expected boolean, received string',
+      },
+    ]);
   });
 
   it('rejects camelCase keys in the file with a hint', () => {
