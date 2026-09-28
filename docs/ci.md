@@ -1,10 +1,13 @@
 # CI
 
-Three workflows run on GitHub Actions.
+Four workflows run on GitHub Actions.
 
 - **CI** runs `pnpm check` and `pnpm build` on every pull request and every push to `main`, and uploads the coverage report. It needs no secret.
 - **Claude Code Review** reviews every non-draft pull request against `AGENTS.md`, `CONTEXT.md` and the ADRs, and posts one comment opening with `**[REVIEW]**`: findings only, or `✅ LGTM`. It reads code and CI status but runs nothing. Drafts, Dependabot and the changesets "chore: version packages" pull request are skipped. The check fails when the model call is rejected or no finished review comment is posted; a zero-cost transient rejection is retried once first. Pull requests that modify a workflow file are skipped by the action itself.
 - **Release** versions and publishes `placebo-eval`; see `docs/releasing.md`.
+- **Dogfood** runs only when started by hand (Actions, Dogfood, Run workflow): it builds Placebo and runs the repo's own suite (`docs/dogfood.md`) with the inputs `runs` (default 5), `task` and `variant`, both optional.
+  It spends real tokens with no cost cap, using the same `CLAUDE_CODE_OAUTH_TOKEN` or `ANTHROPIC_API_KEY` secret as the review.
+  The card lands in the job summary; `report.html` and `results.json` are uploaded as the `dogfood-report` artifact.
 
 The review needs the Claude GitHub App installed on the repository (`claude` in Claude Code, then `/install-github-app`, or https://github.com/apps/claude) and one secret under Settings, Secrets and variables, Actions:
 
