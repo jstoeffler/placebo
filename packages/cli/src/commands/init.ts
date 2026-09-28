@@ -77,24 +77,30 @@ export async function initCommand(flags: InitFlags, io: Io, host: Host): Promise
     await writeFile(join(suiteDir, path), content);
   }
 
+  const rows: [string, string][] = [
+    ['suite.yaml', `commit ${commit}`],
+    ['', `model ${models.model}, judge ${models.judgeModel}`],
+    [
+      '',
+      setup === undefined
+        ? 'no setup command (no lockfile found)'
+        : `setup \`${setup.command}\` (from ${setup.lockfile})`,
+    ],
+    none === undefined
+      ? [`no ${NONE_PATCH}`, 'the repo has no Claude Code configuration to strip;']
+      : [
+          NONE_PATCH,
+          `deletes ${String(none.paths.length)} ${none.paths.length === 1 ? 'file' : 'files'}: ${summarize(none.paths)}`,
+        ],
+    ...(none === undefined
+      ? [['', 'declare a variant in suite.yaml before placebo run'] as [string, string]]
+      : []),
+    [EXAMPLE_TASK.checklist, `questions of the example task ${EXAMPLE_TASK.id}`],
+    ['.gitignore', 'keeps runs/ and reports/ out of git'],
+  ];
+  const width = Math.max(...rows.map(([path]) => path.length)) + 2;
   say(`wrote .placebo/ in ${repoRoot}`);
-  say(`  suite.yaml                  commit ${commit}`);
-  say(`                              model ${models.model}, judge ${models.judgeModel}`);
-  say(
-    setup === undefined
-      ? '                              no setup command (no lockfile found)'
-      : `                              setup \`${setup.command}\` (from ${setup.lockfile})`,
-  );
-  if (none === undefined) {
-    say('  no variants/none.patch      the repo has no Claude Code configuration to strip;');
-    say('                              declare a variant in suite.yaml before placebo run');
-  } else {
-    say(
-      `  ${NONE_PATCH.padEnd(26)}  deletes ${String(none.paths.length)} ${none.paths.length === 1 ? 'file' : 'files'}: ${summarize(none.paths)}`,
-    );
-  }
-  say(`  ${EXAMPLE_TASK.checklist.padEnd(26)}  questions of the example task ${EXAMPLE_TASK.id}`);
-  say('  .gitignore                  keeps runs/ and reports/ out of git');
+  for (const [path, text] of rows) say(`  ${path.padEnd(width)}${text}`);
   const dirty = await git(repoRoot, ['status', '--porcelain', '--untracked-files=no']);
   if (dirty.stdout.trim() !== '') {
     say('note: uncommitted changes are not part of the experiment; it runs the commit above');

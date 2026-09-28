@@ -34,9 +34,13 @@ function scalar(value: string): string {
     : JSON.stringify(value);
 }
 
-/** `value    # note`, with the note aligned as in the brief's Appendix A. */
-function noted(line: string, note: string): string {
-  return `${line.padEnd(33)} # ${note}`;
+/**
+ * Lines with trailing notes, the notes aligned at the column of the brief's Appendix A, or
+ * further right when a line is longer.
+ */
+function noted(lines: readonly (readonly [line: string, note: string])[]): string[] {
+  const width = Math.max(33, ...lines.map(([line]) => line.length));
+  return lines.map(([line, note]) => `${line.padEnd(width)} # ${note}`);
 }
 
 /**
@@ -48,8 +52,10 @@ export function suiteYaml(input: SuiteTemplate): string {
     '# .placebo/suite.yaml',
     'repo: .',
     `commit: "${input.commit}"`,
-    noted(`model: ${scalar(input.model)}`, input.modelNote),
-    noted(`judge_model: ${scalar(input.judgeModel)}`, input.judgeNote),
+    ...noted([
+      [`model: ${scalar(input.model)}`, input.modelNote],
+      [`judge_model: ${scalar(input.judgeModel)}`, input.judgeNote],
+    ]),
     'runs: 5',
     'parallelism: 4',
     ...(input.setup === undefined ? [] : [`setup: ${scalar(input.setup)}`]),

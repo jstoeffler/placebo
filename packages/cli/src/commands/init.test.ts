@@ -211,17 +211,16 @@ describe('placebo init', () => {
     );
   });
 
-  it('asks only for what the flags leave out, and warns when both are the same', async () => {
+  it('warns when the judge is the subject model and aligns long model IDs', async () => {
     await makeRepo({ 'README.md': '# shop\n' });
-    const ran = await run([
-      'init',
-      '--model',
-      'claude-opus-5-5',
-      '--judge-model',
-      'claude-opus-5-5',
-    ]);
+    const haiku = 'claude-haiku-4-5-20251001';
+    const ran = await run(['init', '--model', haiku, '--judge-model', haiku]);
     expect(ran.exitCode).toBe(0);
-    expect(ran.stderr).toContain('warning: the judge model is the subject model (claude-opus-5-5)');
+    expect(ran.stderr).toContain(`warning: the judge model is the subject model (${haiku})`);
+    const yaml = await readFile(join(repo, '.placebo', 'suite.yaml'), 'utf8');
+    expect(yaml).toContain(
+      `model: ${haiku}       # from --model\njudge_model: ${haiku} # from --judge-model\n`,
+    );
   });
 
   it('exits 1 and names the flags when Claude Code cannot be asked', async () => {
