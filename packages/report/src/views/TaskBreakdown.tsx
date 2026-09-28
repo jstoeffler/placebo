@@ -1,33 +1,11 @@
-import { METRICS, type Metric } from '@placebo-eval/core/results';
+import { METRICS } from '@placebo-eval/core/results';
 import { ArmLabel, useReport } from '../context.js';
 import { METRIC_ORDER } from '../data/model.js';
-import { formatCurrency, formatDuration, formatTokens } from '@placebo-eval/core/format';
-import { formatPlain, formatShare } from '../format.js';
+import { formatMean } from '@placebo-eval/core/format';
 import { toHash } from '../route.js';
 
 const DEAD_TASK_NOTE =
   'Every arm scored zero on this task: it is flagged as unsolvable or brittle and excluded from verdicts.';
-
-/** A per-run mean in the metric's own unit. */
-function formatMean(metric: Metric, value: number): string {
-  switch (metric) {
-    case 'passRate':
-    case 'winRate':
-      return formatShare(value);
-    case 'costUsd':
-      return formatCurrency(value);
-    case 'tokensIn':
-    case 'tokensOut':
-    case 'cacheRead':
-    case 'cacheWrite':
-      return formatTokens(value);
-    case 'durationMs':
-      return formatDuration(value);
-    case 'turns':
-    case 'checklist':
-      return formatPlain(Math.round(value * 10) / 10);
-  }
-}
 
 function sentenceCase(text: string): string {
   return text.charAt(0).toUpperCase() + text.slice(1);

@@ -32,7 +32,7 @@ What the reader sees:
 
 ## Number formatting
 
-Differences, ranges, verdicts, runs needed, currency, token counts and durations come from `@placebo-eval/core/format`, the same functions the terminal card uses, so both print the same strings. `src/format.ts` holds only what the report alone shows: shares, plain means, byte sizes and timestamps.
+Differences, ranges, verdicts, runs needed, per-run means, currency, token counts, durations and byte sizes come from `@placebo-eval/core/format`, the same functions the terminal card and table use, so both print the same strings. `src/format.ts` holds only what the report alone shows: timestamps.
 
 ## Scripts
 

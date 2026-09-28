@@ -1,6 +1,6 @@
 import type { Change } from '@placebo-eval/core/results';
 import { parseDiff, type DiffFile } from '../diff.js';
-import { formatBytes } from '../format.js';
+import { formatBytes } from '@placebo-eval/core/format';
 
 export function ChangeView({ change }: { readonly change: Change }) {
   if (change.diff.trim() === '') {

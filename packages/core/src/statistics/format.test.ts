@@ -1,12 +1,16 @@
 import { describe, expect, it } from 'vitest';
 import type { Metric } from '../domain/metrics.js';
 import {
+  formatBytes,
   formatCurrency,
   formatDifference,
   formatDuration,
+  formatMean,
+  formatPlain,
   formatRange,
   formatRunsNeeded,
   formatRunsNeededNote,
+  formatShare,
   formatSigned,
   formatTokens,
   formatVerdict,
@@ -119,5 +123,39 @@ describe('formatDuration', () => {
   it('prints hours and padded minutes from an hour', () => {
     expect(formatDuration(3_600_000)).toBe('1 h 00 m');
     expect(formatDuration(7_380_000)).toBe('2 h 03 m');
+  });
+});
+
+describe('per-run formatting', () => {
+  it('formats shares as percentages with at most one decimal', () => {
+    expect(formatShare(0.6)).toBe('60 %');
+    expect(formatShare(0)).toBe('0 %');
+    expect(formatShare(1 / 12)).toBe('8.3 %');
+  });
+
+  it('formats plain numbers with at most two decimals', () => {
+    expect(formatPlain(3.14159)).toBe('3.14');
+    expect(formatPlain(14)).toBe('14');
+    expect(formatPlain(-0.001)).toBe('0');
+  });
+
+  it('formats byte sizes', () => {
+    expect(formatBytes(812)).toBe('812 B');
+    expect(formatBytes(4200)).toBe('4.2 KB');
+    expect(formatBytes(1_300_000)).toBe('1.3 MB');
+    expect(formatBytes(2_100_000_000)).toBe('2.1 GB');
+  });
+
+  it.each<[Metric, number, string]>([
+    ['passRate', 0.8, '80 %'],
+    ['winRate', 0.5, '50 %'],
+    ['costUsd', 0.123, '$0.12'],
+    ['tokensIn', 12345.4, '12,345'],
+    ['cacheWrite', 10, '10'],
+    ['durationMs', 12_340, '12.3 s'],
+    ['turns', 3.25, '3.3'],
+    ['checklist', 2, '2'],
+  ])('formats a %s mean of %d as %s', (metric, value, text) => {
+    expect(formatMean(metric, value)).toBe(text);
   });
 });

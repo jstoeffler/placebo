@@ -1,4 +1,10 @@
-import { METRICS, type MetricRow, type MetricUnit, type Verdict } from '../domain/metrics.js';
+import {
+  METRICS,
+  type Metric,
+  type MetricRow,
+  type MetricUnit,
+  type Verdict,
+} from '../domain/metrics.js';
 import { RUNS_NEEDED_CAP } from './metric-row.js';
 
 const UNIT_SUFFIX: Readonly<Record<MetricUnit, string>> = {
@@ -116,4 +122,54 @@ export function formatDuration(ms: number): string {
 
 function pad(value: number): string {
   return String(value).padStart(2, '0');
+}
+
+/** Rounds to `decimals` places, turning -0 into 0. */
+function round(value: number, decimals: number): number {
+  const factor = 10 ** decimals;
+  const rounded = Math.round(value * factor) / factor;
+  return rounded === 0 ? 0 : rounded;
+}
+
+/** A plain number with at most two decimals, trailing zeros dropped: `3.2`, `14`. */
+export function formatPlain(value: number): string {
+  return String(round(value, 2));
+}
+
+/** A share in [0, 1] as a percentage, at most one decimal: `60 %`, `0 %`, `8.3 %`. */
+export function formatShare(share: number): string {
+  return `${String(round(share * 100, 1))} %`;
+}
+
+/** A byte size: `812 B`, `4.2 KB`, `1.3 MB`, `2.1 GB`. */
+export function formatBytes(bytes: number): string {
+  if (bytes < 1000) return `${String(bytes)} B`;
+  if (bytes < 1_000_000) return `${(bytes / 1000).toFixed(1)} KB`;
+  if (bytes < 1_000_000_000) return `${(bytes / 1_000_000).toFixed(1)} MB`;
+  return `${(bytes / 1_000_000_000).toFixed(1)} GB`;
+}
+
+/**
+ * A per-run mean of a metric in the metric's own unit, as the per-task tables print it: shares
+ * for pass rate and win rate, dollars, token counts, durations, and plain numbers with one
+ * decimal for turns and checklist.
+ */
+export function formatMean(metric: Metric, value: number): string {
+  switch (metric) {
+    case 'passRate':
+    case 'winRate':
+      return formatShare(value);
+    case 'costUsd':
+      return formatCurrency(value);
+    case 'tokensIn':
+    case 'tokensOut':
+    case 'cacheRead':
+    case 'cacheWrite':
+      return formatTokens(value);
+    case 'durationMs':
+      return formatDuration(value);
+    case 'turns':
+    case 'checklist':
+      return formatPlain(round(value, 1));
+  }
 }
