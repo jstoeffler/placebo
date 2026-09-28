@@ -16,7 +16,12 @@ import { Arm, armName, ArmName, CONTROL } from './arm.js';
 import { Change } from './change.js';
 import { Outcome, RunnerEvent } from './events.js';
 import { Experiment } from './experiment.js';
-import { Grade, GraderRef } from './grade.js';
+import {
+  CHECKLIST_JUDGE_OUTPUT_SCHEMA,
+  COMPARISON_JUDGE_OUTPUT_SCHEMA,
+  Grade,
+  GraderRef,
+} from './grade.js';
 import { Measurements } from './measurements.js';
 import { METRICS, Metric, MetricRow, Verdict } from './metrics.js';
 import { RESULTS_SCHEMA_VERSION, Results } from './results.js';
@@ -260,6 +265,23 @@ describe('Grade', () => {
     expect(issuesOf(Grade, withPath(sampleGrades[0]!, ['detail', 'type'], 'stdout'))).toEqual([
       "detail.type: Invalid discriminator value. Expected 'command' | 'check' | 'judge' | 'comparison' | 'error' | 'review'",
     ]);
+  });
+});
+
+describe('judge output schemas', () => {
+  it('are plain JSON Schema objects with no dialect URI, which Claude Code rejects', () => {
+    expect(COMPARISON_JUDGE_OUTPUT_SCHEMA).toEqual({
+      type: 'object',
+      properties: { better: { type: 'string', enum: ['a', 'b'] }, reason: { type: 'string' } },
+      required: ['better', 'reason'],
+      additionalProperties: false,
+    });
+    expect(CHECKLIST_JUDGE_OUTPUT_SCHEMA).not.toHaveProperty('$schema');
+    expect(CHECKLIST_JUDGE_OUTPUT_SCHEMA).toMatchObject({
+      type: 'object',
+      required: ['answers'],
+      additionalProperties: false,
+    });
   });
 });
 
