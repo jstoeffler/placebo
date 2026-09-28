@@ -49,7 +49,7 @@ Each line of the card is one metric, the treatment compared with control. The **
 | `placebo run [--runs <n>] [--parallelism <n>] [--task <id>] [--variant <name>] [--keep all\|reviewable\|none] [--seed <n>] [--runner sdk\|cli] [--sandbox\|--no-sandbox] [--out <dir>] [--suite <dir>] [--no-color] [--quiet]` | run the suite, print card and table, write report and results |
 | `placebo report [experiment] [--out <dir>] [--suite <dir>] [--no-color]` | regenerate the HTML report from the run store, the newest experiment by default |
 | `placebo clean [--experiment <id>] [--snapshots] [--dry-run] [--suite <dir>]` | remove kept run folders, and snapshots with `--snapshots` |
-| `placebo review` | serve the report locally with blinded review mode (not built yet) |
+| `placebo review [experiment]` | serve the report locally with blinded review mode; `--reviewer`, `--port`, `--no-open` |
 
 `placebo <command> --help` describes every flag.
 
