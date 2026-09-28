@@ -88,13 +88,15 @@ The headline question of the first run is "is your CLAUDE.md a placebo?". The sa
 
 **Isolation.** Only project settings load, so nothing from the user's personal settings, personal `CLAUDE.md` or rules enters a run. Strict MCP config keeps personal MCP servers out. Each run's unique folder means Claude's auto-memory starts empty and is never shared. Residual leaks that this design does not close, and which a temp HOME would close at the cost of subscription auth: the global config file, managed policy settings, and claude.ai connectors. They are documented in §13.
 
+**Background work.** Every unit of work the agent causes is measured, or it cannot happen. Subject runs turn Claude Code's background execution off, so a subagent or a shell command finishes before the turn that started it, and they cannot use tools whose effects escape the run folder or the measurement: scheduling, notifications, remote triggers, worktrees, workflows and messages to other sessions. A suite that needs background work sets `background_work: true` and gets a warning. `docs/measurement.md` records the facts this rests on.
+
 **Sandbox.** Claude Code's built-in sandbox is on, confining writes to the run folder and hiding HOME, with permissions bypassed inside it so runs never block on a prompt. Network stays allowed because agents install packages. A flag disables the sandbox for repos that need it.
 
 ## 8. What is measured per run
 
 - Tokens: input, output, cache read, cache write, reported separately because cache skews cost.
-- Cost in USD as reported by the SDK, also on subscriptions as an estimate.
-- Turns, wall-clock duration, API duration.
+- Cost in USD as reported by the SDK, also on subscriptions as an estimate; usage streamed after its last result is priced at the rates it implies, and the cost is marked as estimated.
+- Turns of the main loop and of subagents, wall-clock duration from start to exit next to the duration Claude Code reports, API duration. Subagents' tokens and tool calls count with the main loop's.
 - Tool calls, total and per tool. Files read and bytes read. Search calls, as a measure of exploration effort.
 - Size of the change and files touched.
 - Outcome: completed, failed, crashed, or stopped by a permission denial.
@@ -164,6 +166,7 @@ Maintained as a README section. The tool shows these where it can detect them.
 8. The variant influencing its own evaluation. Closed by computing the change against snapshot plus patch and by stripping config from the agentic judge's view.
 9. Rate limits and time of day. Closed by interleaving arms in random order.
 10. Reading a single number. Closed by never printing one without its range, and by per-metric verdicts with no overall winner.
+11. Work that escapes the measurement. A subagent started in the background keeps editing the run folder after Claude Code reports its result, so the change includes work whose tokens, cost, turns and transcript the run never recorded. Closed by turning background execution off in subject runs, disallowing tools that schedule, notify, trigger remote work, fan out workflows or reach other sessions, reading the stream until Claude Code exits, measuring duration by wall clock, and counting every subagent's turns, tokens and tool calls. Residual: subagents stream provisional output tokens, so only the run's total is exact, not its split between subagents; with `background_work: true`, work still running at exit is lost and cost after the last result is an estimate, marked ≈.
 
 ## 14. Engineering
 

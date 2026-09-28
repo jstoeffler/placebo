@@ -75,6 +75,7 @@ Snapshots and run folders live outside the repo, under `~/.placebo/<repo>-<hash>
 8. The variant influencing its own evaluation. Closed by computing the change against snapshot plus patch and by stripping config from the agentic judge's view.
 9. Rate limits and time of day. Closed by interleaving arms in random order.
 10. Reading a single number. Closed by never printing one without its range, and by per-metric verdicts with no overall winner.
+11. Work that escapes the measurement. A subagent started in the background keeps editing the run folder after Claude Code reports its result, so the change includes work whose tokens, cost, turns and transcript the run never recorded. Closed by turning background execution off in subject runs, disallowing tools that schedule, notify, trigger remote work, fan out workflows or reach other sessions, reading the stream until Claude Code exits, measuring duration by wall clock, and counting every subagent's turns, tokens and tool calls. Residual: subagents stream provisional output tokens, so only the run's total is exact, not its split between subagents; with `background_work: true`, work still running at exit is lost and cost after the last result is an estimate, marked ≈.
 
 (§9 refers to [the brief](docs/brief.md#9-grading): an agent may fix a bug a better way and still fail a test coupled to the old implementation, so every failure shows its output next to the change for a human to judge.)
 
