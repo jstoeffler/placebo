@@ -92,6 +92,44 @@ describe('renderCard', () => {
     expect(renderCard(empty, data, plain)).toContain('no metric has data for this treatment');
   });
 
+  it('prints the two-run note instead of an estimate, and the tasks each row leaves out', () => {
+    const data = results({
+      verdictCards: [
+        {
+          variant: 'none',
+          rows: [
+            {
+              metric: 'passRate',
+              difference: 0,
+              range: [0, 0],
+              verdict: 'no_evidence',
+              margin: 5,
+              runsNeeded: 2,
+              taskCount: 0,
+              runCount: 0,
+              excludedTasks: [{ taskId: 'refund-rounding', reason: 'too_few_runs' }],
+            },
+            {
+              ...row('costUsd', -18, [-24, -12], 'helps'),
+              excludedTasks: [{ taskId: 'date-utils', reason: 'control_zero' }],
+            },
+          ],
+        },
+      ],
+    });
+    const card = data.verdictCards[0];
+    if (card === undefined) throw new Error('no card');
+    expect(renderCard(card, data, plain)).toBe(
+      [
+        'none vs control            5 runs × 3 tasks    model claude-sonnet-5    claude code 2.1.283',
+        '  pass rate     -         -              no evidence   (at least 2 runs/task to compute a range)',
+        '  cost          -18 %     [-24, -12]     helps',
+        '                left out: date-utils (control is zero)',
+        '',
+      ].join('\n'),
+    );
+  });
+
   it('colours the verdict word only', () => {
     const colors = pc.createColors(true);
     const data = results({

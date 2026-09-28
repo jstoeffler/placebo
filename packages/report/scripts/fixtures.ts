@@ -465,6 +465,7 @@ function buildRun(opts: {
       detail: {
         type: 'error',
         message: 'The judge answer failed its schema: answers has 2 items, the checklist has 3.',
+        spend: judgeSpend(task.prompt, 'answers'),
       },
     });
   } else if (opts.withChecklist) {
@@ -591,12 +592,44 @@ function draw<T>(rng: Rng, items: readonly T[]): T[] {
   return items.map(() => rng.pick(items));
 }
 
+/** Like core: a task needs two runs per arm it compares, and a nonzero control for `percent`. */
+function exclusionOf(
+  metric: Metric,
+  task: { control: number[]; treatment: number[] },
+): 'too_few_runs' | 'control_zero' | undefined {
+  const reference = metric === 'winRate';
+  if (task.treatment.length < 2 || (!reference && task.control.length < 2)) return 'too_few_runs';
+  if (UNIT[metric] === 'percent' && mean(task.control) === 0) return 'control_zero';
+  return undefined;
+}
+
 function metricRow(
   rng: Rng,
   metric: Metric,
-  perTask: readonly { control: number[]; treatment: number[] }[],
+  tasks: readonly { taskId: string; control: number[]; treatment: number[] }[],
   runsPerTask: number,
 ): Json {
+  const excludedTasks = tasks.flatMap((task) => {
+    const reason = exclusionOf(metric, task);
+    return reason === undefined ? [] : [{ taskId: task.taskId, reason }];
+  });
+  const excluded = excludedTasks.length === 0 ? {} : { excludedTasks };
+  const perTask = tasks.filter((task) => exclusionOf(metric, task) === undefined);
+  const margin = MARGIN[metric] ?? null;
+  if (perTask.length === 0) {
+    const thin = excludedTasks.some((task) => task.reason === 'too_few_runs');
+    return {
+      metric,
+      difference: 0,
+      range: [0, 0],
+      verdict: 'no_evidence',
+      margin,
+      ...(thin ? { runsNeeded: 2 } : {}),
+      taskCount: 0,
+      runCount: 0,
+      ...excluded,
+    };
+  }
   const diffOf = (tasks: readonly { control: number[]; treatment: number[] }[]) =>
     mean(tasks.map((task) => taskDifference(metric, task.control, task.treatment)));
   const difference = diffOf(perTask);
@@ -611,7 +644,6 @@ function metricRow(
   samples.sort((a, b) => a - b);
   const lo = samples[25] ?? difference;
   const hi = samples[974] ?? difference;
-  const margin = MARGIN[metric] ?? null;
   const good = HIGHER_IS_BETTER[metric] === true ? 1 : -1;
   let verdict: string;
   if (margin !== null && lo >= -margin && hi <= margin) verdict = 'placebo';
@@ -625,6 +657,7 @@ function metricRow(
     margin,
     taskCount: perTask.length,
     runCount: perTask.reduce((n, task) => n + task.control.length + task.treatment.length, 0),
+    ...excluded,
   };
   if (verdict === 'no_evidence') {
     const half = (hi - lo) / 2;
@@ -770,9 +803,9 @@ function rich() {
             // Win rate is the treatment's share of wins against control; its difference is
             // measured from an even split.
             const own = pick(arm);
-            return { control: own.map(() => 0.5), treatment: own };
+            return { taskId: task.id, control: own.map(() => 0.5), treatment: own };
           }
-          return { control: pick('control'), treatment: pick(arm) };
+          return { taskId: task.id, control: pick('control'), treatment: pick(arm) };
         });
         if (perTask.some((task) => task.control.length === 0 || task.treatment.length === 0))
           return [];
@@ -903,27 +936,21 @@ function minimal() {
     verdictCards: [
       {
         variant: 'none',
-        rows: [
-          {
-            metric: 'passRate',
-            difference: 0,
-            range: [-100, 100],
-            verdict: 'no_evidence',
-            margin: 5,
-            taskCount: 1,
-            runCount: 2,
-          },
-          {
-            metric: 'costUsd',
-            difference: -21.4,
-            range: [-38.2, 4.6],
-            verdict: 'no_evidence',
-            margin: 10,
-            runsNeeded: 9,
-            taskCount: 1,
-            runCount: 2,
-          },
-        ],
+        // One run per arm: no task has the two runs a range needs, so no row decides.
+        rows: (['passRate', 'costUsd'] as const).map((metric) =>
+          metricRow(
+            rng,
+            metric,
+            [
+              {
+                taskId: task.id,
+                control: [runs[0]?.metrics[metric] ?? 0],
+                treatment: [runs[1]?.metrics[metric] ?? 0],
+              },
+            ],
+            1,
+          ),
+        ),
       },
     ],
     breakdown: runs.map((entry, i) => ({
@@ -933,7 +960,10 @@ function minimal() {
       means: { passRate: entry.metrics.passRate ?? null, costUsd: entry.metrics.costUsd ?? null },
     })),
     deadTasks: [],
-    warnings: [{ type: 'few_tasks', taskCount: 1, threshold: 5 }],
+    warnings: [
+      { type: 'few_tasks', taskCount: 1, threshold: 5 },
+      { type: 'few_runs', runsPerTask: 1, threshold: 3 },
+    ],
     reviews: [],
   };
 }

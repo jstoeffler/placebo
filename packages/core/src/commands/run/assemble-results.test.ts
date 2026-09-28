@@ -54,6 +54,7 @@ describe('assembleResults', () => {
     expect(results.verdictCards.map((card) => card.variant)).toEqual(['none']);
     expect(results.warnings).toEqual([
       { type: 'few_tasks', taskCount: 1, threshold: 5 },
+      { type: 'few_runs', runsPerTask: 1, threshold: 3 },
       { type: 'judge_equals_subject', model: 'x' },
     ]);
   });
@@ -76,7 +77,10 @@ describe('assembleResults', () => {
       clock,
     });
     expect(results.tasks).toEqual([]);
-    expect(results.warnings).toEqual([{ type: 'few_tasks', taskCount: 1, threshold: 5 }]);
+    expect(results.warnings).toEqual([
+      { type: 'few_tasks', taskCount: 1, threshold: 5 },
+      { type: 'few_runs', runsPerTask: 1, threshold: 3 },
+    ]);
   });
 });
 

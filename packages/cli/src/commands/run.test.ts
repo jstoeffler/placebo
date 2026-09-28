@@ -68,7 +68,12 @@ describe('placebo run', () => {
     expect(ran.stderr).toContain('seed 7');
     expect(ran.exitCode).toBe(0);
     expect(ran.stdout).toMatch(/none vs control {12}1 run × 1 task {4}model claude-sonnet-5/);
-    expect(ran.stdout).toMatch(/^ {2}pass rate {5}0 pts {5}\[0, 0\] {9}placebo$/m);
+    expect(ran.stdout).toMatch(
+      /^ {2}pass rate {5}- {9}- {14}no evidence {3}\(at least 2 runs\/task to compute a range\)$/m,
+    );
+    expect(ran.stdout).toContain(
+      'warning: only 1 run per task (fewer than 3): only large differences can be detected\n',
+    );
     const id = /experiment (\S+) · seed 7/.exec(ran.stderr)?.[1] ?? '';
     const out = join(repo, '.placebo', 'reports', id);
     expect(ran.stdout).toContain(

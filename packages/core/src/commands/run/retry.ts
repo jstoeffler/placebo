@@ -42,23 +42,39 @@ export function sleep(ms: number, signal?: AbortSignal): Promise<void> {
   });
 }
 
+/** Where a request Claude Code rejects gets reported: it is a bug in Placebo or a version skew. */
+const ISSUES_URL = 'https://github.com/jstoeffler/placebo/issues';
+
 /**
  * Whether the attempt that just failed with `error` (0 for the first) is the last one: attempts
- * ran out, or the error is `auth`, which no retry can fix.
+ * ran out, or the error is `auth` or `invalid_request`, which no retry can fix.
  */
 export function isLastAttempt(
   error: RunnerInfraError,
   attempt: number,
   maxInfraAttempts: number,
 ): boolean {
-  return error.reason === 'auth' || attempt + 1 >= maxInfraAttempts;
+  return (
+    error.reason === 'auth' || error.reason === 'invalid_request' || attempt + 1 >= maxInfraAttempts
+  );
 }
 
 /**
- * What an experiment ending on `error` says: the error itself, and for `auth` how to log in,
- * since Placebo uses whatever Claude Code auth the machine already has (ADR 0003).
+ * What an experiment ending on `error` says: the error itself; for `auth` how to log in, since
+ * Placebo uses whatever Claude Code auth the machine already has (ADR 0003); for
+ * `invalid_request` that Claude Code rejected the request Placebo built, with the installed
+ * Claude Code version when known, and where to report it.
  */
-export function infraMessage(error: RunnerInfraError): string {
-  if (error.reason !== 'auth') return error.message;
-  return `Claude Code could not authenticate or bill this account: ${error.message}. Run \`claude\` once interactively and log in, or set ANTHROPIC_API_KEY, then run the experiment again.`;
+export function infraMessage(error: RunnerInfraError, claudeCodeVersion?: string): string {
+  switch (error.reason) {
+    case 'auth':
+      return `Claude Code could not authenticate or bill this account: ${error.message}. Run \`claude\` once interactively and log in, or set ANTHROPIC_API_KEY, then run the experiment again.`;
+    case 'invalid_request': {
+      const version =
+        claudeCodeVersion === undefined ? 'Claude Code' : `Claude Code ${claudeCodeVersion}`;
+      return `${version} rejected the request Placebo built: ${error.message}. This is a Placebo bug or an incompatibility with this Claude Code version; please report it at ${ISSUES_URL} with this message.`;
+    }
+    default:
+      return error.message;
+  }
 }

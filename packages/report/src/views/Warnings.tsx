@@ -16,6 +16,8 @@ function warningSentence(warning: Warning): string {
   switch (warning.type) {
     case 'few_tasks':
       return `With ${String(warning.taskCount)} ${warning.taskCount === 1 ? 'task' : 'tasks'}, fewer than ${String(warning.threshold)}, these results describe these tasks, not the repo.`;
+    case 'few_runs':
+      return `With ${String(warning.runsPerTask)} ${warning.runsPerTask === 1 ? 'run' : 'runs'} per task, fewer than ${String(warning.threshold)}, only large differences can be detected; the ranges show how wide the uncertainty is.`;
     case 'judge_equals_subject':
       return `The judge model is the subject model (${warning.model}), so the judge may favour its own work; pin a different judge model.`;
     case 'patch_outside_surface':

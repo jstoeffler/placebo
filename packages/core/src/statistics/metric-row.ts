@@ -1,4 +1,11 @@
-import { METRICS, type Metric, type MetricRow, type Verdict } from '../domain/metrics.js';
+import {
+  type ExcludedTask,
+  METRICS,
+  MIN_RUNS_PER_ARM,
+  type Metric,
+  type MetricRow,
+  type Verdict,
+} from '../domain/metrics.js';
 import type { Margins } from '../domain/suite.js';
 import type { TaskId } from '../kernel/ids.js';
 import type { Random } from '../kernel/random.js';
@@ -30,18 +37,23 @@ export interface MetricRowInput {
 /**
  * One verdict-card line for one metric (brief §10).
  *
- * 1. Per task, the control mean `c` and treatment mean `t` give a task difference in the
+ * 1. Tasks with no values in an arm are skipped silently: the metric does not exist there. A
+ *    task counts only when each arm the row compares (the treatment alone for a metric with a
+ *    `reference`) has at least `MIN_RUNS_PER_ARM` values on it; one run gives a range that is a
+ *    point, a confident verdict from nothing. Thinner tasks are listed in `excludedTasks` as
+ *    `too_few_runs`.
+ * 2. Per task, the control mean `c` and treatment mean `t` give a task difference in the
  *    metric's unit: `pts` is `(t − c) × 100`, `percent` is `(t − c) / c × 100`, `absolute` is
  *    `t − c`. A metric with a `reference` (win rate) uses that fixed value as `c` and only
  *    treatment runs. A `percent` task whose control mean is 0 has no difference; it is left out
- *    and listed in `excludedTasks`. Tasks with no values in an arm are skipped silently: the
- *    metric does not exist there.
- * 2. The difference is the mean of the task differences, so every task weighs the same however
+ *    and listed in `excludedTasks` as `control_zero`.
+ * 3. The difference is the mean of the task differences, so every task weighs the same however
  *    many runs it has.
- * 3. The range comes from {@link resampleRange}, the verdict from {@link decideVerdict}, and
+ * 4. The range comes from {@link resampleRange}, the verdict from {@link decideVerdict}, and
  *    `runsNeeded` (on `no_evidence` rows only) from {@link estimateRunsNeeded}.
  *
- * With no task left, the row is `no_evidence` with `taskCount` 0, difference 0 and range [0, 0].
+ * With no task left, the row is `no_evidence` with `taskCount` 0, difference 0 and range [0, 0];
+ * when a task was left out for `too_few_runs`, its `runsNeeded` is `MIN_RUNS_PER_ARM`.
  */
 export function computeMetricRow(input: MetricRowInput): MetricRow {
   const { metric, margins, random } = input;
@@ -57,11 +69,21 @@ export function computeMetricRow(input: MetricRowInput): MetricRow {
     (task) => task.treatment.length > 0 && (reference !== undefined || task.control.length > 0),
   );
   const included: TaskSamples[] = [];
-  const excludedTasks: TaskId[] = [];
+  const excludedTasks: ExcludedTask[] = [];
+  const exclude = (taskId: TaskId, reason: ExcludedTask['reason']): void => {
+    excludedTasks.push({ taskId, reason });
+  };
   for (const task of present) {
+    const thin =
+      task.treatment.length < MIN_RUNS_PER_ARM ||
+      (reference === undefined && task.control.length < MIN_RUNS_PER_ARM);
+    if (thin) {
+      exclude(task.taskId, 'too_few_runs');
+      continue;
+    }
     const c = reference ?? mean(task.control);
     if (taskDifference(metric, c, mean(task.treatment)) === undefined) {
-      excludedTasks.push(task.taskId);
+      exclude(task.taskId, 'control_zero');
     } else {
       included.push(task);
     }
@@ -69,12 +91,14 @@ export function computeMetricRow(input: MetricRowInput): MetricRow {
   const excluded = excludedTasks.length > 0 ? { excludedTasks } : {};
 
   if (included.length === 0) {
+    const thin = excludedTasks.some((task) => task.reason === 'too_few_runs');
     return {
       metric,
       difference: 0,
       range: [0, 0],
       verdict: 'no_evidence',
       margin,
+      ...(thin ? { runsNeeded: MIN_RUNS_PER_ARM } : {}),
       taskCount: 0,
       runCount: 0,
       ...excluded,

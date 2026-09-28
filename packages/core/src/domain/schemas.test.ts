@@ -386,11 +386,28 @@ describe('metrics and verdicts', () => {
       verdict: 'helps',
     });
   });
+
+  it('says why each excluded task is left out', () => {
+    const excludedTasks = [
+      { taskId: 'a', reason: 'too_few_runs' },
+      { taskId: 'b', reason: 'control_zero' },
+    ];
+    expect(MetricRow.parse({ ...sampleRow, excludedTasks }).excludedTasks).toEqual(excludedTasks);
+    expect(issuesOf(MetricRow, { ...sampleRow, excludedTasks: ['a'] })).toEqual([
+      'excludedTasks.0: Invalid input: expected object, received string',
+    ]);
+    expect(
+      issuesOf(MetricRow, { ...sampleRow, excludedTasks: [{ taskId: 'a', reason: 'dead' }] }),
+    ).toEqual([
+      'excludedTasks.0.reason: Invalid option: expected one of "control_zero"|"too_few_runs"',
+    ]);
+  });
 });
 
 describe('Warning', () => {
   it.each([
     { type: 'few_tasks', taskCount: 3, threshold: 5 },
+    { type: 'few_runs', runsPerTask: 2, threshold: 3 },
     { type: 'judge_equals_subject', model: 'claude-sonnet-5' },
     { type: 'patch_outside_surface', variant: 'arch', paths: ['docs/arch.md'] },
     { type: 'dead_task', taskId: 't' },

@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { Random } from '../../kernel/random.js';
-import { backoffMs, sleep } from './retry.js';
+import { RunnerInfraError, type RunnerInfraReason } from '../../ports/runner.js';
+import { backoffMs, infraMessage, isLastAttempt, sleep } from './retry.js';
 
 const fixed = (value: number): Random => ({
   next: () => value,
@@ -44,5 +45,35 @@ describe('sleep', () => {
     controller.abort();
     await expect(waiting).resolves.toBeUndefined();
     await expect(sleep(60_000, controller.signal)).resolves.toBeUndefined();
+  });
+});
+
+describe('isLastAttempt', () => {
+  const error = (reason: RunnerInfraReason) => new RunnerInfraError(reason, 'x');
+
+  it('retries transient errors until attempts run out', () => {
+    for (const reason of ['spawn_failed', 'rate_limited', 'network', 'other'] as const) {
+      expect(isLastAttempt(error(reason), 0, 5)).toBe(false);
+      expect(isLastAttempt(error(reason), 4, 5)).toBe(true);
+    }
+  });
+
+  it('never retries auth or a rejected request', () => {
+    expect(isLastAttempt(error('auth'), 0, 5)).toBe(true);
+    expect(isLastAttempt(error('invalid_request'), 0, 5)).toBe(true);
+  });
+});
+
+describe('infraMessage', () => {
+  it('names the Claude Code version and asks to report a rejected request', () => {
+    const rejected = new RunnerInfraError('invalid_request', 'Invalid schema');
+    expect(infraMessage(rejected, '2.1.283')).toBe(
+      'Claude Code 2.1.283 rejected the request Placebo built: Invalid schema. This is a Placebo bug or an incompatibility with this Claude Code version; please report it at https://github.com/jstoeffler/placebo/issues with this message.',
+    );
+    expect(infraMessage(rejected)).toMatch(/^Claude Code rejected the request Placebo built/);
+  });
+
+  it('passes other errors through', () => {
+    expect(infraMessage(new RunnerInfraError('network', 'ECONNRESET'))).toBe('ECONNRESET');
   });
 });

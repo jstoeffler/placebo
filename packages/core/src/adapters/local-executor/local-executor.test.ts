@@ -12,14 +12,17 @@ import {
 } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Clock } from '../../kernel/clock.js';
 import type { Snapshot } from '../../ports/executor.js';
 import { ExecutorError } from './executor-error.js';
 import { LocalExecutor, type LocalExecutorOptions } from './local-executor.js';
 import { spawnProcess, type ProcessRunner } from './process.js';
 
-const TIMEOUT = 60_000;
+// Real git and file copies are slow on a loaded machine, not wrong: every test and hook of this
+// file gets 180 s.
+const TIMEOUT = 180_000;
+vi.setConfig({ testTimeout: TIMEOUT, hookTimeout: TIMEOUT });
 const clock: Clock = { now: () => new Date('2026-09-27T10:00:00.000Z') };
 
 /** Test git never reads the developer's configuration. */

@@ -4,6 +4,7 @@ import { err, ok, type Result } from '../kernel/result.js';
 import type { RunFolder } from '../ports/executor.js';
 import { RunnerInfraError, type RunRequest } from '../ports/runner.js';
 import type { JudgeContext } from './context.js';
+import { JudgeInfraError } from './grading-infra-error.js';
 
 /** How a judge query is started (ADR 0007). */
 export interface JudgeQuery {
@@ -152,7 +153,7 @@ type JudgeRepeats<T> = Result<
 /**
  * Asks `query` `repeats` times in one judge folder (see `inJudgeFolder`), stopping at the first
  * repeat that fails. The failure keeps the spend of every call that returned, the failing one
- * included; `RunnerInfraError` propagates.
+ * included; `RunnerInfraError` propagates as a `JudgeInfraError` carrying the spend so far.
  */
 export async function askRepeats<T>(
   ctx: JudgeContext,
@@ -165,7 +166,13 @@ export async function askRepeats<T>(
   const calls: JudgeCall[] = [];
   const asked = await inJudgeFolder(ctx, source, async (folder) => {
     for (let repeat = 1; repeat <= repeats; repeat++) {
-      const answer = await askJudge(ctx, query, folder, validate);
+      let answer: Result<JudgeAnswer<T>, JudgeFailure>;
+      try {
+        answer = await askJudge(ctx, query, folder, validate);
+      } catch (error) {
+        if (!(error instanceof RunnerInfraError)) throw error;
+        throw new JudgeInfraError(error, calls.length === 0 ? undefined : spendOf(calls));
+      }
       if (!answer.ok) {
         if (answer.error.call !== undefined) calls.push(answer.error.call);
         const which = repeats > 1 ? ` (repeat ${String(repeat)} of ${String(repeats)})` : '';

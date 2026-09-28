@@ -18064,7 +18064,17 @@
           "score": 0,
           "detail": {
             "type": "error",
-            "message": "The judge answer failed its schema: answers has 2 items, the checklist has 3."
+            "message": "The judge answer failed its schema: answers has 2 items, the checklist has 3.",
+            "spend": {
+              "costUsd": 0.0141,
+              "tokens": {
+                "input": 2500,
+                "output": 62,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         },
         {

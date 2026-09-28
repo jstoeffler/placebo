@@ -402,6 +402,11 @@ pre {
   font-size: var(--step-0);
 }
 
+.card-rows .excluded-tasks {
+  display: block;
+  white-space: normal;
+}
+
 .verdict-word {
   display: inline-block;
   min-width: 6.5rem;

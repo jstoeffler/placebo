@@ -15,19 +15,26 @@ const CONFIG_TOKENS = 900;
 
 /**
  * The plan of `--runner fake`: a deterministic agent for demos and tests that spends nothing.
+ * Each call returns a fresh plan function with its own tie-break state.
  *
  * - A subject run writes the file named after the word "named" in the prompt, if any, and
  *   otherwise only reads. Usage, cost and duration are plausible and grow with each of
  *   `CLAUDE.md` and `AGENTS.md` at the run folder's root, so a treatment that strips one shows a
  *   difference.
  * - A checklist judge answers yes to every question when the change is not empty.
- * - A comparison judge prefers the attempt whose change adds more lines, `a` on a tie.
+ * - A comparison judge prefers the attempt whose change adds more lines. Ties alternate between
+ *   `a` and `b`, call after call, so identical attempts split evenly and never make a win rate
+ *   look like it helps or harms on its own.
  */
-export function fakePlan(request: RunRequest): FakePlan {
-  const properties = propertiesOf(request.outputSchema);
-  if (properties.has('answers')) return checklistAnswer(request.prompt);
-  if (properties.has('better')) return comparisonAnswer(request.prompt);
-  return subjectRun(request);
+export function createFakePlan(): (request: RunRequest) => FakePlan {
+  let ties = 0;
+  const tieBreak = (): 'a' | 'b' => (ties++ % 2 === 0 ? 'a' : 'b');
+  return (request) => {
+    const properties = propertiesOf(request.outputSchema);
+    if (properties.has('answers')) return checklistAnswer(request.prompt);
+    if (properties.has('better')) return comparisonAnswer(request.prompt, tieBreak);
+    return subjectRun(request);
+  };
 }
 
 function propertiesOf(schema: RunRequest['outputSchema']): Set<string> {
@@ -60,14 +67,14 @@ function checklistAnswer(prompt: string): FakePlan {
   };
 }
 
-function comparisonAnswer(prompt: string): FakePlan {
+function comparisonAnswer(prompt: string, tieBreak: () => 'a' | 'b'): FakePlan {
   const a = prompt.indexOf('Attempt a');
   const b = prompt.indexOf('Attempt b');
   const added = (body: string): number =>
     body.split('\n').filter((line) => line.startsWith('+')).length;
   const addedA = a === -1 || b === -1 ? 0 : added(prompt.slice(a, b));
   const addedB = b === -1 ? 0 : added(prompt.slice(b));
-  const better = addedB > addedA ? 'b' : 'a';
+  const better = addedA === addedB ? tieBreak() : addedB > addedA ? 'b' : 'a';
   return {
     steps: [{ usage: JUDGE_TURN }],
     result: {

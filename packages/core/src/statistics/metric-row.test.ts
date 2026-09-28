@@ -82,12 +82,57 @@ describe('computeMetricRow: known scenarios', () => {
     expect(r.difference).toBeCloseTo(-2);
   });
 
-  it('works with one run per arm: every resample is the same, so the range is a point', () => {
-    const r = row('costUsd', [task('a', [0.1], [0.2])]);
-    expect(r.difference).toBeCloseTo(100);
-    expect(r.range[0]).toBeCloseTo(100);
-    expect(r.range[1]).toBeCloseTo(100);
-    expect(r).toMatchObject({ verdict: 'harms', taskCount: 1, runCount: 2 });
+  it('never gives a verdict from one run per arm: every task is left out as too few runs', () => {
+    for (const metric of ['passRate', 'costUsd', 'turns'] as const) {
+      const r = row(metric, [task('a', [0.1], [0.2]), task('b', [1], [0])]);
+      expect(r).toEqual({
+        metric,
+        difference: 0,
+        range: [0, 0],
+        verdict: 'no_evidence',
+        margin: metric === 'turns' ? null : metric === 'costUsd' ? 10 : 5,
+        runsNeeded: 2,
+        taskCount: 0,
+        runCount: 0,
+        excludedTasks: [
+          { taskId: 'a', reason: 'too_few_runs' },
+          { taskId: 'b', reason: 'too_few_runs' },
+        ],
+      });
+    }
+  });
+
+  it('needs two runs in the control arm too, not only in the treatment', () => {
+    const r = row('costUsd', [task('a', [0.1], [0.2, 0.2])]);
+    expect(r.excludedTasks).toEqual([{ taskId: 'a', reason: 'too_few_runs' }]);
+    expect(r.verdict).toBe('no_evidence');
+  });
+
+  it('gives a range from two runs per arm', () => {
+    const r = row('costUsd', [task('a', [0.1, 0.12], [0.2, 0.22])]);
+    expect(r.taskCount).toBe(1);
+    expect(r.runCount).toBe(4);
+    expect(r.excludedTasks).toBeUndefined();
+    expect(r.range[0]).toBeLessThan(r.range[1]);
+    expect(r.range[0]).toBeLessThanOrEqual(r.difference);
+    expect(r.range[1]).toBeGreaterThanOrEqual(r.difference);
+  });
+
+  it('leaves out only the thin tasks when tasks have different run counts', () => {
+    const r = row('turns', [
+      task('thin', [4], [2, 2]),
+      task('a', [4, 6], [2, 2]),
+      task('b', [10, 10], [9, 9]),
+    ]);
+    expect(r.excludedTasks).toEqual([{ taskId: 'thin', reason: 'too_few_runs' }]);
+    expect(r).toMatchObject({ taskCount: 2, runCount: 8 });
+    expect(r.difference).toBeCloseTo(-2);
+  });
+
+  it('counts only treatment runs toward the minimum for win rate', () => {
+    const r = row('winRate', [task('thin', [], [1]), task('a', [], [1, 1]), task('b', [], [1, 0])]);
+    expect(r.excludedTasks).toEqual([{ taskId: 'thin', reason: 'too_few_runs' }]);
+    expect(r.taskCount).toBe(2);
   });
 
   it('with one task draws runs only and still gives a range', () => {
@@ -105,7 +150,7 @@ describe('computeMetricRow: known scenarios', () => {
       task('a', [100, 100], [110, 110]),
       task('b', [100, 100], [110, 110]),
     ]);
-    expect(r.excludedTasks).toEqual(['zero']);
+    expect(r.excludedTasks).toEqual([{ taskId: 'zero', reason: 'control_zero' }]);
     expect(r.taskCount).toBe(2);
     expect(r.runCount).toBe(8);
     expect(r.difference).toBeCloseTo(10);
@@ -121,7 +166,7 @@ describe('computeMetricRow: known scenarios', () => {
       margin: 10,
       taskCount: 0,
       runCount: 0,
-      excludedTasks: ['zero'],
+      excludedTasks: [{ taskId: 'zero', reason: 'control_zero' }],
     });
   });
 

@@ -95,8 +95,13 @@ describe('runExperiment', () => {
     expect(results.warnings).toContainEqual({ type: 'few_tasks', taskCount: 2, threshold: 5 });
 
     const types = typesOf(h.events);
-    expect(types.slice(0, 3)).toEqual(['message', 'snapshot_ready', 'experiment_started']);
-    expect(h.events[1]).toEqual({
+    expect(types.slice(0, 4)).toEqual([
+      'message',
+      'message',
+      'snapshot_ready',
+      'experiment_started',
+    ]);
+    expect(h.events[2]).toEqual({
       type: 'snapshot_ready',
       snapshotId: expect.any(String) as unknown,
       cached: false,
@@ -174,34 +179,49 @@ describe('runExperiment', () => {
   });
 
   it('never has more runs in flight than parallelism', async () => {
-    let inFlight = 0;
-    let peak = 0;
-    const plan = (request: RunRequest) => {
-      if (!isSubject(request)) return defaultPlan(request);
-      return {
-        ...defaultPlan(request),
-        steps: [
-          {
-            wait: async () => {
-              inFlight += 1;
-              peak = Math.max(peak, inFlight);
-              await new Promise((resolve) => setTimeout(resolve, 5));
-              inFlight -= 1;
+    /**
+     * Each subject run waits at a barrier that opens once `size` runs wait there, so the pool
+     * must hold that many agents at once to make progress, with no timer involved. The run
+     * count is a multiple of `size`, so the last group fills too.
+     */
+    const gated = (size: number) => {
+      const state = { inFlight: 0, peak: 0 };
+      let waiting: (() => void)[] = [];
+      const plan = (request: RunRequest) => {
+        if (!isSubject(request)) return defaultPlan(request);
+        return {
+          ...defaultPlan(request),
+          steps: [
+            {
+              wait: async () => {
+                state.inFlight += 1;
+                state.peak = Math.max(state.peak, state.inFlight);
+                await new Promise<void>((resolve) => {
+                  waiting.push(resolve);
+                  if (waiting.length === size) {
+                    for (const release of waiting) release();
+                    waiting = [];
+                  }
+                });
+                state.inFlight -= 1;
+              },
             },
-          },
-          ...(defaultPlan(request).steps ?? []),
-        ],
+            ...(defaultPlan(request).steps ?? []),
+          ],
+        };
       };
+      return { state, plan };
     };
-    const h = setup({ plan, suite: { runs: 3 }, options: { parallelism: 3 } });
-    const result = await runExperiment(h.input);
-    expect(result.ok).toBe(true);
-    expect(peak).toBe(3);
 
-    peak = 0;
-    const serial = setup({ plan, suite: { runs: 2 }, options: { parallelism: 1 } });
+    const parallel = gated(3);
+    const h = setup({ plan: parallel.plan, suite: { runs: 3 }, options: { parallelism: 3 } });
+    expect((await runExperiment(h.input)).ok).toBe(true);
+    expect(parallel.state.peak).toBe(3);
+
+    const one = gated(1);
+    const serial = setup({ plan: one.plan, suite: { runs: 2 }, options: { parallelism: 1 } });
     expect((await runExperiment(serial.input)).ok).toBe(true);
-    expect(peak).toBe(1);
+    expect(one.state.peak).toBe(1);
   });
 
   it('retries an infrastructure error from a fresh run folder after a backoff', async () => {
@@ -312,6 +332,29 @@ describe('runExperiment', () => {
     await expect(h.store.list()).resolves.toEqual([]);
   });
 
+  it('fails at once when Claude Code rejects the request, asking to report it', async () => {
+    const rejected = new RunnerInfraError(
+      'invalid_request',
+      "error: unknown option '--include-partial-messages'",
+    );
+    const plan = (request: RunRequest) =>
+      isSubject(request) ? { infraError: rejected } : defaultPlan(request);
+    const h = setup({ plan, suite: { runs: 1, parallelism: 1 } });
+    const result = await runExperiment(h.input);
+    if (result.ok) throw new Error('expected infra_exhausted');
+    expect(result.error).toMatchObject({
+      type: 'infra_exhausted',
+      completedRuns: 0,
+      reason: 'invalid_request',
+      attempts: 1,
+      message:
+        "Claude Code 2.1.283 rejected the request Placebo built: error: unknown option '--include-partial-messages'. This is a Placebo bug or an incompatibility with this Claude Code version; please report it at https://github.com/jstoeffler/placebo/issues with this message.",
+    });
+    expect(h.sleeps).toEqual([]);
+    expect(h.runner.requests.filter(isSubject)).toHaveLength(1);
+    expect(typesOf(h.events)).not.toContain('run_retried');
+  });
+
   it('fails at once when a judge or a comparison hits an auth error', async () => {
     const auth = new RunnerInfraError('auth', 'credit balance is too low');
     const judgeFails = setup({
@@ -325,7 +368,7 @@ describe('runExperiment', () => {
       type: 'infra_exhausted',
       reason: 'auth',
       attempts: 1,
-      completedRuns: 0,
+      completedRuns: 1,
     });
     expect(judgeFails.sleeps).toEqual([]);
 
@@ -374,7 +417,7 @@ describe('runExperiment', () => {
     ).toBe('grep -q round src/money.ts\n');
   });
 
-  it('warns up front: judge equals subject, patch outside the surface, few tasks', async () => {
+  it('warns up front: judge equals subject, patch outside the surface, few tasks, few runs', async () => {
     const outside =
       'diff --git a/src/app.ts b/src/app.ts\n--- a/src/app.ts\n+++ b/src/app.ts\n@@ -1 +1 @@\n-a\n+b\n';
     const h = setup({
@@ -400,6 +443,11 @@ describe('runExperiment', () => {
         level: 'warn',
         text: 'only 2 tasks (fewer than 5): results describe these tasks, not the repo in general',
       },
+      {
+        type: 'message',
+        level: 'warn',
+        text: 'only 1 run per task (fewer than 3): only large differences can be detected',
+      },
     ]);
     expect(typesOf(h.events).indexOf('message')).toBe(0);
     expect(result.value.results.warnings).toEqual(
@@ -407,6 +455,7 @@ describe('runExperiment', () => {
         { type: 'judge_equals_subject', model: 'claude-sonnet-5' },
         { type: 'patch_outside_surface', variant: 'rules', paths: ['src/app.ts'] },
         { type: 'few_tasks', taskCount: 2, threshold: 5 },
+        { type: 'few_runs', runsPerTask: 1, threshold: 3 },
       ]),
     );
     expect(result.value.results.warnings.filter((w) => w.type === 'few_tasks')).toHaveLength(1);
@@ -686,10 +735,54 @@ describe('runExperiment grading and comparison retries', () => {
       type: 'infra_exhausted',
       reason: 'network',
       attempts: 2,
-      completedRuns: 0,
+      completedRuns: 1,
     });
-    await expect(h.store.list()).resolves.toEqual([]);
-    expect(await h.executor.listRunFolders()).toEqual([]);
+    const [saved] = await h.store.list();
+    expect(saved?.infraRetries).toBe(1);
+    expect(saved?.grades.find((grade) => grade.grader.type === 'checklist')?.detail).toEqual({
+      type: 'error',
+      message: 'grading stopped on an infrastructure error (network): socket hang up',
+    });
+  });
+
+  it('saves a run with error grades when a judge is rejected, then ends the experiment', async () => {
+    const rejected = new RunnerInfraError('invalid_request', 'is not a valid JSON Schema');
+    const plan = (request: RunRequest) =>
+      isSubject(request) ? defaultPlan(request) : { infraError: rejected };
+    const h = setup({
+      plan,
+      suite: { runs: 1, parallelism: 1 },
+      options: { tasks: ['refund' as TaskId] },
+    });
+    const result = await runExperiment(h.input);
+    if (result.ok) throw new Error('expected infra_exhausted');
+    expect(result.error).toMatchObject({
+      type: 'infra_exhausted',
+      reason: 'invalid_request',
+      attempts: 1,
+      completedRuns: 1,
+      totalRuns: 2,
+    });
+    expect(h.sleeps).toEqual([]);
+
+    const stored = await h.store.list();
+    expect(stored).toHaveLength(1);
+    const [run] = stored;
+    expect(run?.outcome).toBe('completed');
+    expect(run?.grades.map((grade) => [grade.grader.type, grade.detail.type])).toEqual([
+      ['command', 'command'],
+      ['file_modified', 'check'],
+      ['checklist', 'error'],
+    ]);
+    expect(run?.grades[2]?.detail).toEqual({
+      type: 'error',
+      message:
+        'grading stopped on an infrastructure error (invalid_request): is not a valid JSON Schema',
+    });
+    expect(h.events.filter((event) => event.type === 'run_finished')).toEqual([
+      { type: 'run_finished', runId: run?.id, outcome: 'completed' },
+    ]);
+    expect(h.events.at(-1)).toMatchObject({ type: 'experiment_finished', completedRuns: 1 });
   });
 
   it('retries comparisons after a backoff and gives up after maxInfraAttempts', async () => {
@@ -737,6 +830,15 @@ describe('runExperiment grading and comparison retries', () => {
       completedRuns: 2,
     });
     expect(exhausted.ok ? undefined : exhausted.error).not.toHaveProperty('runId');
+    const saved = await always.store.list();
+    const compared = saved.find((run) => run.arm.kind === 'treatment');
+    expect(compared?.grades.at(-1)).toMatchObject({
+      grader: { type: 'comparison' },
+      detail: {
+        type: 'error',
+        message: 'grading stopped on an infrastructure error (rate_limited): slow down',
+      },
+    });
   });
 
   it('stops before comparisons when aborted after the last run', async () => {

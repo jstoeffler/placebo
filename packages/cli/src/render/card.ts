@@ -1,6 +1,7 @@
 import {
   describeWarning,
   formatDifference,
+  formatExcludedTasks,
   formatMean,
   formatRange,
   formatRunsNeededNote,
@@ -53,8 +54,8 @@ function colorVerdict(colors: Colors, verdict: Verdict, text: string): string {
 /**
  * One verdict card in the brief §5 layout: the header line (treatment vs control, runs × tasks,
  * subject model, Claude Code version), then one row per metric in card order with the label,
- * difference, range, verdict word and, on `no evidence` rows, the runs-needed note. Colour only
- * decorates the verdict word; the word carries the meaning.
+ * difference, range, verdict word and, on `no evidence` rows, the runs-needed note, and under a
+ * row the tasks it leaves out. Colour only decorates; the words carry the meaning.
  */
 export function renderCard(card: VerdictCard, results: Results, colors: Colors): string {
   const { experiment } = results;
@@ -79,6 +80,7 @@ export function renderCard(card: VerdictCard, results: Results, colors: Colors):
     range: formatRange(row),
     verdict: formatVerdict(row.verdict),
     note: formatRunsNeededNote(row),
+    excluded: formatExcludedTasks(row),
   }));
   const labelWidth = widthOf(
     cells.map((cell) => cell.label),
@@ -98,7 +100,10 @@ export function renderCard(card: VerdictCard, results: Results, colors: Colors):
   const lines = cells.map((cell) => {
     const verdict =
       cell.note === undefined ? cell.verdict : pad(cell.verdict, VERDICT_WIDTH) + cell.note;
-    return `  ${pad(cell.label, labelWidth)}${pad(cell.difference, differenceWidth)}${pad(cell.range, rangeWidth)}${colorVerdict(colors, cell.row.verdict, verdict)}`;
+    const line = `  ${pad(cell.label, labelWidth)}${pad(cell.difference, differenceWidth)}${pad(cell.range, rangeWidth)}${colorVerdict(colors, cell.row.verdict, verdict)}`;
+    return cell.excluded === undefined
+      ? line
+      : `${line}\n  ${' '.repeat(labelWidth)}${colors.dim(cell.excluded)}`;
   });
   return `${colors.bold(header)}\n${lines.join('\n')}\n`;
 }

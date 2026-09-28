@@ -13,6 +13,7 @@ describe('upfrontWarnings', () => {
         suite: { model: 'claude-sonnet-5', judgeModel: 'claude-opus-5-5' },
         arms: [CONTROL, { kind: 'treatment', variant: 'rules' as VariantName, patch: 'p' }],
         taskCount: 5,
+        runsPerTask: 3,
         patchText: () => patch('.claude/settings.json'),
       }),
     ).toEqual([]);
@@ -32,14 +33,35 @@ describe('upfrontWarnings', () => {
           { kind: 'treatment', variant: 'b' as VariantName, patch: 'b.patch' },
         ],
         taskCount: 7,
+        runsPerTask: 5,
         patchText: (path) => texts[path] ?? '',
       }),
     ).toEqual([{ type: 'patch_outside_surface', variant: 'a', paths: ['src/app.ts'] }]);
+  });
+
+  it('flags fewer than three runs per task, since only large effects are then detectable', () => {
+    expect(
+      upfrontWarnings({
+        suite: { model: 'm', judgeModel: 'j' },
+        arms: [CONTROL],
+        taskCount: 5,
+        runsPerTask: 2,
+        patchText: () => '',
+      }),
+    ).toEqual([{ type: 'few_runs', runsPerTask: 2, threshold: 3 }]);
   });
 });
 
 describe('describeWarning', () => {
   it.each<[Warning, string]>([
+    [
+      { type: 'few_runs', runsPerTask: 1, threshold: 3 },
+      'only 1 run per task (fewer than 3): only large differences can be detected',
+    ],
+    [
+      { type: 'few_runs', runsPerTask: 2, threshold: 3 },
+      'only 2 runs per task (fewer than 3): only large differences can be detected',
+    ],
     [
       { type: 'few_tasks', taskCount: 1, threshold: 5 },
       'only 1 task (fewer than 5): results describe these tasks, not the repo in general',

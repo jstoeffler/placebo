@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-import { cleanup, render, screen, waitFor, within } from '@testing-library/react';
+import { act, cleanup, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { formatCurrency } from '@placebo-eval/core/format';
@@ -22,6 +22,26 @@ function rowTexts(card: HTMLElement): string[][] {
         .map((cell) => cell.textContent)
         .filter((text) => text !== ''),
     );
+}
+
+/**
+ * Runs `action` and returns once the route change it causes has rendered: it waits for the
+ * `hashchange` event itself rather than polling, so a slow machine cannot time it out.
+ */
+async function routed(action: () => Promise<unknown>): Promise<void> {
+  await act(async () => {
+    const changed = new Promise<void>((resolve) => {
+      window.addEventListener(
+        'hashchange',
+        () => {
+          resolve();
+        },
+        { once: true },
+      );
+    });
+    await action();
+    await changed;
+  });
 }
 
 beforeEach(() => {
@@ -60,12 +80,39 @@ describe('verdict card', () => {
       expect(screen.getAllByText(word, { selector: '.verdict-word' }).length).toBeGreaterThan(0);
   });
 
-  it('omits absent metrics and caps runs needed', () => {
+  it('asks for two runs per task instead of an estimate when every task has one', () => {
     renderReport('minimal');
     const card = screen.getByRole('region', { name: /^none vs control/ });
+    const note = '(at least 2 runs/task to compute a range)';
     expect(rowTexts(card)).toEqual([
-      ['pass rate', '0 pts', '[-100, +100]', 'no evidence', '(more than 1000 runs/task)'],
-      ['cost', '-21 %', '[-38, +4.6]', 'no evidence', '(≈9 runs/task to decide)'],
+      ['pass rate', '-', '-', 'no evidence', note],
+      ['cost', '-', '-', 'no evidence', note],
+    ]);
+    expect(card.querySelector('.gauge')).toBeNull();
+  });
+
+  it('caps runs needed and names the tasks a row leaves out', () => {
+    const data = fixture('rich');
+    const [card] = data.verdictCards;
+    if (card === undefined) throw new Error('no card');
+    const rows = card.rows.map((row) =>
+      row.metric === 'passRate'
+        ? {
+            ...row,
+            runsNeeded: undefined,
+            excludedTasks: [{ taskId: 'fix-refund-rounding', reason: 'too_few_runs' }],
+          }
+        : row,
+    );
+    const changed = { ...data, verdictCards: [{ ...card, rows }] };
+    render(<App loaded={loadResults(JSON.stringify(changed))} />);
+    const region = screen.getByRole('region', { name: /^none vs control/ });
+    expect(rowTexts(region)[0]).toEqual([
+      'pass rate',
+      '-25 pts',
+      '[-60, +10]',
+      'no evidence',
+      '(more than 1000 runs/task)left out: fix-refund-rounding (fewer than 2 runs)',
     ]);
   });
 });
@@ -88,11 +135,16 @@ describe('warnings and pins', () => {
     expect(warnings.compareDocumentPosition(card) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
-  it('says results describe these tasks when there are few', () => {
+  it('says results describe these tasks when there are few, and runs are few', () => {
     renderReport('minimal');
     expect(
       screen.getByText(
         'With 1 task, fewer than 5, these results describe these tasks, not the repo.',
+      ),
+    ).toBeDefined();
+    expect(
+      screen.getByText(
+        'With 1 run per task, fewer than 3, only large differences can be detected; the ranges show how wide the uncertainty is.',
       ),
     ).toBeDefined();
   });
@@ -106,9 +158,10 @@ describe('warnings and pins', () => {
       { type: 'dead_task', taskId: 'validate-webhook-signature' },
       { type: 'isolation_residual', sources: ['claude_ai_connectors'] },
       { type: 'ancestor_configuration', paths: ['/Users/ada/CLAUDE.md', '/Users/ada/.claude'] },
+      { type: 'few_runs', runsPerTask: 2, threshold: 3 },
     ];
     render(<App loaded={loadResults(JSON.stringify({ ...data, warnings }))} />);
-    const region = screen.getByRole('region', { name: '6 warnings' });
+    const region = screen.getByRole('region', { name: '7 warnings' });
     expect(
       within(region)
         .getAllByRole('listitem')
@@ -120,6 +173,7 @@ describe('warnings and pins', () => {
       'Every arm scored zero on validate-webhook-signature, so it is flagged as unsolvable or brittle and excluded from verdicts.',
       'Project-only settings do not keep out claude.ai connectors, which may reach every arm.',
       'Claude Code loads /Users/ada/CLAUDE.md and /Users/ada/.claude from a directory above the run folders, so it reaches every arm.',
+      'With 2 runs per task, fewer than 3, only large differences can be detected; the ranges show how wide the uncertainty is.',
     ]);
   });
 
@@ -156,20 +210,16 @@ describe('runs', () => {
     const user = userEvent.setup();
     renderReport('rich', '#/runs');
     expect(screen.getByText('75 runs')).toBeDefined();
-    await user.selectOptions(screen.getByLabelText('Task'), 'fix-refund-rounding');
-    await waitFor(() => {
-      expect(screen.getByText('15 of 75 runs')).toBeDefined();
-    });
-    await user.selectOptions(screen.getByLabelText('Arm'), 'tests-first');
-    await waitFor(() => {
-      expect(screen.getByText('5 of 75 runs')).toBeDefined();
-    });
+    await routed(() => user.selectOptions(screen.getByLabelText('Task'), 'fix-refund-rounding'));
+    expect(screen.getByText('15 of 75 runs')).toBeDefined();
+    await routed(() => user.selectOptions(screen.getByLabelText('Arm'), 'tests-first'));
+    expect(screen.getByText('5 of 75 runs')).toBeDefined();
     expect(window.location.hash).toBe('#/runs?task=fix-refund-rounding&arm=tests-first');
-    await user.selectOptions(screen.getByLabelText('Task'), '');
-    await user.selectOptions(screen.getByLabelText('Outcome'), 'stopped_by_permission_denial');
-    await waitFor(() => {
-      expect(screen.getByText('1 of 75 runs')).toBeDefined();
-    });
+    await routed(() => user.selectOptions(screen.getByLabelText('Task'), ''));
+    await routed(() =>
+      user.selectOptions(screen.getByLabelText('Outcome'), 'stopped_by_permission_denial'),
+    );
+    expect(screen.getByText('1 of 75 runs')).toBeDefined();
   });
 });
 
@@ -250,7 +300,7 @@ describe('run detail', () => {
     );
   });
 
-  it('shows the message of a grader that could not score', () => {
+  it('shows the message and the spend of a grader that could not score', () => {
     const failed = results.runs.find((candidate) =>
       candidate.grades.some((grade) => grade.detail.type === 'error'),
     )!;
@@ -258,7 +308,18 @@ describe('run detail', () => {
     const message = screen.getByText(
       'The judge answer failed its schema: answers has 2 items, the checklist has 3.',
     );
-    expect(message.closest('article')?.querySelector('.grade-score')?.textContent).toBe('error');
+    const article = message.closest('article');
+    expect(article?.querySelector('.grade-score')?.textContent).toBe('error');
+    const detail = failed.grades.find((grade) => grade.detail.type === 'error')?.detail;
+    const spend = detail?.type === 'error' ? detail.spend : undefined;
+    if (spend === undefined || !(article instanceof HTMLElement)) {
+      throw new Error('expected an error grade with spend');
+    }
+    const facts = within(article);
+    expect(facts.getByText('Judge cost').nextElementSibling?.textContent).toBe(
+      formatCurrency(spend.costUsd),
+    );
+    expect(facts.getByText('Judge calls').nextElementSibling?.textContent).toBe('1');
   });
 
   it('steps to the next and previous run within the filter', async () => {
@@ -266,15 +327,11 @@ describe('run detail', () => {
     const siblings = results.runs.filter((candidate) => candidate.taskId === run.taskId);
     renderReport('rich', `#/runs/${siblings[0]!.id}?task=${run.taskId}`);
     expect(screen.getByText('1 of 15')).toBeDefined();
-    await user.click(screen.getByRole('link', { name: 'Next' }));
-    await waitFor(() => {
-      expect(screen.getByText('2 of 15')).toBeDefined();
-    });
+    await routed(() => user.click(screen.getByRole('link', { name: 'Next' })));
+    expect(screen.getByText('2 of 15')).toBeDefined();
     expect(window.location.hash).toBe(`#/runs/${siblings[1]!.id}?task=${run.taskId}`);
-    await user.click(screen.getByRole('link', { name: 'Previous' }));
-    await waitFor(() => {
-      expect(screen.getByText('1 of 15')).toBeDefined();
-    });
+    await routed(() => user.click(screen.getByRole('link', { name: 'Previous' })));
+    expect(screen.getByText('1 of 15')).toBeDefined();
   });
 
   it('hides arm names and leaves room for the review panel in review mode', () => {
