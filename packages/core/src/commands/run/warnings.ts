@@ -49,6 +49,8 @@ export function describeWarning(warning: Warning): string {
       return `task "${warning.taskId}" scored zero in every arm; it is left out of the verdicts`;
     case 'isolation_residual':
       return `configuration outside the project can still reach runs: ${warning.sources.join(', ')}`;
+    case 'ancestor_configuration':
+      return `Claude Code loads configuration from above the run folders into every arm: ${warning.paths.join(', ')}`;
   }
 }
 

@@ -24,6 +24,8 @@ function warningSentence(warning: Warning): string {
       return `Every arm scored zero on ${warning.taskId}, so it is flagged as unsolvable or brittle and excluded from verdicts.`;
     case 'isolation_residual':
       return `Project-only settings do not keep out ${list(warning.sources.map((source) => SOURCE_LABEL[source]))}, which may reach every arm.`;
+    case 'ancestor_configuration':
+      return `Claude Code loads ${list(warning.paths)} from a directory above the run folders, so it reaches every arm.`;
   }
 }
 

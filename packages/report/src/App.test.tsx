@@ -73,7 +73,7 @@ describe('verdict card', () => {
 describe('warnings and pins', () => {
   it('says each warning in one sentence above the cards', () => {
     renderReport('rich');
-    const warnings = screen.getByRole('region', { name: '3 warnings' });
+    const warnings = screen.getByRole('region', { name: '4 warnings' });
     expect(
       within(warnings)
         .getAllByRole('listitem')
@@ -82,6 +82,7 @@ describe('warnings and pins', () => {
       'Every arm scored zero on migrate-date-utils, so it is flagged as unsolvable or brittle and excluded from verdicts.',
       'The variant patch of tests-first touches files outside the configuration surface: docs/architecture.md and vitest.config.ts.',
       'Project-only settings do not keep out the global Claude Code config file and managed policy settings, which may reach every arm.',
+      'Claude Code loads /Users/ada/CLAUDE.md from a directory above the run folders, so it reaches every arm.',
     ]);
     const card = screen.getByRole('region', { name: /^none vs control/ });
     expect(warnings.compareDocumentPosition(card) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
@@ -104,9 +105,10 @@ describe('warnings and pins', () => {
       { type: 'patch_outside_surface', variant: 'none', paths: ['src/a.ts'] },
       { type: 'dead_task', taskId: 'validate-webhook-signature' },
       { type: 'isolation_residual', sources: ['claude_ai_connectors'] },
+      { type: 'ancestor_configuration', paths: ['/Users/ada/CLAUDE.md', '/Users/ada/.claude'] },
     ];
     render(<App loaded={loadResults(JSON.stringify({ ...data, warnings }))} />);
-    const region = screen.getByRole('region', { name: '5 warnings' });
+    const region = screen.getByRole('region', { name: '6 warnings' });
     expect(
       within(region)
         .getAllByRole('listitem')
@@ -117,6 +119,7 @@ describe('warnings and pins', () => {
       'The variant patch of none touches files outside the configuration surface: src/a.ts.',
       'Every arm scored zero on validate-webhook-signature, so it is flagged as unsolvable or brittle and excluded from verdicts.',
       'Project-only settings do not keep out claude.ai connectors, which may reach every arm.',
+      'Claude Code loads /Users/ada/CLAUDE.md and /Users/ada/.claude from a directory above the run folders, so it reaches every arm.',
     ]);
   });
 

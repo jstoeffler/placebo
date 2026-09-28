@@ -53,6 +53,7 @@ export * from './commands/load-suite.js';
 export * from './commands/run/assemble-results.js';
 export * from './commands/run/experiment-error.js';
 export * from './commands/run/run-experiment.js';
+export { describeWarning, upfrontWarnings } from './commands/run/warnings.js';
 export { type KeepRunFolders, type Sleep } from './commands/run/perform-run.js';
 
 // adapters

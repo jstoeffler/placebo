@@ -342,6 +342,7 @@ describe('Warning', () => {
     { type: 'patch_outside_surface', variant: 'arch', paths: ['docs/arch.md'] },
     { type: 'dead_task', taskId: 't' },
     { type: 'isolation_residual', sources: ['global_config'] },
+    { type: 'ancestor_configuration', paths: ['/Users/ada/CLAUDE.md'] },
   ])('accepts %o', (warning) => {
     expect(Warning.parse(warning)).toEqual(warning);
   });
@@ -350,6 +351,12 @@ describe('Warning', () => {
     expect(
       issuesOf(Warning, { type: 'patch_outside_surface', variant: 'arch', paths: [] }),
     ).toEqual(['paths: Too small: expected array to have >=1 items']);
+  });
+
+  it('requires at least one ancestor configuration path', () => {
+    expect(issuesOf(Warning, { type: 'ancestor_configuration', paths: [] })).toEqual([
+      'paths: Too small: expected array to have >=1 items',
+    ]);
   });
 });
 

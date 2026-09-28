@@ -24,6 +24,14 @@ export const Warning = z.discriminatedUnion('type', [
     /** Leaks project-only settings do not close (ADR 0004). */
     sources: z.array(z.enum(['global_config', 'managed_settings', 'claude_ai_connectors'])).min(1),
   }),
+  z.strictObject({
+    type: z.literal('ancestor_configuration'),
+    /**
+     * Absolute paths of `CLAUDE.md`, `CLAUDE.local.md`, `AGENTS.md` or `.claude/` in a directory
+     * above the run folders; Claude Code loads them into every arm (ADR 0014).
+     */
+    paths: z.array(z.string()).min(1),
+  }),
 ]);
 export type Warning = z.infer<typeof Warning>;
 export type WarningType = Warning['type'];

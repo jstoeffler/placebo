@@ -833,6 +833,7 @@ function rich() {
         paths: ['docs/architecture.md', 'vitest.config.ts'],
       },
       { type: 'isolation_residual', sources: ['global_config', 'managed_settings'] },
+      { type: 'ancestor_configuration', paths: ['/Users/ada/CLAUDE.md'] },
     ],
     reviews,
   };

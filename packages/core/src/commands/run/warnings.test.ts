@@ -52,6 +52,10 @@ describe('describeWarning', () => {
       { type: 'isolation_residual', sources: ['global_config', 'claude_ai_connectors'] },
       'configuration outside the project can still reach runs: global_config, claude_ai_connectors',
     ],
+    [
+      { type: 'ancestor_configuration', paths: ['/Users/ada/CLAUDE.md', '/Users/ada/.claude'] },
+      'Claude Code loads configuration from above the run folders into every arm: /Users/ada/CLAUDE.md, /Users/ada/.claude',
+    ],
   ])('describes %j', (warning, text) => {
     expect(describeWarning(warning)).toBe(text);
   });
