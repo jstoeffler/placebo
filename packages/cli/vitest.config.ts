@@ -5,5 +5,6 @@ export default defineProject({
   test: {
     name: 'cli',
     include: ['src/**/*.test.ts'],
+    setupFiles: ['./vitest.setup.ts'],
   },
 });

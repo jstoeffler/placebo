@@ -2,8 +2,8 @@
 // the fake runner, the real local executor and the SQLite run store. Zero tokens.
 import { execFileSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
-import { mkdtemp, readFile, realpath, rm, writeFile } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
+import { mkdtemp, readdir, readFile, realpath, rm, writeFile } from 'node:fs/promises';
+import { tmpdir, userInfo } from 'node:os';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { Results } from '@placebo-eval/core/results';
@@ -23,12 +23,33 @@ const claudeMd = execFileSync('git', ['show', 'HEAD:CLAUDE.md'], { cwd: repo, en
 /** The built report when there is one; otherwise a stand-in with the same placeholder. */
 const BUILT_REPORT = join(repo, 'packages', 'report', 'dist', 'report.html');
 
+/** The real `~/.placebo` of the account running the tests: HOME is a temporary directory here. */
+const REAL_DATA = join(userInfo().homedir, '.placebo');
+
+/**
+ * Everything down to `<data dir>/<snapshots or folders>/<entry>` under `dir`, sorted: deep enough
+ * to see a new data dir, snapshot or run folder, without walking the snapshots' contents.
+ */
+async function listing(dir: string, depth = 3): Promise<string[]> {
+  const entries = await readdir(dir, { withFileTypes: true }).catch(() => []);
+  const paths: string[] = [];
+  for (const entry of entries) {
+    paths.push(entry.name);
+    if (depth > 1 && entry.isDirectory())
+      for (const inner of await listing(join(dir, entry.name), depth - 1))
+        paths.push(join(entry.name, inner));
+  }
+  return paths.toSorted();
+}
+
 let temp: string;
 let home: string;
 let suite: string;
 let template: string;
+let realDataBefore: string[];
 
 beforeAll(async () => {
+  realDataBefore = await listing(REAL_DATA);
   temp = await realpath(await mkdtemp(join(tmpdir(), 'placebo-e2e-')));
   home = join(temp, 'home');
   suite = join(temp, 'suite');
@@ -113,5 +134,9 @@ describe('placebo run on its own repo', () => {
     expect(existsSync(join(repo, '.placebo', 'folders'))).toBe(false);
     expect(existsSync(join(repo, '.placebo', 'snapshots'))).toBe(false);
     expect(results.runs.some((run) => run.runFolder?.startsWith(`${repo}/`) === true)).toBe(false);
+
+    // Snapshots and run folders went to the test's own home, never to the real `~/.placebo`.
+    expect((await listing(home)).some((entry) => entry.endsWith('snapshots'))).toBe(true);
+    expect(await listing(REAL_DATA)).toEqual(realDataBefore);
   }, 40_000);
 });
