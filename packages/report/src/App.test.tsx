@@ -2,7 +2,7 @@
 import { cleanup, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { formatCurrency } from '@placebo-eval/core/format';
+import { formatCurrency, formatDuration } from '@placebo-eval/core/format';
 import { App } from './App.js';
 import { loadResults, type ReportMode } from './data/load.js';
 import { runOrdinal } from './data/model.js';
@@ -106,9 +106,10 @@ describe('warnings and pins', () => {
       { type: 'dead_task', taskId: 'validate-webhook-signature' },
       { type: 'isolation_residual', sources: ['claude_ai_connectors'] },
       { type: 'ancestor_configuration', paths: ['/Users/ada/CLAUDE.md', '/Users/ada/.claude'] },
+      { type: 'background_work_unmeasured' },
     ];
     render(<App loaded={loadResults(JSON.stringify({ ...data, warnings }))} />);
-    const region = screen.getByRole('region', { name: '6 warnings' });
+    const region = screen.getByRole('region', { name: '7 warnings' });
     expect(
       within(region)
         .getAllByRole('listitem')
@@ -120,6 +121,7 @@ describe('warnings and pins', () => {
       'Every arm scored zero on validate-webhook-signature, so it is flagged as unsolvable or brittle and excluded from verdicts.',
       'Project-only settings do not keep out claude.ai connectors, which may reach every arm.',
       'Claude Code loads /Users/ada/CLAUDE.md and /Users/ada/.claude from a directory above the run folders, so it reaches every arm.',
+      'The suite lets subject runs work in the background, so work still running when Claude Code exits is not measured and cost after its last result is estimated.',
     ]);
   });
 
@@ -281,6 +283,75 @@ describe('run detail', () => {
     renderReport('rich', `#/runs/${run.id}`, 'review');
     expect(screen.getAllByText('hidden arm').length).toBeGreaterThan(0);
     expect(document.querySelector('[data-slot="review"]')).not.toBeNull();
+  });
+
+  describe('with a subagent', () => {
+    const delegating = results.runs.find(
+      (candidate) => (candidate.measurements.subagentTurns ?? 0) > 0,
+    )!;
+    const agent = delegating.events.find(
+      (event) => event.type === 'tool_call' && event.name === 'Agent',
+    )!;
+
+    it('nests the subagent under its Agent call, collapsed, with its turns and tokens', () => {
+      renderReport('rich', `#/runs/${delegating.id}`);
+      const topLevel = Array.from(
+        document.querySelectorAll('.timeline:not(.timeline-nested) > .step > .step-body > .tool'),
+      );
+      const row = topLevel.find(
+        (node) => node.querySelector('.tool-name')?.textContent === 'Agent',
+      );
+      expect(row).toBeDefined();
+      expect(row?.hasAttribute('open')).toBe(false);
+      expect(row?.querySelector('.tool-spend')?.textContent).toBe(
+        'subagent: 2 turns, 27,960 tokens',
+      );
+      const nested = Array.from(row?.querySelectorAll('.timeline-nested .tool-name') ?? []).map(
+        (node) => node.textContent,
+      );
+      expect(nested).toEqual(['Grep', 'Read']);
+      expect(row?.querySelector('.timeline-nested')?.textContent).toContain('Subagent turn 2');
+      expect(
+        delegating.events
+          .filter((event) => 'parentToolUseId' in event)
+          .every(
+            (event) =>
+              'parentToolUseId' in event &&
+              event.parentToolUseId === (agent.type === 'tool_call' ? agent.id : ''),
+          ),
+      ).toBe(true);
+    });
+
+    it('marks a partly estimated cost and shows the reported duration in a tooltip', () => {
+      renderReport('rich', `#/runs/${delegating.id}`);
+      const facts = document.querySelector('.run-facts')!;
+      const cost = within(facts as HTMLElement).getByText(
+        `≈ ${formatCurrency(delegating.measurements.costUsd)}`,
+      );
+      expect(cost.getAttribute('title')).toMatch(/^Claude Code reported \$/);
+      const result = delegating.events.findLast((event) => event.type === 'result')!;
+      const duration = within(facts as HTMLElement).getByText(
+        formatDuration(delegating.measurements.durationMs),
+      );
+      expect(duration.getAttribute('title')).toBe(
+        `Wall clock. Claude Code reported ${formatDuration(result.reportedDurationMs ?? 0)}.`,
+      );
+      expect(within(facts as HTMLElement).getByText('Subagent turns')).toBeDefined();
+    });
+
+    it('marks the estimated cost in the run list', () => {
+      renderReport('rich', '#/runs');
+      expect(
+        screen.getByText(`≈ ${formatCurrency(delegating.measurements.costUsd)}`),
+      ).toBeDefined();
+    });
+
+    it('lists the tools the run had', () => {
+      renderReport('rich', `#/runs/${delegating.id}`);
+      expect(document.querySelector('.tools-available')?.textContent).toBe(
+        'Agent, Bash, Edit, Glob, Grep, Read, Write, TodoWrite',
+      );
+    });
   });
 
   it('says when a run is not in the report', () => {

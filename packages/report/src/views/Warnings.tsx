@@ -26,6 +26,8 @@ function warningSentence(warning: Warning): string {
       return `Project-only settings do not keep out ${list(warning.sources.map((source) => SOURCE_LABEL[source]))}, which may reach every arm.`;
     case 'ancestor_configuration':
       return `Claude Code loads ${list(warning.paths)} from a directory above the run folders, so it reaches every arm.`;
+    case 'background_work_unmeasured':
+      return 'The suite lets subject runs work in the background, so work still running when Claude Code exits is not measured and cost after its last result is estimated.';
   }
 }
 

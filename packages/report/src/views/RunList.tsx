@@ -2,15 +2,17 @@ import type { Run } from '@placebo-eval/core/results';
 import { ArmLabel, useReport } from '../context.js';
 import {
   armName,
+  costLabel,
   deterministicTally,
   filterRuns,
   OUTCOME_LABEL,
   OUTCOMES,
+  resultEventOf,
   runOrdinal,
   withFilter,
   type RunFilter,
 } from '../data/model.js';
-import { formatCurrency, formatDuration } from '@placebo-eval/core/format';
+import { formatDuration } from '@placebo-eval/core/format';
 import { navigate, toHash } from '../route.js';
 
 export function RunList({ filter }: { readonly filter: RunFilter }) {
@@ -128,7 +130,9 @@ function RunRow({
           {tally.total === 0 ? 'none' : `${String(tally.passed)} of ${String(tally.total)} passed`}
         </span>
       </td>
-      <td className="num">{formatCurrency(run.measurements.costUsd)}</td>
+      <td className="num">
+        {costLabel(run.measurements.costUsd, resultEventOf(run)?.costEstimated)}
+      </td>
       <td className="num">{run.measurements.turns}</td>
       <td className="num">{formatDuration(run.measurements.durationMs)}</td>
       <td className="num">{run.measurements.filesTouched}</td>

@@ -3,9 +3,11 @@ import { useEffect, useRef } from 'react';
 import { ArmLabel, useReport } from '../context.js';
 import {
   armName,
+  costLabel,
   filterRuns,
   OUTCOME_LABEL,
   OUTCOMES,
+  resultEventOf,
   runOrdinal,
   type RunFilter,
 } from '../data/model.js';
@@ -136,13 +138,45 @@ function describeFilter(filter: RunFilter): string {
   return parts.length === 0 ? '' : ` (${parts.join(', ')})`;
 }
 
+/**
+ * The run's cost and duration with what Claude Code itself reported, when that differs: the
+ * cost "≈" when part of it is estimated, the reported figure in a tooltip.
+ */
+function costAndDuration(run: Run): { cost: Fact; duration: Fact } {
+  const m = run.measurements;
+  const result = resultEventOf(run);
+  const cost: Fact = [
+    'Cost',
+    costLabel(m.costUsd, result?.costEstimated),
+    result?.costEstimated === true && result.reportedCostUsd !== undefined
+      ? `Claude Code reported ${formatCurrency(result.reportedCostUsd)}; the rest is estimated from usage it streamed after its last result.`
+      : undefined,
+  ];
+  const reported = result?.reportedDurationMs;
+  const duration: Fact = [
+    'Duration',
+    formatDuration(m.durationMs),
+    reported !== undefined && formatDuration(reported) !== formatDuration(m.durationMs)
+      ? `Wall clock. Claude Code reported ${formatDuration(reported)}.`
+      : undefined,
+  ];
+  return { cost, duration };
+}
+
+/** Label, value, and an optional tooltip. */
+type Fact = readonly [string, string, (string | undefined)?];
+
 function RunFacts({ run }: { readonly run: Run }) {
   const m = run.measurements;
-  const facts: [string, string][] = [
+  const { cost, duration } = costAndDuration(run);
+  const facts: Fact[] = [
     ['Outcome', OUTCOME_LABEL[run.outcome]],
-    ['Cost', formatCurrency(m.costUsd)],
+    cost,
     ['Turns', String(m.turns)],
-    ['Duration', formatDuration(m.durationMs)],
+    ...(m.subagentTurns === undefined || m.subagentTurns === 0
+      ? []
+      : [['Subagent turns', String(m.subagentTurns)] as const]),
+    duration,
     ['Tokens in', formatTokens(m.tokens.input)],
     ['Tokens out', formatTokens(m.tokens.output)],
     ['Cache read', formatTokens(m.tokens.cacheRead)],
@@ -155,11 +189,17 @@ function RunFacts({ run }: { readonly run: Run }) {
   if (run.infraRetries > 0) facts.push(['Infrastructure retries', String(run.infraRetries)]);
   return (
     <dl className="facts run-facts">
-      {facts.map(([label, value]) => (
+      {facts.map(([label, value, tooltip]) => (
         <div key={label}>
           <dt>{label}</dt>
           <dd className={label === 'Outcome' ? `outcome outcome-${run.outcome}` : undefined}>
-            {value}
+            {tooltip === undefined ? (
+              value
+            ) : (
+              <span className="has-tooltip" title={tooltip}>
+                {value}
+              </span>
+            )}
           </dd>
         </div>
       ))}

@@ -238,6 +238,9 @@ function buildRun(opts: {
   const effect = ARM_EFFECT[arm] ?? { cost: 1, tokensOut: 1, turns: 0 };
   const crashed = arm === 'none' && task.id === 'validate-webhook-signature' && opts.ordinal === 3;
   const denied = arm === 'tests-first' && task.id === 'rename-customer-field' && opts.ordinal === 5;
+  // One run delegates to a subagent part of whose work streamed after Claude Code's last result,
+  // so its cost is partly estimated. Built without the random source, so every other value stays.
+  const delegates = arm === 'tests-first' && opts.taskIndex === 0 && opts.ordinal === 2;
   const passed = !crashed && !denied && rng.next() < (task.pass[arm] ?? 0.5);
   const outcome = crashed
     ? 'crashed'
@@ -258,7 +261,7 @@ function buildRun(opts: {
     timestamp: iso(t),
     model: SUBJECT,
     claudeCodeVersion: CLAUDE_CODE,
-    tools: ['Bash', 'Edit', 'Glob', 'Grep', 'Read', 'Write', 'TodoWrite'],
+    tools: ['Agent', 'Bash', 'Edit', 'Glob', 'Grep', 'Read', 'Write', 'TodoWrite'],
   });
 
   const totals = { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 };
@@ -366,7 +369,84 @@ function buildRun(opts: {
       );
     },
   ];
+  let subagentTurns = 0;
+  const delegate = () => {
+    callId += 1;
+    const agentId = `toolu_${String(opts.taskIndex)}${String(opts.ordinal)}${String(callId).padStart(3, '0')}`;
+    const nested = { parentToolUseId: agentId };
+    events.push({
+      type: 'tool_call',
+      timestamp: iso((t += 900)),
+      id: agentId,
+      name: 'Agent',
+      input: {
+        description: 'Find every caller of computeRefund',
+        subagent_type: 'Explore',
+        prompt: 'List every caller of computeRefund and how each passes the amount.',
+      },
+    });
+    byTool.Agent = (byTool.Agent ?? 0) + 1;
+    const subagentCall = (name: string, input: Json, output: string) => {
+      callId += 1;
+      const id = `toolu_${String(opts.taskIndex)}${String(opts.ordinal)}${String(callId).padStart(3, '0')}`;
+      events.push({ type: 'tool_call', timestamp: iso((t += 1200)), id, name, input, ...nested });
+      events.push({
+        type: 'tool_result',
+        timestamp: iso((t += 300)),
+        id,
+        output,
+        isError: false,
+        ...nested,
+      });
+      byTool[name] = (byTool[name] ?? 0) + 1;
+      if (name === 'Grep') searchCalls += 1;
+      if (name === 'Read') {
+        filesRead += 1;
+        bytesRead += output.length;
+      }
+    };
+    const subagentUsage = (u: {
+      input: number;
+      output: number;
+      cacheRead: number;
+      cacheWrite: number;
+    }) => {
+      subagentTurns += 1;
+      totals.input += u.input;
+      totals.output += u.output;
+      totals.cacheRead += u.cacheRead;
+      totals.cacheWrite += u.cacheWrite;
+      events.push({ type: 'usage', timestamp: iso((t += 100)), ...u, ...nested });
+    };
+    events.push({
+      type: 'assistant_text',
+      timestamp: iso((t += 1500)),
+      text: 'Searching for callers of computeRefund.',
+      ...nested,
+    });
+    subagentCall(
+      'Grep',
+      { pattern: 'computeRefund', path: 'src' },
+      'src/api/refunds.ts\nsrc/jobs/reconcile.ts',
+    );
+    subagentUsage({ input: 1800, output: 140, cacheRead: 9_400, cacheWrite: 2_100 });
+    subagentCall(
+      'Read',
+      { file_path: 'src/jobs/reconcile.ts' },
+      'computeRefund(invoice, invoice.total - paid)',
+    );
+    subagentUsage({ input: 2100, output: 320, cacheRead: 11_500, cacheWrite: 600 });
+    events.push({
+      type: 'tool_result',
+      timestamp: iso((t += 400)),
+      id: agentId,
+      output:
+        'Two callers: src/api/refunds.ts passes the requested amount; src/jobs/reconcile.ts passes a float difference.',
+      isError: false,
+    });
+  };
   for (let turn = 0; turn < turns; turn += 1) {
+    if (delegates && turn === 2) delegate();
     const action = script[turn];
     if (action !== undefined) action();
     else if (rng.next() < 0.5)
@@ -404,8 +484,13 @@ function buildRun(opts: {
     timestamp: iso(finish),
     outcome,
     costUsd: Math.round(costUsd * 10000) / 10000,
+    reportedCostUsd: Math.round(costUsd * (delegates ? 0.86 : 1) * 10000) / 10000,
+    costEstimated: delegates,
     turns,
     durationMs,
+    // Claude Code's own duration leaves out its start-up, and, for the delegating run, the
+    // subagent's work after the last result.
+    reportedDurationMs: Math.round(durationMs * (delegates ? 0.64 : 0.97)),
     apiDurationMs: Math.round(durationMs * 0.78),
     stopReason: crashed ? null : denied ? 'permission_denied' : 'end_turn',
     permissionDenials: denied
@@ -496,6 +581,7 @@ function buildRun(opts: {
     tokens: totals,
     costUsd: Math.round(costUsd * 10000) / 10000,
     turns,
+    subagentTurns,
     durationMs,
     apiDurationMs: Math.round(durationMs * 0.78),
     toolCalls: { total: Object.values(byTool).reduce((a, b) => a + b, 0), byTool },

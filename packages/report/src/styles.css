@@ -1111,6 +1111,31 @@ select {
   min-width: 0;
 }
 
+.tool-spend {
+  flex: none;
+  color: var(--ink-3);
+  font-size: var(--step--1);
+  white-space: nowrap;
+}
+
+.step-subagent::before {
+  background: var(--accent);
+}
+
+.tools-available {
+  max-width: var(--measure);
+}
+
+.timeline-nested {
+  margin-top: 0.25rem;
+}
+
+.has-tooltip {
+  text-decoration: underline dotted var(--ink-3);
+  text-underline-offset: 0.2em;
+  cursor: help;
+}
+
 .tool-detail {
   margin: 0.5rem 0 0.75rem;
 }

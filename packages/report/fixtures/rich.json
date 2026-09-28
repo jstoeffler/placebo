@@ -217,6 +217,7 @@
         },
         "costUsd": 0.421,
         "turns": 9,
+        "subagentTurns": 0,
         "durationMs": 89831,
         "apiDurationMs": 70068,
         "toolCalls": {
@@ -241,7 +242,7 @@
           "timestamp": "2026-09-27T09:12:43.491Z",
           "model": "claude-sonnet-5-20260801",
           "claudeCodeVersion": "2.1.283",
-          "tools": ["Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
+          "tools": ["Agent", "Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
         },
         {
           "type": "assistant_text",
@@ -502,8 +503,11 @@
           "timestamp": "2026-09-27T09:14:13.322Z",
           "outcome": "failed",
           "costUsd": 0.421,
+          "reportedCostUsd": 0.421,
+          "costEstimated": false,
           "turns": 9,
           "durationMs": 89831,
+          "reportedDurationMs": 87136,
           "apiDurationMs": 70068,
           "stopReason": "end_turn",
           "permissionDenials": []
@@ -648,6 +652,7 @@
         },
         "costUsd": 0.4076,
         "turns": 11,
+        "subagentTurns": 0,
         "durationMs": 103500,
         "apiDurationMs": 80730,
         "toolCalls": {
@@ -672,7 +677,7 @@
           "timestamp": "2026-09-27T09:13:29.802Z",
           "model": "claude-sonnet-5-20260801",
           "claudeCodeVersion": "2.1.283",
-          "tools": ["Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
+          "tools": ["Agent", "Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
         },
         {
           "type": "assistant_text",
@@ -982,8 +987,11 @@
           "timestamp": "2026-09-27T09:15:13.302Z",
           "outcome": "completed",
           "costUsd": 0.4076,
+          "reportedCostUsd": 0.4076,
+          "costEstimated": false,
           "turns": 11,
           "durationMs": 103500,
+          "reportedDurationMs": 100395,
           "apiDurationMs": 80730,
           "stopReason": "end_turn",
           "permissionDenials": []
@@ -1100,6 +1108,7 @@
         },
         "costUsd": 0.4655,
         "turns": 8,
+        "subagentTurns": 0,
         "durationMs": 84136,
         "apiDurationMs": 65626,
         "toolCalls": {
@@ -1124,7 +1133,7 @@
           "timestamp": "2026-09-27T09:14:41.977Z",
           "model": "claude-sonnet-5-20260801",
           "claudeCodeVersion": "2.1.283",
-          "tools": ["Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
+          "tools": ["Agent", "Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
         },
         {
           "type": "assistant_text",
@@ -1361,8 +1370,11 @@
           "timestamp": "2026-09-27T09:16:06.113Z",
           "outcome": "completed",
           "costUsd": 0.4655,
+          "reportedCostUsd": 0.4655,
+          "costEstimated": false,
           "turns": 8,
           "durationMs": 84136,
+          "reportedDurationMs": 81612,
           "apiDurationMs": 65626,
           "stopReason": "end_turn",
           "permissionDenials": []
@@ -1479,6 +1491,7 @@
         },
         "costUsd": 0.4302,
         "turns": 7,
+        "subagentTurns": 0,
         "durationMs": 88888,
         "apiDurationMs": 69333,
         "toolCalls": {
@@ -1503,7 +1516,7 @@
           "timestamp": "2026-09-27T09:16:01.245Z",
           "model": "claude-sonnet-5-20260801",
           "claudeCodeVersion": "2.1.283",
-          "tools": ["Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
+          "tools": ["Agent", "Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
         },
         {
           "type": "assistant_text",
@@ -1715,8 +1728,11 @@
           "timestamp": "2026-09-27T09:17:30.133Z",
           "outcome": "completed",
           "costUsd": 0.4302,
+          "reportedCostUsd": 0.4302,
+          "costEstimated": false,
           "turns": 7,
           "durationMs": 88888,
+          "reportedDurationMs": 86221,
           "apiDurationMs": 69333,
           "stopReason": "end_turn",
           "permissionDenials": []
@@ -1861,6 +1877,7 @@
         },
         "costUsd": 0.4192,
         "turns": 10,
+        "subagentTurns": 0,
         "durationMs": 92232,
         "apiDurationMs": 71941,
         "toolCalls": {
@@ -1885,7 +1902,7 @@
           "timestamp": "2026-09-27T09:16:45.218Z",
           "model": "claude-sonnet-5-20260801",
           "claudeCodeVersion": "2.1.283",
-          "tools": ["Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
+          "tools": ["Agent", "Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
         },
         {
           "type": "assistant_text",
@@ -2171,8 +2188,11 @@
           "timestamp": "2026-09-27T09:18:17.450Z",
           "outcome": "completed",
           "costUsd": 0.4192,
+          "reportedCostUsd": 0.4192,
+          "costEstimated": false,
           "turns": 10,
           "durationMs": 92232,
+          "reportedDurationMs": 89465,
           "apiDurationMs": 71941,
           "stopReason": "end_turn",
           "permissionDenials": []
@@ -2291,6 +2311,7 @@
         },
         "costUsd": 0.3104,
         "turns": 8,
+        "subagentTurns": 0,
         "durationMs": 68322,
         "apiDurationMs": 53291,
         "toolCalls": {
@@ -2315,7 +2336,7 @@
           "timestamp": "2026-09-27T09:17:59.872Z",
           "model": "claude-sonnet-5-20260801",
           "claudeCodeVersion": "2.1.283",
-          "tools": ["Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
+          "tools": ["Agent", "Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
         },
         {
           "type": "assistant_text",
@@ -2553,8 +2574,11 @@
           "timestamp": "2026-09-27T09:19:08.194Z",
           "outcome": "completed",
           "costUsd": 0.3104,
+          "reportedCostUsd": 0.3104,
+          "costEstimated": false,
           "turns": 8,
           "durationMs": 68322,
+          "reportedDurationMs": 66272,
           "apiDurationMs": 53291,
           "stopReason": "end_turn",
           "permissionDenials": []
@@ -2705,6 +2729,7 @@
         },
         "costUsd": 0.2902,
         "turns": 12,
+        "subagentTurns": 0,
         "durationMs": 84315,
         "apiDurationMs": 65766,
         "toolCalls": {
@@ -2729,7 +2754,7 @@
           "timestamp": "2026-09-27T09:19:29.244Z",
           "model": "claude-sonnet-5-20260801",
           "claudeCodeVersion": "2.1.283",
-          "tools": ["Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
+          "tools": ["Agent", "Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
         },
         {
           "type": "assistant_text",
@@ -3064,8 +3089,11 @@
           "timestamp": "2026-09-27T09:20:53.559Z",
           "outcome": "completed",
           "costUsd": 0.2902,
+          "reportedCostUsd": 0.2902,
+          "costEstimated": false,
           "turns": 12,
           "durationMs": 84315,
+          "reportedDurationMs": 81786,
           "apiDurationMs": 65766,
           "stopReason": "end_turn",
           "permissionDenials": []
@@ -3244,6 +3272,7 @@
         },
         "costUsd": 0.3713,
         "turns": 10,
+        "subagentTurns": 0,
         "durationMs": 68862,
         "apiDurationMs": 53712,
         "toolCalls": {
@@ -3268,7 +3297,7 @@
           "timestamp": "2026-09-27T09:20:37.075Z",
           "model": "claude-sonnet-5-20260801",
           "claudeCodeVersion": "2.1.283",
-          "tools": ["Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
+          "tools": ["Agent", "Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
         },
         {
           "type": "assistant_text",
@@ -3555,8 +3584,11 @@
           "timestamp": "2026-09-27T09:21:45.937Z",
           "outcome": "completed",
           "costUsd": 0.3713,
+          "reportedCostUsd": 0.3713,
+          "costEstimated": false,
           "turns": 10,
           "durationMs": 68862,
+          "reportedDurationMs": 66796,
           "apiDurationMs": 53712,
           "stopReason": "end_turn",
           "permissionDenials": []
@@ -3707,6 +3739,7 @@
         },
         "costUsd": 0.3403,
         "turns": 7,
+        "subagentTurns": 0,
         "durationMs": 68849,
         "apiDurationMs": 53702,
         "toolCalls": {
@@ -3731,7 +3764,7 @@
           "timestamp": "2026-09-27T09:21:32.660Z",
           "model": "claude-sonnet-5-20260801",
           "claudeCodeVersion": "2.1.283",
-          "tools": ["Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
+          "tools": ["Agent", "Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
         },
         {
           "type": "assistant_text",
@@ -3943,8 +3976,11 @@
           "timestamp": "2026-09-27T09:22:41.509Z",
           "outcome": "completed",
           "costUsd": 0.3403,
+          "reportedCostUsd": 0.3403,
+          "costEstimated": false,
           "turns": 7,
           "durationMs": 68849,
+          "reportedDurationMs": 66784,
           "apiDurationMs": 53702,
           "stopReason": "end_turn",
           "permissionDenials": []
@@ -4095,6 +4131,7 @@
         },
         "costUsd": 0.3337,
         "turns": 8,
+        "subagentTurns": 0,
         "durationMs": 79022,
         "apiDurationMs": 61637,
         "toolCalls": {
@@ -4119,7 +4156,7 @@
           "timestamp": "2026-09-27T09:22:15.434Z",
           "model": "claude-sonnet-5-20260801",
           "claudeCodeVersion": "2.1.283",
-          "tools": ["Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
+          "tools": ["Agent", "Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
         },
         {
           "type": "assistant_text",
@@ -4357,8 +4394,11 @@
           "timestamp": "2026-09-27T09:23:34.456Z",
           "outcome": "completed",
           "costUsd": 0.3337,
+          "reportedCostUsd": 0.3337,
+          "costEstimated": false,
           "turns": 8,
           "durationMs": 79022,
+          "reportedDurationMs": 76651,
           "apiDurationMs": 61637,
           "stopReason": "end_turn",
           "permissionDenials": []
@@ -4537,6 +4577,7 @@
         },
         "costUsd": 0.4241,
         "turns": 13,
+        "subagentTurns": 0,
         "durationMs": 91197,
         "apiDurationMs": 71134,
         "toolCalls": {
@@ -4561,7 +4602,7 @@
           "timestamp": "2026-09-27T09:23:07.337Z",
           "model": "claude-sonnet-5-20260801",
           "claudeCodeVersion": "2.1.283",
-          "tools": ["Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
+          "tools": ["Agent", "Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
         },
         {
           "type": "assistant_text",
@@ -4920,8 +4961,11 @@
           "timestamp": "2026-09-27T09:24:38.534Z",
           "outcome": "completed",
           "costUsd": 0.4241,
+          "reportedCostUsd": 0.4241,
+          "costEstimated": false,
           "turns": 13,
           "durationMs": 91197,
+          "reportedDurationMs": 88461,
           "apiDurationMs": 71134,
           "stopReason": "end_turn",
           "permissionDenials": []
@@ -5093,28 +5137,30 @@
       "outcome": "completed",
       "measurements": {
         "tokens": {
-          "input": 29150,
-          "output": 5722,
-          "cacheRead": 218998,
-          "cacheWrite": 16390
+          "input": 33050,
+          "output": 6182,
+          "cacheRead": 239898,
+          "cacheWrite": 19090
         },
         "costUsd": 0.4635,
         "turns": 10,
+        "subagentTurns": 2,
         "durationMs": 105131,
         "apiDurationMs": 82002,
         "toolCalls": {
-          "total": 11,
+          "total": 14,
           "byTool": {
-            "Grep": 4,
-            "Read": 3,
+            "Grep": 5,
+            "Read": 4,
+            "Agent": 1,
             "Glob": 1,
             "Edit": 1,
             "Bash": 2
           }
         },
-        "filesRead": 3,
-        "bytesRead": 231,
-        "searchCalls": 5,
+        "filesRead": 4,
+        "bytesRead": 275,
+        "searchCalls": 6,
         "changeBytes": 1429,
         "filesTouched": 2
       },
@@ -5124,7 +5170,7 @@
           "timestamp": "2026-09-27T09:24:02.032Z",
           "model": "claude-sonnet-5-20260801",
           "claudeCodeVersion": "2.1.283",
-          "tools": ["Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
+          "tools": ["Agent", "Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
         },
         {
           "type": "assistant_text",
@@ -5183,8 +5229,87 @@
         },
         {
           "type": "tool_call",
-          "timestamp": "2026-09-27T09:24:10.793Z",
+          "timestamp": "2026-09-27T09:24:10.817Z",
           "id": "toolu_02003",
+          "name": "Agent",
+          "input": {
+            "description": "Find every caller of computeRefund",
+            "subagent_type": "Explore",
+            "prompt": "List every caller of computeRefund and how each passes the amount."
+          }
+        },
+        {
+          "type": "assistant_text",
+          "timestamp": "2026-09-27T09:24:12.317Z",
+          "text": "Searching for callers of computeRefund.",
+          "parentToolUseId": "toolu_02003"
+        },
+        {
+          "type": "tool_call",
+          "timestamp": "2026-09-27T09:24:13.517Z",
+          "id": "toolu_02004",
+          "name": "Grep",
+          "input": {
+            "pattern": "computeRefund",
+            "path": "src"
+          },
+          "parentToolUseId": "toolu_02003"
+        },
+        {
+          "type": "tool_result",
+          "timestamp": "2026-09-27T09:24:13.817Z",
+          "id": "toolu_02004",
+          "output": "src/api/refunds.ts\nsrc/jobs/reconcile.ts",
+          "isError": false,
+          "parentToolUseId": "toolu_02003"
+        },
+        {
+          "type": "usage",
+          "timestamp": "2026-09-27T09:24:13.917Z",
+          "input": 1800,
+          "output": 140,
+          "cacheRead": 9400,
+          "cacheWrite": 2100,
+          "parentToolUseId": "toolu_02003"
+        },
+        {
+          "type": "tool_call",
+          "timestamp": "2026-09-27T09:24:15.117Z",
+          "id": "toolu_02005",
+          "name": "Read",
+          "input": {
+            "file_path": "src/jobs/reconcile.ts"
+          },
+          "parentToolUseId": "toolu_02003"
+        },
+        {
+          "type": "tool_result",
+          "timestamp": "2026-09-27T09:24:15.417Z",
+          "id": "toolu_02005",
+          "output": "computeRefund(invoice, invoice.total - paid)",
+          "isError": false,
+          "parentToolUseId": "toolu_02003"
+        },
+        {
+          "type": "usage",
+          "timestamp": "2026-09-27T09:24:15.517Z",
+          "input": 2100,
+          "output": 320,
+          "cacheRead": 11500,
+          "cacheWrite": 600,
+          "parentToolUseId": "toolu_02003"
+        },
+        {
+          "type": "tool_result",
+          "timestamp": "2026-09-27T09:24:15.917Z",
+          "id": "toolu_02003",
+          "output": "Two callers: src/api/refunds.ts passes the requested amount; src/jobs/reconcile.ts passes a float difference.",
+          "isError": false
+        },
+        {
+          "type": "tool_call",
+          "timestamp": "2026-09-27T09:24:16.793Z",
+          "id": "toolu_02006",
           "name": "Glob",
           "input": {
             "pattern": "tests/**/*.test.ts"
@@ -5192,15 +5317,15 @@
         },
         {
           "type": "tool_result",
-          "timestamp": "2026-09-27T09:24:11.814Z",
-          "id": "toolu_02003",
+          "timestamp": "2026-09-27T09:24:17.814Z",
+          "id": "toolu_02006",
           "output": "tests/billing/invoice.test.ts\ntests/money.test.ts",
           "isError": false
         },
         {
           "type": "tool_call",
-          "timestamp": "2026-09-27T09:24:12.796Z",
-          "id": "toolu_02004",
+          "timestamp": "2026-09-27T09:24:18.796Z",
+          "id": "toolu_02007",
           "name": "Read",
           "input": {
             "file_path": "src/money.ts"
@@ -5208,14 +5333,14 @@
         },
         {
           "type": "tool_result",
-          "timestamp": "2026-09-27T09:24:15.077Z",
-          "id": "toolu_02004",
+          "timestamp": "2026-09-27T09:24:21.077Z",
+          "id": "toolu_02007",
           "output": "export const toCents = (n: number) => …",
           "isError": false
         },
         {
           "type": "usage",
-          "timestamp": "2026-09-27T09:24:15.137Z",
+          "timestamp": "2026-09-27T09:24:21.137Z",
           "input": 2627,
           "output": 828,
           "cacheRead": 18968,
@@ -5223,13 +5348,13 @@
         },
         {
           "type": "assistant_text",
-          "timestamp": "2026-09-27T09:24:20.397Z",
+          "timestamp": "2026-09-27T09:24:26.397Z",
           "text": "Following the project rule, I will write a failing test first."
         },
         {
           "type": "tool_call",
-          "timestamp": "2026-09-27T09:24:21.728Z",
-          "id": "toolu_02005",
+          "timestamp": "2026-09-27T09:24:27.728Z",
+          "id": "toolu_02008",
           "name": "Edit",
           "input": {
             "file_path": "src/billing/refund.ts",
@@ -5239,14 +5364,14 @@
         },
         {
           "type": "tool_result",
-          "timestamp": "2026-09-27T09:24:23.716Z",
-          "id": "toolu_02005",
+          "timestamp": "2026-09-27T09:24:29.716Z",
+          "id": "toolu_02008",
           "output": "The file src/billing/refund.ts has been updated.",
           "isError": false
         },
         {
           "type": "usage",
-          "timestamp": "2026-09-27T09:24:23.898Z",
+          "timestamp": "2026-09-27T09:24:29.898Z",
           "input": 2724,
           "output": 369,
           "cacheRead": 18978,
@@ -5254,8 +5379,8 @@
         },
         {
           "type": "tool_call",
-          "timestamp": "2026-09-27T09:24:24.378Z",
-          "id": "toolu_02006",
+          "timestamp": "2026-09-27T09:24:30.378Z",
+          "id": "toolu_02009",
           "name": "Bash",
           "input": {
             "command": "pnpm vitest run tests/billing",
@@ -5264,14 +5389,14 @@
         },
         {
           "type": "tool_result",
-          "timestamp": "2026-09-27T09:24:26.728Z",
-          "id": "toolu_02006",
+          "timestamp": "2026-09-27T09:24:32.728Z",
+          "id": "toolu_02009",
           "output": " ✓ tests/billing/invoice.test.ts (14 tests) 212ms\n\n Test Files  1 passed (1)\n      Tests  14 passed (14)",
           "isError": false
         },
         {
           "type": "usage",
-          "timestamp": "2026-09-27T09:24:26.856Z",
+          "timestamp": "2026-09-27T09:24:32.856Z",
           "input": 1972,
           "output": 625,
           "cacheRead": 18829,
@@ -5279,8 +5404,8 @@
         },
         {
           "type": "tool_call",
-          "timestamp": "2026-09-27T09:24:27.930Z",
-          "id": "toolu_02007",
+          "timestamp": "2026-09-27T09:24:33.930Z",
+          "id": "toolu_02010",
           "name": "Bash",
           "input": {
             "command": "pnpm tsc --noEmit",
@@ -5289,14 +5414,14 @@
         },
         {
           "type": "tool_result",
-          "timestamp": "2026-09-27T09:24:28.675Z",
-          "id": "toolu_02007",
+          "timestamp": "2026-09-27T09:24:34.675Z",
+          "id": "toolu_02010",
           "output": "",
           "isError": false
         },
         {
           "type": "usage",
-          "timestamp": "2026-09-27T09:24:28.868Z",
+          "timestamp": "2026-09-27T09:24:34.868Z",
           "input": 3404,
           "output": 674,
           "cacheRead": 19455,
@@ -5304,8 +5429,8 @@
         },
         {
           "type": "tool_call",
-          "timestamp": "2026-09-27T09:24:29.476Z",
-          "id": "toolu_02008",
+          "timestamp": "2026-09-27T09:24:35.476Z",
+          "id": "toolu_02011",
           "name": "Grep",
           "input": {
             "pattern": "captured",
@@ -5314,14 +5439,14 @@
         },
         {
           "type": "tool_result",
-          "timestamp": "2026-09-27T09:24:31.087Z",
-          "id": "toolu_02008",
+          "timestamp": "2026-09-27T09:24:37.087Z",
+          "id": "toolu_02011",
           "output": "src/billing/refund.ts",
           "isError": false
         },
         {
           "type": "usage",
-          "timestamp": "2026-09-27T09:24:31.141Z",
+          "timestamp": "2026-09-27T09:24:37.141Z",
           "input": 3442,
           "output": 662,
           "cacheRead": 23544,
@@ -5329,8 +5454,8 @@
         },
         {
           "type": "tool_call",
-          "timestamp": "2026-09-27T09:24:31.502Z",
-          "id": "toolu_02009",
+          "timestamp": "2026-09-27T09:24:37.502Z",
+          "id": "toolu_02012",
           "name": "Read",
           "input": {
             "file_path": "src/index.ts"
@@ -5338,14 +5463,14 @@
         },
         {
           "type": "tool_result",
-          "timestamp": "2026-09-27T09:24:32.842Z",
-          "id": "toolu_02009",
+          "timestamp": "2026-09-27T09:24:38.842Z",
+          "id": "toolu_02012",
           "output": "…",
           "isError": false
         },
         {
           "type": "usage",
-          "timestamp": "2026-09-27T09:24:32.927Z",
+          "timestamp": "2026-09-27T09:24:38.927Z",
           "input": 2842,
           "output": 659,
           "cacheRead": 25070,
@@ -5353,8 +5478,8 @@
         },
         {
           "type": "tool_call",
-          "timestamp": "2026-09-27T09:24:33.559Z",
-          "id": "toolu_02010",
+          "timestamp": "2026-09-27T09:24:39.559Z",
+          "id": "toolu_02013",
           "name": "Grep",
           "input": {
             "pattern": "taxRate",
@@ -5363,14 +5488,14 @@
         },
         {
           "type": "tool_result",
-          "timestamp": "2026-09-27T09:24:34.670Z",
-          "id": "toolu_02010",
+          "timestamp": "2026-09-27T09:24:40.670Z",
+          "id": "toolu_02013",
           "output": "src/billing/refund.ts",
           "isError": false
         },
         {
           "type": "usage",
-          "timestamp": "2026-09-27T09:24:34.825Z",
+          "timestamp": "2026-09-27T09:24:40.825Z",
           "input": 1785,
           "output": 184,
           "cacheRead": 26441,
@@ -5378,8 +5503,8 @@
         },
         {
           "type": "tool_call",
-          "timestamp": "2026-09-27T09:24:36.118Z",
-          "id": "toolu_02011",
+          "timestamp": "2026-09-27T09:24:42.118Z",
+          "id": "toolu_02014",
           "name": "Grep",
           "input": {
             "pattern": "taxRate",
@@ -5388,14 +5513,14 @@
         },
         {
           "type": "tool_result",
-          "timestamp": "2026-09-27T09:24:36.298Z",
-          "id": "toolu_02011",
+          "timestamp": "2026-09-27T09:24:42.298Z",
+          "id": "toolu_02014",
           "output": "src/billing/refund.ts",
           "isError": false
         },
         {
           "type": "usage",
-          "timestamp": "2026-09-27T09:24:36.439Z",
+          "timestamp": "2026-09-27T09:24:42.439Z",
           "input": 4294,
           "output": 593,
           "cacheRead": 33732,
@@ -5403,7 +5528,7 @@
         },
         {
           "type": "assistant_text",
-          "timestamp": "2026-09-27T09:24:40.697Z",
+          "timestamp": "2026-09-27T09:24:46.697Z",
           "text": "Done. refund now works in integer cents and never refunds more than was captured. Tests pass."
         },
         {
@@ -5411,8 +5536,11 @@
           "timestamp": "2026-09-27T09:25:47.163Z",
           "outcome": "completed",
           "costUsd": 0.4635,
+          "reportedCostUsd": 0.3986,
+          "costEstimated": true,
           "turns": 10,
           "durationMs": 105131,
+          "reportedDurationMs": 67284,
           "apiDurationMs": 82002,
           "stopReason": "end_turn",
           "permissionDenials": []
@@ -5563,6 +5691,7 @@
         },
         "costUsd": 0.4523,
         "turns": 12,
+        "subagentTurns": 0,
         "durationMs": 107828,
         "apiDurationMs": 84106,
         "toolCalls": {
@@ -5587,7 +5716,7 @@
           "timestamp": "2026-09-27T09:24:53.996Z",
           "model": "claude-sonnet-5-20260801",
           "claudeCodeVersion": "2.1.283",
-          "tools": ["Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
+          "tools": ["Agent", "Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
         },
         {
           "type": "assistant_text",
@@ -5920,8 +6049,11 @@
           "timestamp": "2026-09-27T09:26:41.824Z",
           "outcome": "completed",
           "costUsd": 0.4523,
+          "reportedCostUsd": 0.4523,
+          "costEstimated": false,
           "turns": 12,
           "durationMs": 107828,
+          "reportedDurationMs": 104593,
           "apiDurationMs": 84106,
           "stopReason": "end_turn",
           "permissionDenials": []
@@ -6072,6 +6204,7 @@
         },
         "costUsd": 0.4673,
         "turns": 11,
+        "subagentTurns": 0,
         "durationMs": 115730,
         "apiDurationMs": 90269,
         "toolCalls": {
@@ -6096,7 +6229,7 @@
           "timestamp": "2026-09-27T09:26:13.540Z",
           "model": "claude-sonnet-5-20260801",
           "claudeCodeVersion": "2.1.283",
-          "tools": ["Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
+          "tools": ["Agent", "Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
         },
         {
           "type": "assistant_text",
@@ -6408,8 +6541,11 @@
           "timestamp": "2026-09-27T09:28:09.270Z",
           "outcome": "completed",
           "costUsd": 0.4673,
+          "reportedCostUsd": 0.4673,
+          "costEstimated": false,
           "turns": 11,
           "durationMs": 115730,
+          "reportedDurationMs": 112258,
           "apiDurationMs": 90269,
           "stopReason": "end_turn",
           "permissionDenials": []
@@ -6560,6 +6696,7 @@
         },
         "costUsd": 0.4788,
         "turns": 11,
+        "subagentTurns": 0,
         "durationMs": 110701,
         "apiDurationMs": 86347,
         "toolCalls": {
@@ -6584,7 +6721,7 @@
           "timestamp": "2026-09-27T09:26:45.789Z",
           "model": "claude-sonnet-5-20260801",
           "claudeCodeVersion": "2.1.283",
-          "tools": ["Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
+          "tools": ["Agent", "Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
         },
         {
           "type": "assistant_text",
@@ -6893,8 +7030,11 @@
           "timestamp": "2026-09-27T09:28:36.490Z",
           "outcome": "completed",
           "costUsd": 0.4788,
+          "reportedCostUsd": 0.4788,
+          "costEstimated": false,
           "turns": 11,
           "durationMs": 110701,
+          "reportedDurationMs": 107380,
           "apiDurationMs": 86347,
           "stopReason": "end_turn",
           "permissionDenials": []
@@ -7043,6 +7183,7 @@
         },
         "costUsd": 0.6032,
         "turns": 16,
+        "subagentTurns": 0,
         "durationMs": 68752,
         "apiDurationMs": 53627,
         "toolCalls": {
@@ -7067,7 +7208,7 @@
           "timestamp": "2026-09-27T09:27:50.292Z",
           "model": "claude-sonnet-5-20260801",
           "claudeCodeVersion": "2.1.283",
-          "tools": ["Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
+          "tools": ["Agent", "Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
         },
         {
           "type": "assistant_text",
@@ -7501,8 +7642,11 @@
           "timestamp": "2026-09-27T09:28:59.044Z",
           "outcome": "completed",
           "costUsd": 0.6032,
+          "reportedCostUsd": 0.6032,
+          "costEstimated": false,
           "turns": 16,
           "durationMs": 68752,
+          "reportedDurationMs": 66689,
           "apiDurationMs": 53627,
           "stopReason": "end_turn",
           "permissionDenials": []
@@ -7619,6 +7763,7 @@
         },
         "costUsd": 0.6392,
         "turns": 15,
+        "subagentTurns": 0,
         "durationMs": 81736,
         "apiDurationMs": 63754,
         "toolCalls": {
@@ -7643,7 +7788,7 @@
           "timestamp": "2026-09-27T09:29:02.033Z",
           "model": "claude-sonnet-5-20260801",
           "claudeCodeVersion": "2.1.283",
-          "tools": ["Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
+          "tools": ["Agent", "Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
         },
         {
           "type": "assistant_text",
@@ -8052,8 +8197,11 @@
           "timestamp": "2026-09-27T09:30:23.769Z",
           "outcome": "completed",
           "costUsd": 0.6392,
+          "reportedCostUsd": 0.6392,
+          "costEstimated": false,
           "turns": 15,
           "durationMs": 81736,
+          "reportedDurationMs": 79284,
           "apiDurationMs": 63754,
           "stopReason": "end_turn",
           "permissionDenials": []
@@ -8170,6 +8318,7 @@
         },
         "costUsd": 0.6108,
         "turns": 11,
+        "subagentTurns": 0,
         "durationMs": 80551,
         "apiDurationMs": 62830,
         "toolCalls": {
@@ -8194,7 +8343,7 @@
           "timestamp": "2026-09-27T09:29:54.388Z",
           "model": "claude-sonnet-5-20260801",
           "claudeCodeVersion": "2.1.283",
-          "tools": ["Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
+          "tools": ["Agent", "Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
         },
         {
           "type": "assistant_text",
@@ -8502,8 +8651,11 @@
           "timestamp": "2026-09-27T09:31:14.939Z",
           "outcome": "completed",
           "costUsd": 0.6108,
+          "reportedCostUsd": 0.6108,
+          "costEstimated": false,
           "turns": 11,
           "durationMs": 80551,
+          "reportedDurationMs": 78134,
           "apiDurationMs": 62830,
           "stopReason": "end_turn",
           "permissionDenials": []
@@ -8620,6 +8772,7 @@
         },
         "costUsd": 0.5942,
         "turns": 10,
+        "subagentTurns": 0,
         "durationMs": 90021,
         "apiDurationMs": 70216,
         "toolCalls": {
@@ -8644,7 +8797,7 @@
           "timestamp": "2026-09-27T09:31:15.200Z",
           "model": "claude-sonnet-5-20260801",
           "claudeCodeVersion": "2.1.283",
-          "tools": ["Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
+          "tools": ["Agent", "Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
         },
         {
           "type": "assistant_text",
@@ -8931,8 +9084,11 @@
           "timestamp": "2026-09-27T09:32:45.221Z",
           "outcome": "completed",
           "costUsd": 0.5942,
+          "reportedCostUsd": 0.5942,
+          "costEstimated": false,
           "turns": 10,
           "durationMs": 90021,
+          "reportedDurationMs": 87320,
           "apiDurationMs": 70216,
           "stopReason": "end_turn",
           "permissionDenials": []
@@ -9049,6 +9205,7 @@
         },
         "costUsd": 0.5924,
         "turns": 14,
+        "subagentTurns": 0,
         "durationMs": 103138,
         "apiDurationMs": 80448,
         "toolCalls": {
@@ -9073,7 +9230,7 @@
           "timestamp": "2026-09-27T09:32:03.521Z",
           "model": "claude-sonnet-5-20260801",
           "claudeCodeVersion": "2.1.283",
-          "tools": ["Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
+          "tools": ["Agent", "Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
         },
         {
           "type": "assistant_text",
@@ -9457,8 +9614,11 @@
           "timestamp": "2026-09-27T09:33:46.659Z",
           "outcome": "completed",
           "costUsd": 0.5924,
+          "reportedCostUsd": 0.5924,
+          "costEstimated": false,
           "turns": 14,
           "durationMs": 103138,
+          "reportedDurationMs": 100044,
           "apiDurationMs": 80448,
           "stopReason": "end_turn",
           "permissionDenials": []
@@ -9577,6 +9737,7 @@
         },
         "costUsd": 0.4878,
         "turns": 8,
+        "subagentTurns": 0,
         "durationMs": 84441,
         "apiDurationMs": 65864,
         "toolCalls": {
@@ -9601,7 +9762,7 @@
           "timestamp": "2026-09-27T09:32:25.199Z",
           "model": "claude-sonnet-5-20260801",
           "claudeCodeVersion": "2.1.283",
-          "tools": ["Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
+          "tools": ["Agent", "Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
         },
         {
           "type": "assistant_text",
@@ -9838,8 +9999,11 @@
           "timestamp": "2026-09-27T09:33:49.640Z",
           "outcome": "completed",
           "costUsd": 0.4878,
+          "reportedCostUsd": 0.4878,
+          "costEstimated": false,
           "turns": 8,
           "durationMs": 84441,
+          "reportedDurationMs": 81908,
           "apiDurationMs": 65864,
           "stopReason": "end_turn",
           "permissionDenials": []
@@ -9990,6 +10154,7 @@
         },
         "costUsd": 0.489,
         "turns": 11,
+        "subagentTurns": 0,
         "durationMs": 89369,
         "apiDurationMs": 69708,
         "toolCalls": {
@@ -10014,7 +10179,7 @@
           "timestamp": "2026-09-27T09:33:36.682Z",
           "model": "claude-sonnet-5-20260801",
           "claudeCodeVersion": "2.1.283",
-          "tools": ["Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
+          "tools": ["Agent", "Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
         },
         {
           "type": "assistant_text",
@@ -10324,8 +10489,11 @@
           "timestamp": "2026-09-27T09:35:06.051Z",
           "outcome": "completed",
           "costUsd": 0.489,
+          "reportedCostUsd": 0.489,
+          "costEstimated": false,
           "turns": 11,
           "durationMs": 89369,
+          "reportedDurationMs": 86688,
           "apiDurationMs": 69708,
           "stopReason": "end_turn",
           "permissionDenials": []
@@ -10476,6 +10644,7 @@
         },
         "costUsd": 0.5121,
         "turns": 11,
+        "subagentTurns": 0,
         "durationMs": 77679,
         "apiDurationMs": 60590,
         "toolCalls": {
@@ -10500,7 +10669,7 @@
           "timestamp": "2026-09-27T09:35:00.512Z",
           "model": "claude-sonnet-5-20260801",
           "claudeCodeVersion": "2.1.283",
-          "tools": ["Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
+          "tools": ["Agent", "Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
         },
         {
           "type": "assistant_text",
@@ -10811,8 +10980,11 @@
           "timestamp": "2026-09-27T09:36:18.191Z",
           "outcome": "completed",
           "costUsd": 0.5121,
+          "reportedCostUsd": 0.5121,
+          "costEstimated": false,
           "turns": 11,
           "durationMs": 77679,
+          "reportedDurationMs": 75349,
           "apiDurationMs": 60590,
           "stopReason": "end_turn",
           "permissionDenials": []
@@ -10963,6 +11135,7 @@
         },
         "costUsd": 0.4118,
         "turns": 14,
+        "subagentTurns": 0,
         "durationMs": 66528,
         "apiDurationMs": 51892,
         "toolCalls": {
@@ -10987,7 +11160,7 @@
           "timestamp": "2026-09-27T09:35:29.996Z",
           "model": "claude-sonnet-5-20260801",
           "claudeCodeVersion": "2.1.283",
-          "tools": ["Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
+          "tools": ["Agent", "Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
         },
         {
           "type": "assistant_text",
@@ -11373,8 +11546,11 @@
           "timestamp": "2026-09-27T09:36:36.524Z",
           "outcome": "completed",
           "costUsd": 0.4118,
+          "reportedCostUsd": 0.4118,
+          "costEstimated": false,
           "turns": 14,
           "durationMs": 66528,
+          "reportedDurationMs": 64532,
           "apiDurationMs": 51892,
           "stopReason": "end_turn",
           "permissionDenials": []
@@ -11525,6 +11701,7 @@
         },
         "costUsd": 0.4499,
         "turns": 11,
+        "subagentTurns": 0,
         "durationMs": 68165,
         "apiDurationMs": 53169,
         "toolCalls": {
@@ -11549,7 +11726,7 @@
           "timestamp": "2026-09-27T09:36:50.401Z",
           "model": "claude-sonnet-5-20260801",
           "claudeCodeVersion": "2.1.283",
-          "tools": ["Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
+          "tools": ["Agent", "Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
         },
         {
           "type": "assistant_text",
@@ -11860,8 +12037,11 @@
           "timestamp": "2026-09-27T09:37:58.566Z",
           "outcome": "completed",
           "costUsd": 0.4499,
+          "reportedCostUsd": 0.4499,
+          "costEstimated": false,
           "turns": 11,
           "durationMs": 68165,
+          "reportedDurationMs": 66120,
           "apiDurationMs": 53169,
           "stopReason": "end_turn",
           "permissionDenials": []
@@ -12012,6 +12192,7 @@
         },
         "costUsd": 0.6539,
         "turns": 12,
+        "subagentTurns": 0,
         "durationMs": 121520,
         "apiDurationMs": 94786,
         "toolCalls": {
@@ -12036,7 +12217,7 @@
           "timestamp": "2026-09-27T09:37:49.245Z",
           "model": "claude-sonnet-5-20260801",
           "claudeCodeVersion": "2.1.283",
-          "tools": ["Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
+          "tools": ["Agent", "Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
         },
         {
           "type": "assistant_text",
@@ -12371,8 +12552,11 @@
           "timestamp": "2026-09-27T09:39:50.765Z",
           "outcome": "completed",
           "costUsd": 0.6539,
+          "reportedCostUsd": 0.6539,
+          "costEstimated": false,
           "turns": 12,
           "durationMs": 121520,
+          "reportedDurationMs": 117874,
           "apiDurationMs": 94786,
           "stopReason": "end_turn",
           "permissionDenials": []
@@ -12523,6 +12707,7 @@
         },
         "costUsd": 0.6929,
         "turns": 16,
+        "subagentTurns": 0,
         "durationMs": 128598,
         "apiDurationMs": 100306,
         "toolCalls": {
@@ -12547,7 +12732,7 @@
           "timestamp": "2026-09-27T09:38:17.141Z",
           "model": "claude-sonnet-5-20260801",
           "claudeCodeVersion": "2.1.283",
-          "tools": ["Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
+          "tools": ["Agent", "Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
         },
         {
           "type": "assistant_text",
@@ -12979,8 +13164,11 @@
           "timestamp": "2026-09-27T09:40:25.739Z",
           "outcome": "completed",
           "costUsd": 0.6929,
+          "reportedCostUsd": 0.6929,
+          "costEstimated": false,
           "turns": 16,
           "durationMs": 128598,
+          "reportedDurationMs": 124740,
           "apiDurationMs": 100306,
           "stopReason": "end_turn",
           "permissionDenials": []
@@ -13131,6 +13319,7 @@
         },
         "costUsd": 0.6974,
         "turns": 10,
+        "subagentTurns": 0,
         "durationMs": 112229,
         "apiDurationMs": 87539,
         "toolCalls": {
@@ -13155,7 +13344,7 @@
           "timestamp": "2026-09-27T09:39:14.251Z",
           "model": "claude-sonnet-5-20260801",
           "claudeCodeVersion": "2.1.283",
-          "tools": ["Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
+          "tools": ["Agent", "Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
         },
         {
           "type": "assistant_text",
@@ -13443,8 +13632,11 @@
           "timestamp": "2026-09-27T09:41:06.480Z",
           "outcome": "completed",
           "costUsd": 0.6974,
+          "reportedCostUsd": 0.6974,
+          "costEstimated": false,
           "turns": 10,
           "durationMs": 112229,
+          "reportedDurationMs": 108862,
           "apiDurationMs": 87539,
           "stopReason": "end_turn",
           "permissionDenials": []
@@ -13595,6 +13787,7 @@
         },
         "costUsd": 0.6784,
         "turns": 8,
+        "subagentTurns": 0,
         "durationMs": 111550,
         "apiDurationMs": 87009,
         "toolCalls": {
@@ -13619,7 +13812,7 @@
           "timestamp": "2026-09-27T09:40:29.441Z",
           "model": "claude-sonnet-5-20260801",
           "claudeCodeVersion": "2.1.283",
-          "tools": ["Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
+          "tools": ["Agent", "Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
         },
         {
           "type": "assistant_text",
@@ -13856,8 +14049,11 @@
           "timestamp": "2026-09-27T09:42:20.991Z",
           "outcome": "completed",
           "costUsd": 0.6784,
+          "reportedCostUsd": 0.6784,
+          "costEstimated": false,
           "turns": 8,
           "durationMs": 111550,
+          "reportedDurationMs": 108204,
           "apiDurationMs": 87009,
           "stopReason": "end_turn",
           "permissionDenials": []
@@ -14008,6 +14204,7 @@
         },
         "costUsd": 0.6678,
         "turns": 12,
+        "subagentTurns": 0,
         "durationMs": 98586,
         "apiDurationMs": 76897,
         "toolCalls": {
@@ -14032,7 +14229,7 @@
           "timestamp": "2026-09-27T09:41:41.725Z",
           "model": "claude-sonnet-5-20260801",
           "claudeCodeVersion": "2.1.283",
-          "tools": ["Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
+          "tools": ["Agent", "Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
         },
         {
           "type": "assistant_text",
@@ -14366,8 +14563,11 @@
           "timestamp": "2026-09-27T09:43:20.311Z",
           "outcome": "completed",
           "costUsd": 0.6678,
+          "reportedCostUsd": 0.6678,
+          "costEstimated": false,
           "turns": 12,
           "durationMs": 98586,
+          "reportedDurationMs": 95628,
           "apiDurationMs": 76897,
           "stopReason": "end_turn",
           "permissionDenials": []
@@ -14516,6 +14716,7 @@
         },
         "costUsd": 0.3965,
         "turns": 9,
+        "subagentTurns": 0,
         "durationMs": 111150,
         "apiDurationMs": 86697,
         "toolCalls": {
@@ -14540,7 +14741,7 @@
           "timestamp": "2026-09-27T09:42:12.880Z",
           "model": "claude-sonnet-5-20260801",
           "claudeCodeVersion": "2.1.283",
-          "tools": ["Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
+          "tools": ["Agent", "Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
         },
         {
           "type": "assistant_text",
@@ -14801,8 +15002,11 @@
           "timestamp": "2026-09-27T09:44:04.030Z",
           "outcome": "completed",
           "costUsd": 0.3965,
+          "reportedCostUsd": 0.3965,
+          "costEstimated": false,
           "turns": 9,
           "durationMs": 111150,
+          "reportedDurationMs": 107816,
           "apiDurationMs": 86697,
           "stopReason": "end_turn",
           "permissionDenials": []
@@ -14919,6 +15123,7 @@
         },
         "costUsd": 0.4127,
         "turns": 11,
+        "subagentTurns": 0,
         "durationMs": 88865,
         "apiDurationMs": 69315,
         "toolCalls": {
@@ -14943,7 +15148,7 @@
           "timestamp": "2026-09-27T09:42:40.295Z",
           "model": "claude-sonnet-5-20260801",
           "claudeCodeVersion": "2.1.283",
-          "tools": ["Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
+          "tools": ["Agent", "Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
         },
         {
           "type": "assistant_text",
@@ -15252,8 +15457,11 @@
           "timestamp": "2026-09-27T09:44:09.160Z",
           "outcome": "completed",
           "costUsd": 0.4127,
+          "reportedCostUsd": 0.4127,
+          "costEstimated": false,
           "turns": 11,
           "durationMs": 88865,
+          "reportedDurationMs": 86199,
           "apiDurationMs": 69315,
           "stopReason": "end_turn",
           "permissionDenials": []
@@ -15370,6 +15578,7 @@
         },
         "costUsd": 0.4078,
         "turns": 14,
+        "subagentTurns": 0,
         "durationMs": 90816,
         "apiDurationMs": 70836,
         "toolCalls": {
@@ -15394,7 +15603,7 @@
           "timestamp": "2026-09-27T09:43:18.513Z",
           "model": "claude-sonnet-5-20260801",
           "claudeCodeVersion": "2.1.283",
-          "tools": ["Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
+          "tools": ["Agent", "Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
         },
         {
           "type": "assistant_text",
@@ -15779,8 +15988,11 @@
           "timestamp": "2026-09-27T09:44:49.329Z",
           "outcome": "completed",
           "costUsd": 0.4078,
+          "reportedCostUsd": 0.4078,
+          "costEstimated": false,
           "turns": 14,
           "durationMs": 90816,
+          "reportedDurationMs": 88092,
           "apiDurationMs": 70836,
           "stopReason": "end_turn",
           "permissionDenials": []
@@ -15897,6 +16109,7 @@
         },
         "costUsd": 0.3763,
         "turns": 11,
+        "subagentTurns": 0,
         "durationMs": 111510,
         "apiDurationMs": 86978,
         "toolCalls": {
@@ -15921,7 +16134,7 @@
           "timestamp": "2026-09-27T09:44:43.698Z",
           "model": "claude-sonnet-5-20260801",
           "claudeCodeVersion": "2.1.283",
-          "tools": ["Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
+          "tools": ["Agent", "Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
         },
         {
           "type": "assistant_text",
@@ -16234,8 +16447,11 @@
           "timestamp": "2026-09-27T09:46:35.208Z",
           "outcome": "completed",
           "costUsd": 0.3763,
+          "reportedCostUsd": 0.3763,
+          "costEstimated": false,
           "turns": 11,
           "durationMs": 111510,
+          "reportedDurationMs": 108165,
           "apiDurationMs": 86978,
           "stopReason": "end_turn",
           "permissionDenials": []
@@ -16352,6 +16568,7 @@
         },
         "costUsd": 0.3763,
         "turns": 11,
+        "subagentTurns": 0,
         "durationMs": 88195,
         "apiDurationMs": 68792,
         "toolCalls": {
@@ -16376,7 +16593,7 @@
           "timestamp": "2026-09-27T09:45:31.012Z",
           "model": "claude-sonnet-5-20260801",
           "claudeCodeVersion": "2.1.283",
-          "tools": ["Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
+          "tools": ["Agent", "Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
         },
         {
           "type": "assistant_text",
@@ -16686,8 +16903,11 @@
           "timestamp": "2026-09-27T09:46:59.207Z",
           "outcome": "completed",
           "costUsd": 0.3763,
+          "reportedCostUsd": 0.3763,
+          "costEstimated": false,
           "turns": 11,
           "durationMs": 88195,
+          "reportedDurationMs": 85549,
           "apiDurationMs": 68792,
           "stopReason": "end_turn",
           "permissionDenials": []
@@ -16806,6 +17026,7 @@
         },
         "costUsd": 0.3162,
         "turns": 11,
+        "subagentTurns": 0,
         "durationMs": 80695,
         "apiDurationMs": 62942,
         "toolCalls": {
@@ -16830,7 +17051,7 @@
           "timestamp": "2026-09-27T09:46:07.431Z",
           "model": "claude-sonnet-5-20260801",
           "claudeCodeVersion": "2.1.283",
-          "tools": ["Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
+          "tools": ["Agent", "Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
         },
         {
           "type": "assistant_text",
@@ -17143,8 +17364,11 @@
           "timestamp": "2026-09-27T09:47:28.126Z",
           "outcome": "failed",
           "costUsd": 0.3162,
+          "reportedCostUsd": 0.3162,
+          "costEstimated": false,
           "turns": 11,
           "durationMs": 80695,
+          "reportedDurationMs": 78274,
           "apiDurationMs": 62942,
           "stopReason": "end_turn",
           "permissionDenials": []
@@ -17295,6 +17519,7 @@
         },
         "costUsd": 0.2842,
         "turns": 9,
+        "subagentTurns": 0,
         "durationMs": 74879,
         "apiDurationMs": 58406,
         "toolCalls": {
@@ -17319,7 +17544,7 @@
           "timestamp": "2026-09-27T09:47:30.716Z",
           "model": "claude-sonnet-5-20260801",
           "claudeCodeVersion": "2.1.283",
-          "tools": ["Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
+          "tools": ["Agent", "Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
         },
         {
           "type": "assistant_text",
@@ -17580,8 +17805,11 @@
           "timestamp": "2026-09-27T09:48:45.595Z",
           "outcome": "completed",
           "costUsd": 0.2842,
+          "reportedCostUsd": 0.2842,
+          "costEstimated": false,
           "turns": 9,
           "durationMs": 74879,
+          "reportedDurationMs": 72633,
           "apiDurationMs": 58406,
           "stopReason": "end_turn",
           "permissionDenials": []
@@ -17732,6 +17960,7 @@
         },
         "costUsd": 0.1202,
         "turns": 9,
+        "subagentTurns": 0,
         "durationMs": 66885,
         "apiDurationMs": 52170,
         "toolCalls": {
@@ -17756,7 +17985,7 @@
           "timestamp": "2026-09-27T09:48:54.634Z",
           "model": "claude-sonnet-5-20260801",
           "claudeCodeVersion": "2.1.283",
-          "tools": ["Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
+          "tools": ["Agent", "Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
         },
         {
           "type": "assistant_text",
@@ -18012,8 +18241,11 @@
           "timestamp": "2026-09-27T09:50:01.519Z",
           "outcome": "crashed",
           "costUsd": 0.1202,
+          "reportedCostUsd": 0.1202,
+          "costEstimated": false,
           "turns": 9,
           "durationMs": 66885,
+          "reportedDurationMs": 64878,
           "apiDurationMs": 52170,
           "stopReason": null,
           "permissionDenials": []
@@ -18131,6 +18363,7 @@
         },
         "costUsd": 0.3171,
         "turns": 9,
+        "subagentTurns": 0,
         "durationMs": 76691,
         "apiDurationMs": 59819,
         "toolCalls": {
@@ -18155,7 +18388,7 @@
           "timestamp": "2026-09-27T09:49:36.336Z",
           "model": "claude-sonnet-5-20260801",
           "claudeCodeVersion": "2.1.283",
-          "tools": ["Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
+          "tools": ["Agent", "Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
         },
         {
           "type": "assistant_text",
@@ -18418,8 +18651,11 @@
           "timestamp": "2026-09-27T09:50:53.027Z",
           "outcome": "completed",
           "costUsd": 0.3171,
+          "reportedCostUsd": 0.3171,
+          "costEstimated": false,
           "turns": 9,
           "durationMs": 76691,
+          "reportedDurationMs": 74390,
           "apiDurationMs": 59819,
           "stopReason": "end_turn",
           "permissionDenials": []
@@ -18570,6 +18806,7 @@
         },
         "costUsd": 0.3221,
         "turns": 9,
+        "subagentTurns": 0,
         "durationMs": 64138,
         "apiDurationMs": 50028,
         "toolCalls": {
@@ -18594,7 +18831,7 @@
           "timestamp": "2026-09-27T09:50:16.899Z",
           "model": "claude-sonnet-5-20260801",
           "claudeCodeVersion": "2.1.283",
-          "tools": ["Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
+          "tools": ["Agent", "Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
         },
         {
           "type": "assistant_text",
@@ -18857,8 +19094,11 @@
           "timestamp": "2026-09-27T09:51:21.037Z",
           "outcome": "completed",
           "costUsd": 0.3221,
+          "reportedCostUsd": 0.3221,
+          "costEstimated": false,
           "turns": 9,
           "durationMs": 64138,
+          "reportedDurationMs": 62214,
           "apiDurationMs": 50028,
           "stopReason": "end_turn",
           "permissionDenials": []
@@ -19009,6 +19249,7 @@
         },
         "costUsd": 0.4772,
         "turns": 11,
+        "subagentTurns": 0,
         "durationMs": 104732,
         "apiDurationMs": 81691,
         "toolCalls": {
@@ -19033,7 +19274,7 @@
           "timestamp": "2026-09-27T09:51:39.387Z",
           "model": "claude-sonnet-5-20260801",
           "claudeCodeVersion": "2.1.283",
-          "tools": ["Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
+          "tools": ["Agent", "Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
         },
         {
           "type": "assistant_text",
@@ -19343,8 +19584,11 @@
           "timestamp": "2026-09-27T09:53:24.119Z",
           "outcome": "completed",
           "costUsd": 0.4772,
+          "reportedCostUsd": 0.4772,
+          "costEstimated": false,
           "turns": 11,
           "durationMs": 104732,
+          "reportedDurationMs": 101590,
           "apiDurationMs": 81691,
           "stopReason": "end_turn",
           "permissionDenials": []
@@ -19495,6 +19739,7 @@
         },
         "costUsd": 0.4415,
         "turns": 11,
+        "subagentTurns": 0,
         "durationMs": 107290,
         "apiDurationMs": 83686,
         "toolCalls": {
@@ -19519,7 +19764,7 @@
           "timestamp": "2026-09-27T09:53:03.353Z",
           "model": "claude-sonnet-5-20260801",
           "claudeCodeVersion": "2.1.283",
-          "tools": ["Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
+          "tools": ["Agent", "Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
         },
         {
           "type": "assistant_text",
@@ -19830,8 +20075,11 @@
           "timestamp": "2026-09-27T09:54:50.643Z",
           "outcome": "completed",
           "costUsd": 0.4415,
+          "reportedCostUsd": 0.4415,
+          "costEstimated": false,
           "turns": 11,
           "durationMs": 107290,
+          "reportedDurationMs": 104071,
           "apiDurationMs": 83686,
           "stopReason": "end_turn",
           "permissionDenials": []
@@ -19982,6 +20230,7 @@
         },
         "costUsd": 0.4239,
         "turns": 15,
+        "subagentTurns": 0,
         "durationMs": 88350,
         "apiDurationMs": 68913,
         "toolCalls": {
@@ -20006,7 +20255,7 @@
           "timestamp": "2026-09-27T09:53:54.193Z",
           "model": "claude-sonnet-5-20260801",
           "claudeCodeVersion": "2.1.283",
-          "tools": ["Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
+          "tools": ["Agent", "Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
         },
         {
           "type": "assistant_text",
@@ -20417,8 +20666,11 @@
           "timestamp": "2026-09-27T09:55:22.543Z",
           "outcome": "completed",
           "costUsd": 0.4239,
+          "reportedCostUsd": 0.4239,
+          "costEstimated": false,
           "turns": 15,
           "durationMs": 88350,
+          "reportedDurationMs": 85700,
           "apiDurationMs": 68913,
           "stopReason": "end_turn",
           "permissionDenials": []
@@ -20569,6 +20821,7 @@
         },
         "costUsd": 0.3946,
         "turns": 13,
+        "subagentTurns": 0,
         "durationMs": 101277,
         "apiDurationMs": 78996,
         "toolCalls": {
@@ -20593,7 +20846,7 @@
           "timestamp": "2026-09-27T09:54:38.724Z",
           "model": "claude-sonnet-5-20260801",
           "claudeCodeVersion": "2.1.283",
-          "tools": ["Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
+          "tools": ["Agent", "Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
         },
         {
           "type": "assistant_text",
@@ -20955,8 +21208,11 @@
           "timestamp": "2026-09-27T09:56:20.001Z",
           "outcome": "completed",
           "costUsd": 0.3946,
+          "reportedCostUsd": 0.3946,
+          "costEstimated": false,
           "turns": 13,
           "durationMs": 101277,
+          "reportedDurationMs": 98239,
           "apiDurationMs": 78996,
           "stopReason": "end_turn",
           "permissionDenials": []
@@ -21107,6 +21363,7 @@
         },
         "costUsd": 0.422,
         "turns": 14,
+        "subagentTurns": 0,
         "durationMs": 99082,
         "apiDurationMs": 77284,
         "toolCalls": {
@@ -21131,7 +21388,7 @@
           "timestamp": "2026-09-27T09:55:09.416Z",
           "model": "claude-sonnet-5-20260801",
           "claudeCodeVersion": "2.1.283",
-          "tools": ["Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
+          "tools": ["Agent", "Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
         },
         {
           "type": "assistant_text",
@@ -21513,8 +21770,11 @@
           "timestamp": "2026-09-27T09:56:48.498Z",
           "outcome": "completed",
           "costUsd": 0.422,
+          "reportedCostUsd": 0.422,
+          "costEstimated": false,
           "turns": 14,
           "durationMs": 99082,
+          "reportedDurationMs": 96110,
           "apiDurationMs": 77284,
           "stopReason": "end_turn",
           "permissionDenials": []
@@ -21663,6 +21923,7 @@
         },
         "costUsd": 1.0094,
         "turns": 10,
+        "subagentTurns": 0,
         "durationMs": 92774,
         "apiDurationMs": 72364,
         "toolCalls": {
@@ -21687,7 +21948,7 @@
           "timestamp": "2026-09-27T09:55:38.091Z",
           "model": "claude-sonnet-5-20260801",
           "claudeCodeVersion": "2.1.283",
-          "tools": ["Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
+          "tools": ["Agent", "Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
         },
         {
           "type": "assistant_text",
@@ -21973,8 +22234,11 @@
           "timestamp": "2026-09-27T09:57:10.865Z",
           "outcome": "completed",
           "costUsd": 1.0094,
+          "reportedCostUsd": 1.0094,
+          "costEstimated": false,
           "turns": 10,
           "durationMs": 92774,
+          "reportedDurationMs": 89991,
           "apiDurationMs": 72364,
           "stopReason": "end_turn",
           "permissionDenials": []
@@ -22086,6 +22350,7 @@
         },
         "costUsd": 0.9214,
         "turns": 13,
+        "subagentTurns": 0,
         "durationMs": 109410,
         "apiDurationMs": 85340,
         "toolCalls": {
@@ -22110,7 +22375,7 @@
           "timestamp": "2026-09-27T09:57:06.434Z",
           "model": "claude-sonnet-5-20260801",
           "claudeCodeVersion": "2.1.283",
-          "tools": ["Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
+          "tools": ["Agent", "Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
         },
         {
           "type": "assistant_text",
@@ -22469,8 +22734,11 @@
           "timestamp": "2026-09-27T09:58:55.844Z",
           "outcome": "completed",
           "costUsd": 0.9214,
+          "reportedCostUsd": 0.9214,
+          "costEstimated": false,
           "turns": 13,
           "durationMs": 109410,
+          "reportedDurationMs": 106128,
           "apiDurationMs": 85340,
           "stopReason": "end_turn",
           "permissionDenials": []
@@ -22582,6 +22850,7 @@
         },
         "costUsd": 0.8988,
         "turns": 16,
+        "subagentTurns": 0,
         "durationMs": 94311,
         "apiDurationMs": 73563,
         "toolCalls": {
@@ -22606,7 +22875,7 @@
           "timestamp": "2026-09-27T09:58:15.948Z",
           "model": "claude-sonnet-5-20260801",
           "claudeCodeVersion": "2.1.283",
-          "tools": ["Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
+          "tools": ["Agent", "Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
         },
         {
           "type": "assistant_text",
@@ -23041,8 +23310,11 @@
           "timestamp": "2026-09-27T09:59:50.259Z",
           "outcome": "failed",
           "costUsd": 0.8988,
+          "reportedCostUsd": 0.8988,
+          "costEstimated": false,
           "turns": 16,
           "durationMs": 94311,
+          "reportedDurationMs": 91482,
           "apiDurationMs": 73563,
           "stopReason": "end_turn",
           "permissionDenials": []
@@ -23154,6 +23426,7 @@
         },
         "costUsd": 0.9212,
         "turns": 11,
+        "subagentTurns": 0,
         "durationMs": 87398,
         "apiDurationMs": 68170,
         "toolCalls": {
@@ -23178,7 +23451,7 @@
           "timestamp": "2026-09-27T09:59:28.491Z",
           "model": "claude-sonnet-5-20260801",
           "claudeCodeVersion": "2.1.283",
-          "tools": ["Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
+          "tools": ["Agent", "Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
         },
         {
           "type": "assistant_text",
@@ -23489,8 +23762,11 @@
           "timestamp": "2026-09-27T10:00:55.889Z",
           "outcome": "failed",
           "costUsd": 0.9212,
+          "reportedCostUsd": 0.9212,
+          "costEstimated": false,
           "turns": 11,
           "durationMs": 87398,
+          "reportedDurationMs": 84776,
           "apiDurationMs": 68170,
           "stopReason": "end_turn",
           "permissionDenials": []
@@ -23602,6 +23878,7 @@
         },
         "costUsd": 0.9554,
         "turns": 10,
+        "subagentTurns": 0,
         "durationMs": 117533,
         "apiDurationMs": 91676,
         "toolCalls": {
@@ -23626,7 +23903,7 @@
           "timestamp": "2026-09-27T10:00:32.885Z",
           "model": "claude-sonnet-5-20260801",
           "claudeCodeVersion": "2.1.283",
-          "tools": ["Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
+          "tools": ["Agent", "Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
         },
         {
           "type": "assistant_text",
@@ -23911,8 +24188,11 @@
           "timestamp": "2026-09-27T10:02:30.418Z",
           "outcome": "failed",
           "costUsd": 0.9554,
+          "reportedCostUsd": 0.9554,
+          "costEstimated": false,
           "turns": 10,
           "durationMs": 117533,
+          "reportedDurationMs": 114007,
           "apiDurationMs": 91676,
           "stopReason": "end_turn",
           "permissionDenials": []
@@ -24026,6 +24306,7 @@
         },
         "costUsd": 0.7676,
         "turns": 4,
+        "subagentTurns": 0,
         "durationMs": 79747,
         "apiDurationMs": 62203,
         "toolCalls": {
@@ -24049,7 +24330,7 @@
           "timestamp": "2026-09-27T10:01:46.952Z",
           "model": "claude-sonnet-5-20260801",
           "claudeCodeVersion": "2.1.283",
-          "tools": ["Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
+          "tools": ["Agent", "Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
         },
         {
           "type": "assistant_text",
@@ -24187,8 +24468,11 @@
           "timestamp": "2026-09-27T10:03:06.699Z",
           "outcome": "failed",
           "costUsd": 0.7676,
+          "reportedCostUsd": 0.7676,
+          "costEstimated": false,
           "turns": 4,
           "durationMs": 79747,
+          "reportedDurationMs": 77355,
           "apiDurationMs": 62203,
           "stopReason": "end_turn",
           "permissionDenials": []
@@ -24334,6 +24618,7 @@
         },
         "costUsd": 0.7436,
         "turns": 11,
+        "subagentTurns": 0,
         "durationMs": 60251,
         "apiDurationMs": 46996,
         "toolCalls": {
@@ -24358,7 +24643,7 @@
           "timestamp": "2026-09-27T10:03:01.198Z",
           "model": "claude-sonnet-5-20260801",
           "claudeCodeVersion": "2.1.283",
-          "tools": ["Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
+          "tools": ["Agent", "Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
         },
         {
           "type": "assistant_text",
@@ -24669,8 +24954,11 @@
           "timestamp": "2026-09-27T10:04:01.449Z",
           "outcome": "completed",
           "costUsd": 0.7436,
+          "reportedCostUsd": 0.7436,
+          "costEstimated": false,
           "turns": 11,
           "durationMs": 60251,
+          "reportedDurationMs": 58443,
           "apiDurationMs": 46996,
           "stopReason": "end_turn",
           "permissionDenials": []
@@ -24816,6 +25104,7 @@
         },
         "costUsd": 0.7968,
         "turns": 11,
+        "subagentTurns": 0,
         "durationMs": 79317,
         "apiDurationMs": 61867,
         "toolCalls": {
@@ -24840,7 +25129,7 @@
           "timestamp": "2026-09-27T10:04:04.062Z",
           "model": "claude-sonnet-5-20260801",
           "claudeCodeVersion": "2.1.283",
-          "tools": ["Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
+          "tools": ["Agent", "Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
         },
         {
           "type": "assistant_text",
@@ -25151,8 +25440,11 @@
           "timestamp": "2026-09-27T10:05:23.379Z",
           "outcome": "failed",
           "costUsd": 0.7968,
+          "reportedCostUsd": 0.7968,
+          "costEstimated": false,
           "turns": 11,
           "durationMs": 79317,
+          "reportedDurationMs": 76937,
           "apiDurationMs": 61867,
           "stopReason": "end_turn",
           "permissionDenials": []
@@ -25298,6 +25590,7 @@
         },
         "costUsd": 0.7743,
         "turns": 9,
+        "subagentTurns": 0,
         "durationMs": 84207,
         "apiDurationMs": 65681,
         "toolCalls": {
@@ -25322,7 +25615,7 @@
           "timestamp": "2026-09-27T10:05:16.959Z",
           "model": "claude-sonnet-5-20260801",
           "claudeCodeVersion": "2.1.283",
-          "tools": ["Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
+          "tools": ["Agent", "Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
         },
         {
           "type": "assistant_text",
@@ -25583,8 +25876,11 @@
           "timestamp": "2026-09-27T10:06:41.166Z",
           "outcome": "completed",
           "costUsd": 0.7743,
+          "reportedCostUsd": 0.7743,
+          "costEstimated": false,
           "turns": 9,
           "durationMs": 84207,
+          "reportedDurationMs": 81681,
           "apiDurationMs": 65681,
           "stopReason": "end_turn",
           "permissionDenials": []
@@ -25730,6 +26026,7 @@
         },
         "costUsd": 0.778,
         "turns": 13,
+        "subagentTurns": 0,
         "durationMs": 92313,
         "apiDurationMs": 72004,
         "toolCalls": {
@@ -25754,7 +26051,7 @@
           "timestamp": "2026-09-27T10:06:11.427Z",
           "model": "claude-sonnet-5-20260801",
           "claudeCodeVersion": "2.1.283",
-          "tools": ["Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
+          "tools": ["Agent", "Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
         },
         {
           "type": "assistant_text",
@@ -26114,8 +26411,11 @@
           "timestamp": "2026-09-27T10:07:43.740Z",
           "outcome": "completed",
           "costUsd": 0.778,
+          "reportedCostUsd": 0.778,
+          "costEstimated": false,
           "turns": 13,
           "durationMs": 92313,
+          "reportedDurationMs": 89544,
           "apiDurationMs": 72004,
           "stopReason": "end_turn",
           "permissionDenials": []
@@ -26261,6 +26561,7 @@
         },
         "costUsd": 1.0365,
         "turns": 10,
+        "subagentTurns": 0,
         "durationMs": 99352,
         "apiDurationMs": 77495,
         "toolCalls": {
@@ -26285,7 +26586,7 @@
           "timestamp": "2026-09-27T10:06:45.337Z",
           "model": "claude-sonnet-5-20260801",
           "claudeCodeVersion": "2.1.283",
-          "tools": ["Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
+          "tools": ["Agent", "Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
         },
         {
           "type": "assistant_text",
@@ -26572,8 +26873,11 @@
           "timestamp": "2026-09-27T10:08:24.689Z",
           "outcome": "failed",
           "costUsd": 1.0365,
+          "reportedCostUsd": 1.0365,
+          "costEstimated": false,
           "turns": 10,
           "durationMs": 99352,
+          "reportedDurationMs": 96371,
           "apiDurationMs": 77495,
           "stopReason": "end_turn",
           "permissionDenials": []
@@ -26719,6 +27023,7 @@
         },
         "costUsd": 1.0857,
         "turns": 16,
+        "subagentTurns": 0,
         "durationMs": 114521,
         "apiDurationMs": 89326,
         "toolCalls": {
@@ -26743,7 +27048,7 @@
           "timestamp": "2026-09-27T10:07:19.614Z",
           "model": "claude-sonnet-5-20260801",
           "claudeCodeVersion": "2.1.283",
-          "tools": ["Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
+          "tools": ["Agent", "Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
         },
         {
           "type": "assistant_text",
@@ -27173,8 +27478,11 @@
           "timestamp": "2026-09-27T10:09:14.135Z",
           "outcome": "completed",
           "costUsd": 1.0857,
+          "reportedCostUsd": 1.0857,
+          "costEstimated": false,
           "turns": 16,
           "durationMs": 114521,
+          "reportedDurationMs": 111085,
           "apiDurationMs": 89326,
           "stopReason": "end_turn",
           "permissionDenials": []
@@ -27320,6 +27628,7 @@
         },
         "costUsd": 1.0655,
         "turns": 14,
+        "subagentTurns": 0,
         "durationMs": 114568,
         "apiDurationMs": 89363,
         "toolCalls": {
@@ -27344,7 +27653,7 @@
           "timestamp": "2026-09-27T10:07:53.085Z",
           "model": "claude-sonnet-5-20260801",
           "claudeCodeVersion": "2.1.283",
-          "tools": ["Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
+          "tools": ["Agent", "Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
         },
         {
           "type": "assistant_text",
@@ -27727,8 +28036,11 @@
           "timestamp": "2026-09-27T10:09:47.653Z",
           "outcome": "completed",
           "costUsd": 1.0655,
+          "reportedCostUsd": 1.0655,
+          "costEstimated": false,
           "turns": 14,
           "durationMs": 114568,
+          "reportedDurationMs": 111131,
           "apiDurationMs": 89363,
           "stopReason": "end_turn",
           "permissionDenials": []
@@ -27874,6 +28186,7 @@
         },
         "costUsd": 1.0496,
         "turns": 12,
+        "subagentTurns": 0,
         "durationMs": 113028,
         "apiDurationMs": 88162,
         "toolCalls": {
@@ -27898,7 +28211,7 @@
           "timestamp": "2026-09-27T10:09:16.053Z",
           "model": "claude-sonnet-5-20260801",
           "claudeCodeVersion": "2.1.283",
-          "tools": ["Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
+          "tools": ["Agent", "Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
         },
         {
           "type": "assistant_text",
@@ -28235,8 +28548,11 @@
           "timestamp": "2026-09-27T10:11:09.081Z",
           "outcome": "completed",
           "costUsd": 1.0496,
+          "reportedCostUsd": 1.0496,
+          "costEstimated": false,
           "turns": 12,
           "durationMs": 113028,
+          "reportedDurationMs": 109637,
           "apiDurationMs": 88162,
           "stopReason": "end_turn",
           "permissionDenials": []
@@ -28382,6 +28698,7 @@
         },
         "costUsd": 1.0287,
         "turns": 12,
+        "subagentTurns": 0,
         "durationMs": 110979,
         "apiDurationMs": 86564,
         "toolCalls": {
@@ -28406,7 +28723,7 @@
           "timestamp": "2026-09-27T10:10:16.313Z",
           "model": "claude-sonnet-5-20260801",
           "claudeCodeVersion": "2.1.283",
-          "tools": ["Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
+          "tools": ["Agent", "Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
         },
         {
           "type": "assistant_text",
@@ -28740,8 +29057,11 @@
           "timestamp": "2026-09-27T10:12:07.292Z",
           "outcome": "completed",
           "costUsd": 1.0287,
+          "reportedCostUsd": 1.0287,
+          "costEstimated": false,
           "turns": 12,
           "durationMs": 110979,
+          "reportedDurationMs": 107650,
           "apiDurationMs": 86564,
           "stopReason": "end_turn",
           "permissionDenials": []
@@ -28885,6 +29205,7 @@
         },
         "costUsd": 0.5013,
         "turns": 13,
+        "subagentTurns": 0,
         "durationMs": 98788,
         "apiDurationMs": 77055,
         "toolCalls": {
@@ -28909,7 +29230,7 @@
           "timestamp": "2026-09-27T10:11:21.656Z",
           "model": "claude-sonnet-5-20260801",
           "claudeCodeVersion": "2.1.283",
-          "tools": ["Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
+          "tools": ["Agent", "Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
         },
         {
           "type": "assistant_text",
@@ -29270,8 +29591,11 @@
           "timestamp": "2026-09-27T10:13:00.444Z",
           "outcome": "completed",
           "costUsd": 0.5013,
+          "reportedCostUsd": 0.5013,
+          "costEstimated": false,
           "turns": 13,
           "durationMs": 98788,
+          "reportedDurationMs": 95824,
           "apiDurationMs": 77055,
           "stopReason": "end_turn",
           "permissionDenials": []
@@ -29388,6 +29712,7 @@
         },
         "costUsd": 0.4785,
         "turns": 8,
+        "subagentTurns": 0,
         "durationMs": 81367,
         "apiDurationMs": 63466,
         "toolCalls": {
@@ -29412,7 +29737,7 @@
           "timestamp": "2026-09-27T10:12:20.466Z",
           "model": "claude-sonnet-5-20260801",
           "claudeCodeVersion": "2.1.283",
-          "tools": ["Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
+          "tools": ["Agent", "Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
         },
         {
           "type": "assistant_text",
@@ -29648,8 +29973,11 @@
           "timestamp": "2026-09-27T10:13:41.833Z",
           "outcome": "completed",
           "costUsd": 0.4785,
+          "reportedCostUsd": 0.4785,
+          "costEstimated": false,
           "turns": 8,
           "durationMs": 81367,
+          "reportedDurationMs": 78926,
           "apiDurationMs": 63466,
           "stopReason": "end_turn",
           "permissionDenials": []
@@ -29766,6 +30094,7 @@
         },
         "costUsd": 0.5388,
         "turns": 8,
+        "subagentTurns": 0,
         "durationMs": 81796,
         "apiDurationMs": 63801,
         "toolCalls": {
@@ -29790,7 +30119,7 @@
           "timestamp": "2026-09-27T10:13:48.362Z",
           "model": "claude-sonnet-5-20260801",
           "claudeCodeVersion": "2.1.283",
-          "tools": ["Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
+          "tools": ["Agent", "Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
         },
         {
           "type": "assistant_text",
@@ -30028,8 +30357,11 @@
           "timestamp": "2026-09-27T10:15:10.158Z",
           "outcome": "completed",
           "costUsd": 0.5388,
+          "reportedCostUsd": 0.5388,
+          "costEstimated": false,
           "turns": 8,
           "durationMs": 81796,
+          "reportedDurationMs": 79342,
           "apiDurationMs": 63801,
           "stopReason": "end_turn",
           "permissionDenials": []
@@ -30146,6 +30478,7 @@
         },
         "costUsd": 0.501,
         "turns": 11,
+        "subagentTurns": 0,
         "durationMs": 104106,
         "apiDurationMs": 81203,
         "toolCalls": {
@@ -30170,7 +30503,7 @@
           "timestamp": "2026-09-27T10:14:25.078Z",
           "model": "claude-sonnet-5-20260801",
           "claudeCodeVersion": "2.1.283",
-          "tools": ["Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
+          "tools": ["Agent", "Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
         },
         {
           "type": "assistant_text",
@@ -30480,8 +30813,11 @@
           "timestamp": "2026-09-27T10:16:09.184Z",
           "outcome": "completed",
           "costUsd": 0.501,
+          "reportedCostUsd": 0.501,
+          "costEstimated": false,
           "turns": 11,
           "durationMs": 104106,
+          "reportedDurationMs": 100983,
           "apiDurationMs": 81203,
           "stopReason": "end_turn",
           "permissionDenials": []
@@ -30598,6 +30934,7 @@
         },
         "costUsd": 0.5026,
         "turns": 10,
+        "subagentTurns": 0,
         "durationMs": 84989,
         "apiDurationMs": 66291,
         "toolCalls": {
@@ -30622,7 +30959,7 @@
           "timestamp": "2026-09-27T10:15:43.971Z",
           "model": "claude-sonnet-5-20260801",
           "claudeCodeVersion": "2.1.283",
-          "tools": ["Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
+          "tools": ["Agent", "Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
         },
         {
           "type": "assistant_text",
@@ -30908,8 +31245,11 @@
           "timestamp": "2026-09-27T10:17:08.960Z",
           "outcome": "completed",
           "costUsd": 0.5026,
+          "reportedCostUsd": 0.5026,
+          "costEstimated": false,
           "turns": 10,
           "durationMs": 84989,
+          "reportedDurationMs": 82439,
           "apiDurationMs": 66291,
           "stopReason": "end_turn",
           "permissionDenials": []
@@ -31028,6 +31368,7 @@
         },
         "costUsd": 0.397,
         "turns": 7,
+        "subagentTurns": 0,
         "durationMs": 75899,
         "apiDurationMs": 59201,
         "toolCalls": {
@@ -31052,7 +31393,7 @@
           "timestamp": "2026-09-27T10:16:25.577Z",
           "model": "claude-sonnet-5-20260801",
           "claudeCodeVersion": "2.1.283",
-          "tools": ["Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
+          "tools": ["Agent", "Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
         },
         {
           "type": "assistant_text",
@@ -31264,8 +31605,11 @@
           "timestamp": "2026-09-27T10:17:41.476Z",
           "outcome": "completed",
           "costUsd": 0.397,
+          "reportedCostUsd": 0.397,
+          "costEstimated": false,
           "turns": 7,
           "durationMs": 75899,
+          "reportedDurationMs": 73622,
           "apiDurationMs": 59201,
           "stopReason": "end_turn",
           "permissionDenials": []
@@ -31416,6 +31760,7 @@
         },
         "costUsd": 0.3693,
         "turns": 9,
+        "subagentTurns": 0,
         "durationMs": 57861,
         "apiDurationMs": 45132,
         "toolCalls": {
@@ -31440,7 +31785,7 @@
           "timestamp": "2026-09-27T10:17:25.582Z",
           "model": "claude-sonnet-5-20260801",
           "claudeCodeVersion": "2.1.283",
-          "tools": ["Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
+          "tools": ["Agent", "Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
         },
         {
           "type": "assistant_text",
@@ -31702,8 +32047,11 @@
           "timestamp": "2026-09-27T10:18:23.443Z",
           "outcome": "completed",
           "costUsd": 0.3693,
+          "reportedCostUsd": 0.3693,
+          "costEstimated": false,
           "turns": 9,
           "durationMs": 57861,
+          "reportedDurationMs": 56125,
           "apiDurationMs": 45132,
           "stopReason": "end_turn",
           "permissionDenials": []
@@ -31854,6 +32202,7 @@
         },
         "costUsd": 0.4131,
         "turns": 12,
+        "subagentTurns": 0,
         "durationMs": 75435,
         "apiDurationMs": 58839,
         "toolCalls": {
@@ -31878,7 +32227,7 @@
           "timestamp": "2026-09-27T10:18:22.959Z",
           "model": "claude-sonnet-5-20260801",
           "claudeCodeVersion": "2.1.283",
-          "tools": ["Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
+          "tools": ["Agent", "Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
         },
         {
           "type": "assistant_text",
@@ -32215,8 +32564,11 @@
           "timestamp": "2026-09-27T10:19:38.394Z",
           "outcome": "completed",
           "costUsd": 0.4131,
+          "reportedCostUsd": 0.4131,
+          "costEstimated": false,
           "turns": 12,
           "durationMs": 75435,
+          "reportedDurationMs": 73172,
           "apiDurationMs": 58839,
           "stopReason": "end_turn",
           "permissionDenials": []
@@ -32367,6 +32719,7 @@
         },
         "costUsd": 0.3557,
         "turns": 11,
+        "subagentTurns": 0,
         "durationMs": 60304,
         "apiDurationMs": 47037,
         "toolCalls": {
@@ -32391,7 +32744,7 @@
           "timestamp": "2026-09-27T10:19:09.539Z",
           "model": "claude-sonnet-5-20260801",
           "claudeCodeVersion": "2.1.283",
-          "tools": ["Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
+          "tools": ["Agent", "Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
         },
         {
           "type": "assistant_text",
@@ -32700,8 +33053,11 @@
           "timestamp": "2026-09-27T10:20:09.843Z",
           "outcome": "completed",
           "costUsd": 0.3557,
+          "reportedCostUsd": 0.3557,
+          "costEstimated": false,
           "turns": 11,
           "durationMs": 60304,
+          "reportedDurationMs": 58495,
           "apiDurationMs": 47037,
           "stopReason": "end_turn",
           "permissionDenials": []
@@ -32852,6 +33208,7 @@
         },
         "costUsd": 0.3567,
         "turns": 13,
+        "subagentTurns": 0,
         "durationMs": 86840,
         "apiDurationMs": 67735,
         "toolCalls": {
@@ -32876,7 +33233,7 @@
           "timestamp": "2026-09-27T10:20:02.505Z",
           "model": "claude-sonnet-5-20260801",
           "claudeCodeVersion": "2.1.283",
-          "tools": ["Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
+          "tools": ["Agent", "Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
         },
         {
           "type": "assistant_text",
@@ -33237,8 +33594,11 @@
           "timestamp": "2026-09-27T10:21:29.345Z",
           "outcome": "completed",
           "costUsd": 0.3567,
+          "reportedCostUsd": 0.3567,
+          "costEstimated": false,
           "turns": 13,
           "durationMs": 86840,
+          "reportedDurationMs": 84235,
           "apiDurationMs": 67735,
           "stopReason": "end_turn",
           "permissionDenials": []
@@ -33389,6 +33749,7 @@
         },
         "costUsd": 0.5525,
         "turns": 16,
+        "subagentTurns": 0,
         "durationMs": 90728,
         "apiDurationMs": 70768,
         "toolCalls": {
@@ -33413,7 +33774,7 @@
           "timestamp": "2026-09-27T10:21:06.712Z",
           "model": "claude-sonnet-5-20260801",
           "claudeCodeVersion": "2.1.283",
-          "tools": ["Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
+          "tools": ["Agent", "Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
         },
         {
           "type": "assistant_text",
@@ -33846,8 +34207,11 @@
           "timestamp": "2026-09-27T10:22:37.440Z",
           "outcome": "completed",
           "costUsd": 0.5525,
+          "reportedCostUsd": 0.5525,
+          "costEstimated": false,
           "turns": 16,
           "durationMs": 90728,
+          "reportedDurationMs": 88006,
           "apiDurationMs": 70768,
           "stopReason": "end_turn",
           "permissionDenials": []
@@ -33998,6 +34362,7 @@
         },
         "costUsd": 0.5681,
         "turns": 10,
+        "subagentTurns": 0,
         "durationMs": 95179,
         "apiDurationMs": 74240,
         "toolCalls": {
@@ -34022,7 +34387,7 @@
           "timestamp": "2026-09-27T10:21:50.764Z",
           "model": "claude-sonnet-5-20260801",
           "claudeCodeVersion": "2.1.283",
-          "tools": ["Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
+          "tools": ["Agent", "Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
         },
         {
           "type": "assistant_text",
@@ -34308,8 +34673,11 @@
           "timestamp": "2026-09-27T10:23:25.943Z",
           "outcome": "completed",
           "costUsd": 0.5681,
+          "reportedCostUsd": 0.5681,
+          "costEstimated": false,
           "turns": 10,
           "durationMs": 95179,
+          "reportedDurationMs": 92324,
           "apiDurationMs": 74240,
           "stopReason": "end_turn",
           "permissionDenials": []
@@ -34460,6 +34828,7 @@
         },
         "costUsd": 0.5655,
         "turns": 17,
+        "subagentTurns": 0,
         "durationMs": 98684,
         "apiDurationMs": 76974,
         "toolCalls": {
@@ -34484,7 +34853,7 @@
           "timestamp": "2026-09-27T10:23:19.453Z",
           "model": "claude-sonnet-5-20260801",
           "claudeCodeVersion": "2.1.283",
-          "tools": ["Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
+          "tools": ["Agent", "Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
         },
         {
           "type": "assistant_text",
@@ -34942,8 +35311,11 @@
           "timestamp": "2026-09-27T10:24:58.137Z",
           "outcome": "completed",
           "costUsd": 0.5655,
+          "reportedCostUsd": 0.5655,
+          "costEstimated": false,
           "turns": 17,
           "durationMs": 98684,
+          "reportedDurationMs": 95723,
           "apiDurationMs": 76974,
           "stopReason": "end_turn",
           "permissionDenials": []
@@ -35094,6 +35466,7 @@
         },
         "costUsd": 0.5725,
         "turns": 15,
+        "subagentTurns": 0,
         "durationMs": 96281,
         "apiDurationMs": 75099,
         "toolCalls": {
@@ -35118,7 +35491,7 @@
           "timestamp": "2026-09-27T10:24:31.079Z",
           "model": "claude-sonnet-5-20260801",
           "claudeCodeVersion": "2.1.283",
-          "tools": ["Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
+          "tools": ["Agent", "Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
         },
         {
           "type": "assistant_text",
@@ -35526,8 +35899,11 @@
           "timestamp": "2026-09-27T10:26:07.360Z",
           "outcome": "completed",
           "costUsd": 0.5725,
+          "reportedCostUsd": 0.5725,
+          "costEstimated": false,
           "turns": 15,
           "durationMs": 96281,
+          "reportedDurationMs": 93393,
           "apiDurationMs": 75099,
           "stopReason": "end_turn",
           "permissionDenials": []
@@ -35678,6 +36054,7 @@
         },
         "costUsd": 0.5578,
         "turns": 7,
+        "subagentTurns": 0,
         "durationMs": 105089,
         "apiDurationMs": 81969,
         "toolCalls": {
@@ -35702,7 +36079,7 @@
           "timestamp": "2026-09-27T10:25:13.533Z",
           "model": "claude-sonnet-5-20260801",
           "claudeCodeVersion": "2.1.283",
-          "tools": ["Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
+          "tools": ["Agent", "Bash", "Edit", "Glob", "Grep", "Read", "Write", "TodoWrite"]
         },
         {
           "type": "assistant_text",
@@ -35925,8 +36302,11 @@
           "timestamp": "2026-09-27T10:26:58.622Z",
           "outcome": "stopped_by_permission_denial",
           "costUsd": 0.5578,
+          "reportedCostUsd": 0.5578,
+          "costEstimated": false,
           "turns": 7,
           "durationMs": 105089,
+          "reportedDurationMs": 101936,
           "apiDurationMs": 81969,
           "stopReason": "permission_denied",
           "permissionDenials": [
@@ -36184,18 +36564,18 @@
         },
         {
           "metric": "tokensIn",
-          "difference": 15.31,
-          "range": [-11.28, 50.279],
+          "difference": 16.065,
+          "range": [-11.116, 50.373],
           "verdict": "no_evidence",
           "margin": 10,
           "taskCount": 4,
           "runCount": 40,
-          "runsNeeded": 21
+          "runsNeeded": 19
         },
         {
           "metric": "tokensOut",
-          "difference": 69.498,
-          "range": [27.469, 111.899],
+          "difference": 70.148,
+          "range": [28.421, 113.73],
           "verdict": "harms",
           "margin": 10,
           "taskCount": 4,
@@ -36203,8 +36583,8 @@
         },
         {
           "metric": "cacheRead",
-          "difference": 19.199,
-          "range": [-4.19, 46.419],
+          "difference": 19.732,
+          "range": [-4.139, 48.394],
           "verdict": "no_evidence",
           "margin": 10,
           "taskCount": 4,
@@ -36213,8 +36593,8 @@
         },
         {
           "metric": "cacheWrite",
-          "difference": 1.268,
-          "range": [0.33, 2.258],
+          "difference": 2.117,
+          "range": [0.36, 5.408],
           "verdict": "placebo",
           "margin": 10,
           "taskCount": 4,
@@ -36303,10 +36683,10 @@
       "means": {
         "passRate": 1,
         "costUsd": 0.457,
-        "tokensIn": 30900.8,
-        "tokensOut": 6743.4,
-        "cacheRead": 255759.4,
-        "cacheWrite": 16261.8,
+        "tokensIn": 31680.8,
+        "tokensOut": 6835.4,
+        "cacheRead": 259939.4,
+        "cacheWrite": 16801.8,
         "turns": 11.4,
         "durationMs": 106117.4,
         "checklist": 2.8,

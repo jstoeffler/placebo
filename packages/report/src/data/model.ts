@@ -9,8 +9,10 @@ import {
   type Results,
   type Review,
   type Run,
+  type RunnerEvent,
   type TaskSummary,
 } from '@placebo-eval/core/results';
+import { formatCurrency } from '@placebo-eval/core/format';
 
 /** Metrics in card order: pass rate and cost first, then the rest (brief §10). */
 export const METRIC_ORDER = Object.keys(METRICS) as Metric[];
@@ -104,4 +106,16 @@ export function runOrdinal(run: Run, runs: readonly Run[]): number {
     (other) => other.taskId === run.taskId && armName(other.arm) === armName(run.arm),
   );
   return siblings.indexOf(run) + 1;
+}
+
+type ResultEvent = Extract<RunnerEvent, { type: 'result' }>;
+
+/** The run's `result` event, if its stream has one. */
+export function resultEventOf(run: Run): ResultEvent | undefined {
+  return run.events.findLast((event): event is ResultEvent => event.type === 'result');
+}
+
+/** A cost, prefixed with "≈" when part of it is estimated. */
+export function costLabel(costUsd: number, estimated: boolean | undefined): string {
+  return `${estimated === true ? '≈ ' : ''}${formatCurrency(costUsd)}`;
 }
