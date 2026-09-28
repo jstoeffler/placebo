@@ -1,6 +1,5 @@
 import { randomUUID } from 'node:crypto';
 import {
-  copyFile,
   cp,
   mkdir,
   mkdtemp,
@@ -215,17 +214,15 @@ export class LocalExecutor implements Executor {
   async computeChange(runFolder: RunFolder): Promise<Change> {
     const cwd = runFolder.path;
     const base = await this.baseCommit(runFolder);
-    // A private copy of the index: `git add -A` includes untracked files without touching the
-    // index the agent left, so `git status` reads the same before and after.
+    // A private index: `git add -A` includes untracked files without touching the index the
+    // agent left, so `git status` reads the same before and after. It starts from the base tree
+    // with no cached file stats, so every file is hashed: a stat cache copied from the run
+    // folder's index can call a same-size rewrite in the same timestamp tick unchanged.
     const scratch = await mkdtemp(join(tmpdir(), 'placebo-index-'));
     try {
       const index = join(scratch, 'index');
-      const gitIndex = resolve(
-        cwd,
-        (await this.git(cwd, ['rev-parse', '--git-path', 'index'])).trim(),
-      );
-      if (await exists(gitIndex)) await copyFile(gitIndex, index);
       const env = { GIT_INDEX_FILE: index };
+      await this.git(cwd, ['read-tree', base], { env });
       await this.git(cwd, ['add', '-A'], { env });
       const diff = await this.git(
         cwd,
