@@ -1161,6 +1161,10 @@ select {
 
 /* Agreement ----------------------------------------------------------------------------------- */
 
+.agreement h2 {
+  scroll-margin-top: 5rem;
+}
+
 .agreement > .quiet {
   max-width: var(--measure);
 }
@@ -1187,10 +1191,10 @@ select {
 
 /* One square per answer compared, filled when the two sides agreed: counts stay countable. */
 .marks {
-  display: inline-grid;
-  grid-auto-flow: column;
-  grid-template-rows: repeat(2, 0.5rem);
+  display: inline-flex;
+  flex-wrap: wrap;
   gap: 2px;
+  max-width: 6.5rem;
 }
 
 .mark {
@@ -1208,6 +1212,7 @@ select {
 /* Review mode --------------------------------------------------------------------------------- */
 
 .review-bar {
+  margin-left: auto;
   display: flex;
   align-items: center;
   gap: 1.5rem;
