@@ -1,6 +1,6 @@
 # Measurement: what Claude Code reports, and what Placebo does with it
 
-Verified on 2026-09-28 against Claude Code 2.1.283 and `@anthropic-ai/claude-agent-sdk` 0.3.283, from three sources: the SDK's published type definitions (`sdk.d.ts`, `sdk-tools.d.ts`), the current Agent SDK and Claude Code documentation (code.claude.com, through Context7), and real runs on `claude-haiku-4-5-20251001` in a scratch folder with the options the SDK runner uses (project settings only, strict MCP config, sandbox on, permissions bypassed, partial messages on). Ten real runs, eight through `query()` and one through `claude -p --output-format stream-json`, cost $0.36 in all. The recordings that tests replay are in `packages/cli/src/adapters/*/fixtures/`.
+Verified on 2026-09-28 against Claude Code 2.1.283 and `@anthropic-ai/claude-agent-sdk` 0.3.283, from three sources: the SDK's published type definitions (`sdk.d.ts`, `sdk-tools.d.ts`), the current Agent SDK and Claude Code documentation (code.claude.com, through Context7), and real runs on `claude-haiku-4-5-20251001` in a scratch folder with the options the SDK runner uses (project settings only, strict MCP config, sandbox on, permissions bypassed, partial messages on). Eight exploratory runs (seven through `query()`, one through `claude -p --output-format stream-json`) cost $0.36; four recordings of a synchronous and a background subagent through both runners, made by `pnpm --filter placebo-eval smoke --record --scenario=sync-subagent,background-subagent`, cost $0.23 and are the fixtures tests replay, in `packages/cli/src/adapters/*/fixtures/`.
 
 ## Why this matters
 
@@ -56,3 +56,14 @@ One rule: every unit of work the agent causes is measured, or it cannot happen.
 - Work that outlives the Claude Code process: none is possible with background execution off and the tools above disallowed; with `background_work: true`, a background task killed at exit leaves partial edits whose cost is known only up to the last streamed turn.
 - Per-subagent output tokens: only the total over the run is exact (through the remainder), not its split between subagents.
 - Cost of usage with no result at all (a crash before the first `result`): no rates exist to price it, so it stays zero, as before.
+
+## A real run, before and after
+
+The dogfood suite's `single-comparison` task, one run per arm, Sonnet 5 subject and Opus 5.5 judge, SDK runner, on 2026-09-28 ($0.82 in all). The subject tool list came out as `Task`, `Bash`, `Edit`, `NotebookEdit`, `Read`, `ReportFindings`, `Skill`, `TaskStop`, `ToolSearch`, `WebFetch`, `WebSearch`, `Write`. Neither agent started a subagent, so the difference is the helper calls and the wall clock; "before" is what Placebo recorded from the same stream before this change.
+
+| Arm | Turns | Tool calls | Tokens in | Tokens out | Cost | Duration (before → now) |
+| --- | --- | --- | --- | --- | --- | --- |
+| control | 19 | 18 | 38 → 1,097 | 6,067 → 6,084 | $0.394 | 2 m 13 s → 2 m 15 s |
+| none | 16 | 15 | 32 → 1,091 | 4,667 → 4,681 | $0.310 | 1 m 15 s → 1 m 16 s |
+
+Cache reads and writes did not change. Input tokens were understated about thirty times: almost all uncached input of a run is Claude Code's helper calls, which only `modelUsage` counts.
