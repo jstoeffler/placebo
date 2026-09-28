@@ -90,8 +90,15 @@ function meanOrUndefined(values: readonly number[]): number | undefined {
   return values.length === 0 ? undefined : mean(values);
 }
 
-/** Arithmetic mean; `NaN` for an empty list, so callers check the length first. */
+/**
+ * Arithmetic mean; `NaN` for an empty list, so callers check the length first. A list of one
+ * repeated value has exactly that value as its mean: summing can drift by a rounding error
+ * (three runs of 0.7 sum to 2.0999999999999996), which would turn two arms with the same value
+ * but different run counts into a tiny nonzero difference.
+ */
 export function mean(values: readonly number[]): number {
+  const [first] = values;
+  if (values.every((value) => value === first)) return first ?? Number.NaN;
   let sum = 0;
   for (const value of values) sum += value;
   return sum / values.length;

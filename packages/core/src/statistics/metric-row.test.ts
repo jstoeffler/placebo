@@ -47,6 +47,47 @@ describe('computeMetricRow: known scenarios', () => {
     expect(r.runsNeeded).toBeUndefined();
   });
 
+  it('marks a row identical when every counted run gave the same value in both arms', () => {
+    expect(row('checklist', tasks(2, [3, 3, 3], [3, 3, 3]))).toEqual({
+      metric: 'checklist',
+      difference: 0,
+      range: [0, 0],
+      verdict: 'no_evidence',
+      margin: null,
+      taskCount: 2,
+      runCount: 12,
+      identical: true,
+    });
+    // A value per task is enough; tasks may differ from each other.
+    expect(row('turns', [task('a', [4, 4], [4, 4]), task('b', [9, 9], [9, 9])]).identical).toBe(
+      true,
+    );
+    // The verdict stays placebo when the metric has a margin.
+    expect(row('passRate', tasks(3, [1, 1], [1, 1]))).toMatchObject({
+      verdict: 'placebo',
+      identical: true,
+    });
+  });
+
+  it('marks a row identical even when the arms have different run counts', () => {
+    // Three runs of 0.7 sum to 2.0999999999999996: the mean must still be exactly 0.7.
+    const r = row('costUsd', [task('a', [0.7, 0.7, 0.7], [0.7, 0.7])]);
+    expect(r).toMatchObject({ difference: 0, range: [0, 0], verdict: 'placebo', identical: true });
+  });
+
+  it('does not mark identical a row with spread, a nonzero difference or no task', () => {
+    expect(row('turns', tasks(3, [4, 5], [4, 5])).identical).toBeUndefined();
+    expect(row('turns', tasks(3, [4, 4], [5, 5])).identical).toBeUndefined();
+    expect(row('turns', [task('thin', [4], [4])]).identical).toBeUndefined();
+    expect(row('turns', [task('thin', [4], [4])])).toMatchObject({ taskCount: 0, runsNeeded: 2 });
+  });
+
+  it('counts only tasks with enough runs toward identical', () => {
+    const r = row('turns', [task('a', [4, 4], [4, 4]), task('thin', [1], [7])]);
+    expect(r).toMatchObject({ identical: true, taskCount: 1 });
+    expect(r.excludedTasks).toEqual([{ taskId: 'thin', reason: 'too_few_runs' }]);
+  });
+
   it('a clearly better pass rate is helps, with a positive difference in pts', () => {
     const r = row('passRate', tasks(5, [0, 0, 1, 0, 0], [1, 1, 1, 1, 0]));
     expect(r.difference).toBeCloseTo(60);

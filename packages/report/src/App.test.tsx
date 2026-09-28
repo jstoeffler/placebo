@@ -115,6 +115,33 @@ describe('verdict card', () => {
       '(more than 1000 runs/task)left out: fix-refund-rounding (fewer than 2 runs)',
     ]);
   });
+
+  it('says identical in every run instead of a runs-needed estimate on an identical row', () => {
+    const data = fixture('rich');
+    const [card] = data.verdictCards;
+    if (card === undefined) throw new Error('no card');
+    const rows = card.rows.map((row) =>
+      row.metric === 'turns'
+        ? {
+            ...row,
+            difference: 0,
+            range: [0, 0] as [number, number],
+            runsNeeded: undefined,
+            identical: true as const,
+          }
+        : row,
+    );
+    const changed = { ...data, verdictCards: [{ ...card, rows }] };
+    render(<App loaded={loadResults(JSON.stringify(changed))} />);
+    const region = screen.getByRole('region', { name: /^none vs control/ });
+    expect(rowTexts(region).find(([label]) => label === 'turns')).toEqual([
+      'turns',
+      '0',
+      '[0, 0]',
+      'no evidence',
+      '(identical in every run)',
+    ]);
+  });
 });
 
 describe('warnings and pins', () => {

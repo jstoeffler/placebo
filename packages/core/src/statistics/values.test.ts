@@ -6,7 +6,19 @@ import {
   makeRun,
   sampleGrades,
 } from '../testing/fixtures.js';
-import { metricValue } from './values.js';
+import { mean, metricValue } from './values.js';
+
+describe('mean', () => {
+  it('averages the values', () => {
+    expect(mean([1, 2, 6])).toBe(3);
+    expect(mean([])).toBeNaN();
+  });
+
+  it('gives exactly the value of a list of one repeated value, without rounding drift', () => {
+    expect(0.7 + 0.7 + 0.7).not.toBe(2.1);
+    expect(mean([0.7, 0.7, 0.7])).toBe(0.7);
+  });
+});
 
 const review = {
   grader: { type: 'review', index: null },

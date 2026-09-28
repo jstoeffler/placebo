@@ -130,6 +130,30 @@ describe('renderCard', () => {
     );
   });
 
+  it('says identical in every run instead of a runs-needed estimate on an identical row', () => {
+    const data = results({
+      verdictCards: [
+        {
+          variant: 'none',
+          rows: [
+            { ...row('checklist', 0, [0, 0], 'no_evidence'), identical: true },
+            { ...row('passRate', 0, [0, 0], 'placebo'), margin: 5, identical: true },
+          ],
+        },
+      ],
+    });
+    const card = data.verdictCards[0];
+    if (card === undefined) throw new Error('no card');
+    expect(renderCard(card, data, plain)).toBe(
+      [
+        'none vs control            5 runs × 3 tasks    model claude-sonnet-5    claude code 2.1.283',
+        '  pass rate     0 pts     [0, 0]         placebo',
+        '  checklist     0         [0, 0]         no evidence   (identical in every run)',
+        '',
+      ].join('\n'),
+    );
+  });
+
   it('colours the verdict word only', () => {
     const colors = pc.createColors(true);
     const data = results({

@@ -95,6 +95,11 @@ export const MetricRow = z
     runCount: z.int().nonnegative(),
     /** Tasks with values that this row leaves out, with the reason; absent when none. */
     excludedTasks: z.array(ExcludedTask).optional(),
+    /**
+     * Set when every counted run gave the same value in both arms, task by task: the difference
+     * is 0 and the range [0, 0]. More runs would not change a thing, so no `runsNeeded`.
+     */
+    identical: z.literal(true).optional(),
   })
   .refine(({ range: [lo, hi] }) => lo <= hi, {
     error: 'range must be [low, high]',
@@ -103,5 +108,19 @@ export const MetricRow = z
   .refine((row) => row.runsNeeded === undefined || row.verdict === 'no_evidence', {
     error: 'runsNeeded is only set on no_evidence rows',
     path: ['runsNeeded'],
-  });
+  })
+  .refine(
+    (row) =>
+      row.identical === undefined ||
+      (row.taskCount > 0 &&
+        row.difference === 0 &&
+        row.range[0] === 0 &&
+        row.range[1] === 0 &&
+        row.runsNeeded === undefined),
+    {
+      error:
+        'identical is only set on rows with tasks, a difference of 0, a range of [0, 0] and no runsNeeded',
+      path: ['identical'],
+    },
+  );
 export type MetricRow = z.infer<typeof MetricRow>;

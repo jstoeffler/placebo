@@ -55,12 +55,15 @@ export function formatVerdict(verdict: Verdict): string {
 
 /**
  * The runs-needed note of a `no_evidence` row: `12` or `more than 1000` (runs per task);
- * `undefined` on other rows and on rows with no task.
+ * `undefined` on other rows, on rows with no task and on `identical` rows.
  */
 export function formatRunsNeeded(
-  row: Pick<MetricRow, 'verdict' | 'runsNeeded' | 'taskCount'>,
+  row: Pick<MetricRow, 'verdict' | 'runsNeeded' | 'taskCount'> &
+    Partial<Pick<MetricRow, 'identical'>>,
 ): string | undefined {
-  if (row.verdict !== 'no_evidence' || row.taskCount === 0) return undefined;
+  if (row.verdict !== 'no_evidence' || row.taskCount === 0 || row.identical === true) {
+    return undefined;
+  }
   return row.runsNeeded === undefined
     ? `more than ${String(RUNS_NEEDED_CAP)}`
     : String(row.runsNeeded);
@@ -69,11 +72,14 @@ export function formatRunsNeeded(
 /**
  * The runs-needed note of a `no_evidence` row as the card prints it, `(≈12 runs/task to decide)`
  * or `(more than 1000 runs/task)`. A row with no task left because tasks had too few runs says
- * `(at least 2 runs/task to compute a range)`. `undefined` on every other row.
+ * `(at least 2 runs/task to compute a range)`; an `identical` row says `(identical in every run)`,
+ * since more runs would change nothing. `undefined` on every other row.
  */
 export function formatRunsNeededNote(
-  row: Pick<MetricRow, 'verdict' | 'runsNeeded' | 'taskCount'>,
+  row: Pick<MetricRow, 'verdict' | 'runsNeeded' | 'taskCount'> &
+    Partial<Pick<MetricRow, 'identical'>>,
 ): string | undefined {
+  if (row.verdict === 'no_evidence' && row.identical === true) return '(identical in every run)';
   if (row.verdict === 'no_evidence' && row.taskCount === 0 && row.runsNeeded !== undefined) {
     return `(at least ${String(row.runsNeeded)} runs/task to compute a range)`;
   }

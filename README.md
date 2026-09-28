@@ -39,7 +39,7 @@ Each line of the card is one metric, the treatment compared with control. The **
 - **placebo**: the whole range sits inside the margin, so any effect is too small to matter.
 - **no evidence**: the range crosses zero and reaches beyond the margin; there are too few runs to say.
 
-"No evidence" is not "placebo": it means "cannot tell yet", not "does nothing". On those lines, **runs needed** (`≈12 runs/task to decide`) estimates how many runs per task would shrink the range enough to reach another verdict. There is never an overall winner: a treatment can help pass rate and harm cost at once, and weighing that is your call.
+"No evidence" is not "placebo": it means "cannot tell yet", not "does nothing". On those lines, **runs needed** (`≈12 runs/task to decide`) estimates how many runs per task would shrink the range enough to reach another verdict; a line where every run of both arms gave the same value says `identical in every run` instead, since more runs would change nothing. There is never an overall winner: a treatment can help pass rate and harm cost at once, and weighing that is your call.
 
 ## Commands
 

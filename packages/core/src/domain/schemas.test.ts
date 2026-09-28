@@ -432,6 +432,26 @@ describe('metrics and verdicts', () => {
     });
   });
 
+  it('accepts identical only on a row with tasks, a zero difference and range, and no runsNeeded', () => {
+    const identical = {
+      ...sampleRow,
+      difference: 0,
+      range: [0, 0],
+      runsNeeded: undefined,
+      identical: true,
+    };
+    expect(MetricRow.parse(identical).identical).toBe(true);
+    const message =
+      'identical: identical is only set on rows with tasks, a difference of 0, a range of [0, 0] and no runsNeeded';
+    expect(issuesOf(MetricRow, { ...identical, range: [0, 1] })).toEqual([message]);
+    expect(issuesOf(MetricRow, { ...identical, difference: 1, range: [1, 1] })).toEqual([message]);
+    expect(issuesOf(MetricRow, { ...identical, runsNeeded: 12 })).toEqual([message]);
+    expect(issuesOf(MetricRow, { ...identical, taskCount: 0 })).toEqual([message]);
+    expect(issuesOf(MetricRow, { ...identical, identical: false })).toEqual([
+      'identical: Invalid input: expected true',
+    ]);
+  });
+
   it('says why each excluded task is left out', () => {
     const excludedTasks = [
       { taskId: 'a', reason: 'too_few_runs' },

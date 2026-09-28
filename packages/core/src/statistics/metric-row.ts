@@ -51,6 +51,10 @@ export interface MetricRowInput {
  *    many runs it has.
  * 4. The range comes from {@link resampleRange}, the verdict from {@link decideVerdict}, and
  *    `runsNeeded` (on `no_evidence` rows only) from {@link estimateRunsNeeded}.
+ * 5. A row with at least one counted task whose range has zero width and whose difference is 0
+ *    is `identical`: every counted run gave the same value in both arms, task by task, so more
+ *    runs would not narrow anything. Its verdict is unchanged (`placebo` with a margin,
+ *    `no_evidence` without) and it has no `runsNeeded`.
  *
  * With no task left, the row is `no_evidence` with `taskCount` 0, difference 0 and range [0, 0];
  * when a task was left out for `too_few_runs`, its `runsNeeded` is `MIN_RUNS_PER_ARM`.
@@ -112,8 +116,9 @@ export function computeMetricRow(input: MetricRowInput): MetricRow {
     task.treatment.length + (reference === undefined ? task.control.length : 0);
   const armCount = reference === undefined ? 2 : 1;
   const runCount = included.reduce((sum, task) => sum + armRuns(task), 0);
+  const identical = range[0] === range[1] && difference === 0;
   const runsNeeded =
-    verdict === 'no_evidence'
+    verdict === 'no_evidence' && !identical
       ? estimateRunsNeeded({
           difference,
           range,
@@ -132,6 +137,7 @@ export function computeMetricRow(input: MetricRowInput): MetricRow {
     taskCount: included.length,
     runCount,
     ...excluded,
+    ...(identical ? { identical: true as const } : {}),
   };
 }
 

@@ -77,6 +77,12 @@ describe('formatRunsNeeded', () => {
     expect(formatRunsNeeded({ verdict: 'helps', taskCount: 3 })).toBeUndefined();
     expect(formatRunsNeeded({ verdict: 'no_evidence', taskCount: 0 })).toBeUndefined();
   });
+
+  it('prints nothing on identical rows, where more runs would change nothing', () => {
+    expect(
+      formatRunsNeeded({ verdict: 'no_evidence', taskCount: 3, identical: true }),
+    ).toBeUndefined();
+  });
 });
 
 describe('formatRunsNeededNote', () => {
@@ -95,6 +101,15 @@ describe('formatRunsNeededNote', () => {
     expect(formatRunsNeededNote({ verdict: 'no_evidence', runsNeeded: 2, taskCount: 0 })).toBe(
       '(at least 2 runs/task to compute a range)',
     );
+  });
+
+  it('says identical in every run instead of a runs-needed estimate on identical rows', () => {
+    expect(formatRunsNeededNote({ verdict: 'no_evidence', taskCount: 3, identical: true })).toBe(
+      '(identical in every run)',
+    );
+    expect(
+      formatRunsNeededNote({ verdict: 'placebo', taskCount: 3, identical: true }),
+    ).toBeUndefined();
   });
 });
 
