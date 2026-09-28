@@ -11,7 +11,7 @@ interface GitOutput {
  * Runs git with the user's configuration neutralised where it changes output: no pager, no
  * colour, standard diff prefixes. Never rejects; the exit code is in the result.
  */
-function git(
+export function git(
   cwd: string,
   args: readonly string[],
   env: Readonly<Record<string, string | undefined>> = process.env,

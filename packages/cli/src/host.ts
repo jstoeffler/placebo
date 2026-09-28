@@ -1,5 +1,6 @@
 import { homedir } from 'node:os';
 import { type Clock, systemClock } from '@placebo-eval/core';
+import type { QueryFunction } from './adapters/sdk-runner/sdk-runner.js';
 
 /** Where the program writes; the real process in `index.ts`, buffers in tests. */
 export interface Io {
@@ -23,6 +24,8 @@ export interface Host {
   readonly exit: (code: number) => void;
   /** The built report template; found next to the cli when absent. */
   readonly reportTemplate?: string;
+  /** How `init` asks Claude Code for model IDs; the Agent SDK when absent. */
+  readonly modelQuery?: QueryFunction;
 }
 
 export function processHost(): Host {

@@ -1,5 +1,6 @@
 import { Command, CommanderError } from 'commander';
 import pc from 'picocolors';
+import { initCommand, type InitFlags } from './commands/init.js';
 import { runCommand, type RunFlags } from './commands/run.js';
 import { EXIT, UsageError } from './errors.js';
 import { type Host, type Io, processHost } from './host.js';
@@ -48,10 +49,10 @@ function createProgram(io: Io, hostOverrides: Partial<Host> = {}): Command {
   program
     .command('init')
     .description('create .placebo/, pin models and commit, generate none.patch, scaffold a task')
-    .action(() => {
-      io.stderr(`${pc.yellow('placebo init: not implemented yet')}\n`);
-      io.setExitCode(NOT_IMPLEMENTED_EXIT_CODE);
-    });
+    .option('--model <id>', 'subject model, full ID (default: ask Claude Code for your default)')
+    .option('--judge-model <id>', 'judge model, full ID (default: ask Claude Code for Opus)')
+    .option('--force', 'write the suite even though .placebo/ exists')
+    .action(action(io, (flags: InitFlags) => initCommand(flags, io, host)));
 
   program
     .command('run')
