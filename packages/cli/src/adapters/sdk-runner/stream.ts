@@ -39,6 +39,12 @@ const AUTH_TEXT =
   /\b(401|403)\b|invalid[ _-]?(x-)?api[ _-]?key|not logged in|authenticat|credit balance|billing|insufficient[ _-]?(quota|credits?|funds|balance)/i;
 const NETWORK_TEXT =
   /ECONNRESET|ECONNREFUSED|ENOTFOUND|ETIMEDOUT|EAI_AGAIN|ENETUNREACH|EHOSTUNREACH|socket hang up|fetch failed|connection error|network error/i;
+/**
+ * Claude Code refusing the request itself before it starts: a usage error from its option
+ * parser, or an output schema it will not accept. No retry can fix these.
+ */
+const INVALID_REQUEST_TEXT =
+  /error: unknown option|error: option .+ argument missing|error: missing required argument|is not a valid JSON Schema|invalid (?:json )?schema|invalid (?:value for )?option|unknown option|unrecognized option/i;
 const SPAWN_TEXT =
   /ENOENT|EACCES|spawn|executable not found|native binary|failed to start|exited with code/i;
 
@@ -71,10 +77,28 @@ export function parseRetryAfterMs(text: string): number | undefined {
   return match[2]?.startsWith('m') === true ? value : value * 1000;
 }
 
-/** Classifies an error thrown by the SDK or by spawning `claude`. */
+/**
+ * `invalid_request` when the text of a process that stopped before its init message says Claude
+ * Code rejected the request's options or its output schema; `undefined` otherwise.
+ */
+export function invalidRequestFrom(text: string, cause?: unknown): RunnerInfraError | undefined {
+  if (!INVALID_REQUEST_TEXT.test(text)) return undefined;
+  return new RunnerInfraError(
+    'invalid_request',
+    text.trim(),
+    cause === undefined ? undefined : { cause },
+  );
+}
+
+/**
+ * Classifies an error thrown by the SDK or by spawning `claude` before the init message: a
+ * rejected request first, then authentication, rate limits and network, then spawn failures.
+ */
 export function classifyThrown(error: unknown): RunnerInfraError {
   if (error instanceof RunnerInfraError) return error;
   const text = error instanceof Error ? `${error.message} ${codeOf(error)}` : String(error);
+  const rejected = invalidRequestFrom(text, error);
+  if (rejected !== undefined) return rejected;
   const infra = infraErrorFrom(text, { cause: error });
   if (infra !== undefined) return infra;
   if (SPAWN_TEXT.test(text))

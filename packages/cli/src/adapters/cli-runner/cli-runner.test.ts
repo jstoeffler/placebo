@@ -265,6 +265,28 @@ describe('CliRunner outcomes and infrastructure errors', () => {
     });
   });
 
+  it.each([
+    "error: unknown option '--include-partial-messages'",
+    "error: option '--json-schema <schema>' argument missing",
+    'Error: --json-schema is not a valid JSON Schema: type must be a string',
+    'Invalid schema: properties.better.enum must be an array',
+  ])('rejects with invalid_request when claude refuses the request: %s', async (stderr) => {
+    const { runner, dir } = setup({ exit: 1, stderr });
+    await expect(
+      runner.run({ ...SUBJECT_REQUEST, cwd: dir }, () => undefined),
+    ).rejects.toMatchObject({
+      name: 'RunnerInfraError',
+      reason: 'invalid_request',
+      message: stderr,
+    });
+  });
+
+  it('records a crash, not a rejected request, when such a text follows the init message', async () => {
+    const { runner, dir } = setup({ stream: started, exit: 1, stderr: 'Invalid schema' });
+    const result = await runner.run({ ...SUBJECT_REQUEST, cwd: dir }, () => undefined);
+    expect(result.result.outcome).toBe('crashed');
+  });
+
   it('rejects with spawn_failed when the executable does not exist', async () => {
     const { runner, dir } = setup({ executable: '/nonexistent/claude' });
     await expect(

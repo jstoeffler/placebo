@@ -317,6 +317,29 @@ describe('runExperiment', () => {
     await expect(h.store.list()).resolves.toEqual([]);
   });
 
+  it('fails at once when Claude Code rejects the request, asking to report it', async () => {
+    const rejected = new RunnerInfraError(
+      'invalid_request',
+      "error: unknown option '--include-partial-messages'",
+    );
+    const plan = (request: RunRequest) =>
+      isSubject(request) ? { infraError: rejected } : defaultPlan(request);
+    const h = setup({ plan, suite: { runs: 1, parallelism: 1 } });
+    const result = await runExperiment(h.input);
+    if (result.ok) throw new Error('expected infra_exhausted');
+    expect(result.error).toMatchObject({
+      type: 'infra_exhausted',
+      completedRuns: 0,
+      reason: 'invalid_request',
+      attempts: 1,
+      message:
+        "Claude Code 2.1.283 rejected the request Placebo built: error: unknown option '--include-partial-messages'. This is a Placebo bug or an incompatibility with this Claude Code version; please report it at https://github.com/jstoeffler/placebo/issues with this message.",
+    });
+    expect(h.sleeps).toEqual([]);
+    expect(h.runner.requests.filter(isSubject)).toHaveLength(1);
+    expect(typesOf(h.events)).not.toContain('run_retried');
+  });
+
   it('fails at once when a judge or a comparison hits an auth error', async () => {
     const auth = new RunnerInfraError('auth', 'credit balance is too low');
     const judgeFails = setup({
