@@ -18,11 +18,16 @@ describe('FakeExecutor', () => {
     const snapshot = await executor.prepareSnapshot({ repo: '.', commit: COMMIT, setup: 'pnpm i' });
     expect(snapshot.commit).toBe(COMMIT);
     expect(snapshot.id).toMatch(new RegExp(`^${COMMIT}-[0-9a-f]{12}$`));
-    expect(await executor.prepareSnapshot({ repo: '.', commit: COMMIT, setup: 'pnpm i' })).toEqual(
-      snapshot,
-    );
+    expect(snapshot.cached).toBe(false);
+    expect(await executor.prepareSnapshot({ repo: '.', commit: COMMIT, setup: 'pnpm i' })).toEqual({
+      ...snapshot,
+      cached: true,
+    });
     const short = await executor.prepareSnapshot({ repo: '.', commit: 'abc1234' });
     expect(short.commit).toMatch(/^[0-9a-f]{40}$/);
+    expect(short.cached).toBe(false);
+    const scripted = new FakeExecutor({ snapshotCached: true });
+    expect((await scripted.prepareSnapshot({ repo: '.', commit: COMMIT })).cached).toBe(true);
 
     const control = await executor.createRunFolder(snapshot);
     const treatment = await executor.createRunFolder(

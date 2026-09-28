@@ -151,6 +151,7 @@ describe('LocalExecutor.prepareSnapshot', () => {
       expect(snapshot.commit).toBe(head);
       expect(snapshot.id).toMatch(new RegExp(`^${head}-[0-9a-f]{12}$`));
       expect(snapshot.path).toBe(join(root, 'snapshots', snapshot.id));
+      expect(snapshot.cached).toBe(false);
 
       const cwd = snapshot.path;
       expect(git(cwd, ['rev-list', '--all', '--count']).trim()).toBe('1');
@@ -255,6 +256,7 @@ describe('LocalExecutor.prepareSnapshot', () => {
     'returns a cached snapshot without running git, and rebuilds an incomplete one',
     async () => {
       const first = await executor().prepareSnapshot({ repo: source, commit: 'trunk' });
+      expect(first.cached).toBe(false);
       const inode = (await stat(join(first.path, '.git'))).ino;
 
       const spy = recordingRunner();
@@ -262,10 +264,14 @@ describe('LocalExecutor.prepareSnapshot', () => {
         repo: source,
         commit: first.commit,
       });
-      expect(cached).toEqual(first);
+      expect(cached).toEqual({ ...first, cached: true });
       expect(spy.calls).toEqual([]);
 
-      await executor({ run: spy.run }).prepareSnapshot({ repo: source, commit: 'trunk' });
+      const byRef = await executor({ run: spy.run }).prepareSnapshot({
+        repo: source,
+        commit: 'trunk',
+      });
+      expect(byRef.cached).toBe(true);
       expect(spy.calls).toHaveLength(1);
       expect(spy.calls[0]).toContain('rev-parse');
       expect((await stat(join(first.path, '.git'))).ino).toBe(inode);
@@ -274,6 +280,7 @@ describe('LocalExecutor.prepareSnapshot', () => {
       await writeFile(join(first.path, 'leftover.txt'), 'half-built');
       const rebuilt = await executor().prepareSnapshot({ repo: source, commit: first.commit });
       expect(rebuilt).toEqual(first);
+      expect(rebuilt.cached).toBe(false);
       expect(await exists(join(first.path, 'leftover.txt'))).toBe(false);
       expect(await exists(join(root, 'snapshots', `${first.id}.json`))).toBe(true);
     },
@@ -302,7 +309,7 @@ describe('LocalExecutor.prepareSnapshot', () => {
       const setup = `echo run >> ${counter} && echo "$CI$FORCE_COLOR$NO_COLOR" > built.txt && mkdir -p node_modules/dep && echo x > node_modules/dep/index.js`;
       const one = await executor().prepareSnapshot({ repo: source, commit: 'trunk', setup });
       const two = await executor().prepareSnapshot({ repo: source, commit: 'trunk', setup });
-      expect(two).toEqual(one);
+      expect(two).toEqual({ ...one, cached: true });
       expect(await readFile(counter, 'utf8')).toBe('run\n');
       expect(await readFile(join(one.path, 'built.txt'), 'utf8')).toBe('101\n');
       expect(git(one.path, ['ls-files'])).toContain('built.txt');
@@ -352,7 +359,7 @@ describe('LocalExecutor.prepareSnapshot', () => {
     await mkdir(join(root, 'snapshots', 'incomplete'));
     expect((await ex.listSnapshots()).map((s) => s.id).sort()).toEqual([a.id, b.id].sort());
     await ex.removeSnapshots([a.id]);
-    expect(await ex.listSnapshots()).toEqual([b]);
+    expect(await ex.listSnapshots()).toEqual([{ ...b, cached: true }]);
     expect(await exists(a.path)).toBe(false);
     await expect(ex.removeSnapshots(['../x'])).rejects.toThrow('invalid snapshot id');
     await ex.removeSnapshots();

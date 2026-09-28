@@ -20,6 +20,11 @@ export interface FakeExecutorOptions {
    * write files. Judge folders are always empty: the fake copies nothing.
    */
   readonly realDirs?: boolean;
+  /**
+   * What `Snapshot.cached` says. By default the fake behaves like a cache: the first preparation
+   * of a snapshot id is not cached, every later one is.
+   */
+  readonly snapshotCached?: boolean;
   /** What `computeChange` returns; an empty change by default. */
   readonly change?: Change | ((runFolder: RunFolder) => Change);
   /**
@@ -62,6 +67,7 @@ export class FakeExecutor implements Executor {
   private readonly options: FakeExecutorOptions;
   private readonly folders: RunFolder[] = [];
   private readonly judgeFolders: RunFolder[] = [];
+  private readonly prepared = new Set<string>();
   private created = 0;
   private judgesCreated = 0;
 
@@ -80,7 +86,9 @@ export class FakeExecutor implements Executor {
       FULL_COMMIT.test(input.commit) ? input.commit : sha256(input.commit).slice(0, 40)
     ) as CommitSha;
     const id = `${commit}-${sha256(input.setup ?? '').slice(0, 12)}`;
-    return Promise.resolve({ id, path: join(this.root, 'snapshots', id), commit });
+    const cached = this.options.snapshotCached ?? this.prepared.has(id);
+    this.prepared.add(id);
+    return Promise.resolve({ id, path: join(this.root, 'snapshots', id), commit, cached });
   }
 
   async createRunFolder(snapshot: Snapshot, patch?: string): Promise<RunFolder> {

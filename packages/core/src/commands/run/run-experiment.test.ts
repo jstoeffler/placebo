@@ -96,6 +96,11 @@ describe('runExperiment', () => {
 
     const types = typesOf(h.events);
     expect(types.slice(0, 3)).toEqual(['message', 'snapshot_ready', 'experiment_started']);
+    expect(h.events[1]).toEqual({
+      type: 'snapshot_ready',
+      snapshotId: expect.any(String) as unknown,
+      cached: false,
+    });
     expect(types.filter((type) => type === 'run_started')).toHaveLength(8);
     expect(types.filter((type) => type === 'grading_started')).toHaveLength(8);
     expect(types.filter((type) => type === 'run_finished')).toHaveLength(8);
@@ -557,6 +562,14 @@ describe('runExperiment selection and pins', () => {
     const result = await runExperiment(h.input);
     expect(result).toEqual({ ok: false, error: { type, completedRuns: 0, totalRuns: 0, message } });
     expect(h.executor.calls).toEqual([]);
+  });
+
+  it('says in snapshot_ready whether the snapshot came from the cache', async () => {
+    const h = setup({ executor: { snapshotCached: true }, suite: { runs: 1 } });
+    expect((await runExperiment(h.input)).ok).toBe(true);
+    expect(h.events.find((event) => event.type === 'snapshot_ready')).toMatchObject({
+      cached: true,
+    });
   });
 
   it('ends with executor_failed when the snapshot cannot be prepared', async () => {

@@ -125,7 +125,7 @@ export async function runExperiment(
   const pinned = await pin(input);
   if (!pinned.ok) return err({ ...pinned.error, ...before });
   const { snapshot, claudeCodeVersion } = pinned.value;
-  reporter.report({ type: 'snapshot_ready', snapshotId: snapshot.id });
+  reporter.report({ type: 'snapshot_ready', snapshotId: snapshot.id, cached: snapshot.cached });
 
   const experiment = Experiment.parse({
     id: experimentIdOf(started, input.seed),

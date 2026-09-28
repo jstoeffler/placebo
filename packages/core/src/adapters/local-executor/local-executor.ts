@@ -151,13 +151,13 @@ export class LocalExecutor implements Executor {
     const setupHash = sha256(input.setup ?? '').slice(0, 12);
     const given = input.commit.toLowerCase();
     if (FULL_COMMIT.test(given)) {
-      const cached = this.snapshotAt(given as CommitSha, setupHash);
+      const cached = this.snapshotAt(given as CommitSha, setupHash, true);
       if (await exists(this.markerPath(cached.id))) return cached;
     }
     const source = await sourceOf(input.repo);
     const commit = await this.resolveCommit(source, input.commit);
-    const snapshot = this.snapshotAt(commit, setupHash);
-    if (await exists(this.markerPath(snapshot.id))) return snapshot;
+    const snapshot = this.snapshotAt(commit, setupHash, false);
+    if (await exists(this.markerPath(snapshot.id))) return { ...snapshot, cached: true };
 
     let pending = this.building.get(snapshot.id);
     if (pending === undefined) {
@@ -339,6 +339,7 @@ export class LocalExecutor implements Executor {
           id,
           path: join(this.snapshotsDir, id),
           commit: marker.commit as CommitSha,
+          cached: true,
         });
       }
     }
@@ -360,9 +361,9 @@ export class LocalExecutor implements Executor {
     }
   }
 
-  private snapshotAt(commit: CommitSha, setupHash: string): Snapshot {
+  private snapshotAt(commit: CommitSha, setupHash: string, cached: boolean): Snapshot {
     const id = `${commit}-${setupHash}`;
-    return { id, path: join(this.snapshotsDir, id), commit };
+    return { id, path: join(this.snapshotsDir, id), commit, cached };
   }
 
   private markerPath(id: string): string {

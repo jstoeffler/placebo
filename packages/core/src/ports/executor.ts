@@ -7,6 +7,8 @@ export interface Snapshot {
   readonly path: string;
   /** The pinned commit resolved to its full id. */
   readonly commit: CommitSha;
+  /** True when `prepareSnapshot` found it in the cache rather than building it. */
+  readonly cached: boolean;
 }
 
 /**
