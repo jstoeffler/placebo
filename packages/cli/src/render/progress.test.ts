@@ -167,6 +167,12 @@ describe('ProgressRenderer, terminal', () => {
     expect(take()).toBe('\x1b[2A\r\x1b[J');
   });
 
+  it('assumes 80 columns when the terminal reports none', () => {
+    const { progress, take } = renderer(true, { columns: 0 });
+    progress.report({ type: 'run_started', runId: RUN, taskId: TASK, arm: NONE });
+    expect(take()).toBe('  refund · none · run 2 · 0.0 s\n0/0 runs · $0.00 so far\n');
+  });
+
   it('redraws elapsed times on a timer while runs are in flight', async () => {
     let out = '';
     const progress = new ProgressRenderer({

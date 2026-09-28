@@ -168,7 +168,9 @@ export class ProgressRenderer implements Reporter {
   #statusLines(): string[] {
     if (this.#active.size === 0) return [];
     const { colors, now } = this.#options;
-    const width = Math.max(20, (this.#options.columns ?? 80) - 1);
+    // Some pseudo-terminals report 0 columns: treat that as unknown.
+    const columns = this.#options.columns ?? 0;
+    const width = Math.max(20, (columns > 0 ? columns : 80) - 1);
     const lines = [...this.#active.values()].map((run) => {
       const state = run.grading ? ' · grading' : '';
       return colors.dim(
