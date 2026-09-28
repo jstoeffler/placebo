@@ -1,4 +1,4 @@
-import type { Grade, GradeDetail, GraderRef } from '../domain/grade.js';
+import type { Grade, GradeDetail, GraderRef, JudgeSpend } from '../domain/grade.js';
 import type { GraderSpec } from '../domain/suite.js';
 
 /** The ref of the grader declared at `index` of a task's `graders`. */
@@ -18,14 +18,15 @@ export function checkGrade(ref: GraderRef, passed: boolean, message: string): Gr
 
 /**
  * A grader that could not produce a score. Scored 0; deterministic ones also fail, judges leave
- * `passed` undefined like every judge grade.
+ * `passed` undefined like every judge grade. `spend` is what a judge spent before failing.
  */
 export function errorGrade(
   ref: GraderRef,
   kind: 'deterministic' | 'judge',
   message: string,
+  spend?: JudgeSpend,
 ): Grade {
-  const detail: GradeDetail = { type: 'error', message };
+  const detail: GradeDetail = { type: 'error', message, ...(spend === undefined ? {} : { spend }) };
   return kind === 'deterministic'
     ? deterministicGrade(ref, false, detail)
     : { grader: ref, kind, score: 0, detail };

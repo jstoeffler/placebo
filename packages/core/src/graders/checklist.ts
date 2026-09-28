@@ -9,15 +9,7 @@ import type { GraderSpec } from '../domain/suite.js';
 import { err, ok } from '../kernel/result.js';
 import type { GradingContext } from './context.js';
 import { errorGrade } from './grades.js';
-import {
-  askJudge,
-  inJudgeFolder,
-  issuesText,
-  type JudgeAnswer,
-  type JudgeValidator,
-  messageOf,
-  spendOf,
-} from './judge.js';
+import { askRepeats, issuesText, type JudgeValidator, messageOf } from './judge.js';
 import {
   AGENTIC_ADDENDUM,
   CHECKLIST_SYSTEM_PROMPT,
@@ -43,7 +35,7 @@ type ChecklistSpec = Extract<GraderSpec, { type: 'checklist' }>;
  * Either folder is removed once the judge finishes, also on failure. No setting sources load.
  *
  * Any repeat failing (no answer, invalid answer, wrong question count) makes the whole grade an
- * error grade scored 0; `RunnerInfraError` propagates.
+ * error grade scored 0 that keeps what the judge spent; `RunnerInfraError` propagates.
  */
 export async function gradeChecklist(
   spec: ChecklistSpec,
@@ -90,25 +82,15 @@ export async function gradeChecklist(
     return ok(parsed.data);
   };
 
-  const given: JudgeAnswer<ChecklistJudgeOutput>[] = [];
-  const asked = await inJudgeFolder(
+  const asked = await askRepeats(
     ctx,
+    query,
     spec.agentic ? ctx.runFolder : undefined,
-    async (folder) => {
-      for (let repeat = 1; repeat <= spec.repeats; repeat++) {
-        const answer = await askJudge(ctx, query, folder, validate);
-        if (!answer.ok) {
-          const which =
-            spec.repeats > 1 ? ` (repeat ${String(repeat)} of ${String(spec.repeats)})` : '';
-          return `${answer.error}${which}`;
-        }
-        given.push(answer.value);
-      }
-      return undefined;
-    },
+    validate,
+    spec.repeats,
   );
-  const failure = asked.ok ? asked.value : asked.error;
-  if (failure !== undefined) return errorGrade(ref, 'judge', failure);
+  if (!asked.ok) return errorGrade(ref, 'judge', asked.error.message, asked.error.spend);
+  const given = asked.value.answers;
 
   const repeats = given.map((answer) => answer.value);
   const raw = given.map((answer) => answer.raw);
@@ -140,7 +122,7 @@ export async function gradeChecklist(
       reasoning,
       raw,
       answers,
-      spend: spendOf(given),
+      spend: asked.value.spend,
     },
   };
 }

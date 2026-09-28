@@ -62,7 +62,15 @@ export const GradeDetail = z.discriminatedUnion('type', [
     spend: JudgeSpend,
   }),
   /** The grader could not produce a score (command failed to spawn, judge answer invalid, ...); scored 0. */
-  z.strictObject({ type: z.literal('error'), message: z.string() }),
+  z.strictObject({
+    type: z.literal('error'),
+    message: z.string(),
+    /**
+     * Judges only: what the judge calls made before the failure cost, the failing call included
+     * when it returned. Absent when no call returned.
+     */
+    spend: JudgeSpend.optional(),
+  }),
   z.strictObject({
     type: z.literal('review'),
     reviewId: ReviewId,

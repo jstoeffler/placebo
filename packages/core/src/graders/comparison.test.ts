@@ -295,6 +295,11 @@ describe('gradeComparisons', () => {
       type: 'error',
       message:
         'judge answer is invalid: better: Invalid option: expected one of "a"|"b" (repeat 2 of 2)',
+      spend: {
+        costUsd: 0,
+        tokens: { input: 200, output: 40, cacheRead: 0, cacheWrite: 0 },
+        calls: 2,
+      },
     });
   });
 
@@ -304,6 +309,11 @@ describe('gradeComparisons', () => {
     expect(only?.grade.detail).toEqual({
       type: 'error',
       message: 'judge returned no structured output',
+      spend: {
+        costUsd: 0,
+        tokens: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
+        calls: 1,
+      },
     });
     expect(executor.openJudgeFolders.size).toBe(0);
   });

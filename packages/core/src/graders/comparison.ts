@@ -13,14 +13,7 @@ import { err, ok } from '../kernel/result.js';
 import type { JudgeContext } from './context.js';
 import { commandEvidence } from './evidence.js';
 import { errorGrade, refOf } from './grades.js';
-import {
-  askJudge,
-  inJudgeFolder,
-  issuesText,
-  type JudgeAnswer,
-  type JudgeValidator,
-  spendOf,
-} from './judge.js';
+import { askRepeats, issuesText, type JudgeValidator } from './judge.js';
 import { COMPARISON_SYSTEM_PROMPT, comparisonPrompt } from './judge-prompts.js';
 
 type ComparisonSpec = Extract<GraderSpec, { type: 'comparison' }>;
@@ -56,7 +49,7 @@ export interface ComparisonGrade {
  * once. The folder is removed once the judge finishes, also on failure.
  *
  * A pairing whose judge fails, or a treatment run with no control run to face, yields an error
- * grade scored 0. `RunnerInfraError` propagates.
+ * grade scored 0, which keeps what the judge spent. `RunnerInfraError` propagates.
  */
 export async function gradeComparisons(input: ComparisonInput): Promise<ComparisonGrade[]> {
   const ofTask = input.runs.filter((run) => run.taskId === input.task.id);
@@ -99,21 +92,9 @@ async function compareOne(
     outputSchema: COMPARISON_JUDGE_OUTPUT_SCHEMA,
   };
 
-  const given: JudgeAnswer<ComparisonJudgeOutput>[] = [];
-  const asked = await inJudgeFolder(input, undefined, async (folder) => {
-    for (let repeat = 1; repeat <= spec.repeats; repeat++) {
-      const answer = await askJudge(input, query, folder, validateComparison);
-      if (!answer.ok) {
-        const which =
-          spec.repeats > 1 ? ` (repeat ${String(repeat)} of ${String(spec.repeats)})` : '';
-        return `${answer.error}${which}`;
-      }
-      given.push(answer.value);
-    }
-    return undefined;
-  });
-  const failure = asked.ok ? asked.value : asked.error;
-  if (failure !== undefined) return errorGrade(ref, 'judge', failure);
+  const asked = await askRepeats(input, query, undefined, validateComparison, spec.repeats);
+  if (!asked.ok) return errorGrade(ref, 'judge', asked.error.message, asked.error.spend);
+  const given = asked.value.answers;
 
   const reasons = given.map((answer) => answer.value.reason);
   const wins = given.filter((answer) => answer.value.better === position).length;
@@ -133,7 +114,7 @@ async function compareOne(
           : reasons.map((r, i) => `${String(i + 1)}: ${r}`).join('\n'),
       model: input.judgeModel,
       raw: given.map((answer) => answer.raw),
-      spend: spendOf(given),
+      spend: asked.value.spend,
     },
   };
 }

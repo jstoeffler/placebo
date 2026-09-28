@@ -18,26 +18,36 @@ export interface JudgeQuery {
   readonly agentic?: boolean;
 }
 
-/** A judge answer that passed validation, with the structured output verbatim and its cost. */
-export interface JudgeAnswer<T> {
-  readonly value: T;
-  readonly raw: unknown;
+/** What one judge call cost. */
+interface JudgeCall {
   readonly costUsd: number;
   readonly tokens: TokenUsage;
 }
 
-/** The spend of a judge grade: the sum over its answers, one call each. */
-export function spendOf(answers: readonly JudgeAnswer<unknown>[]): JudgeSpend {
+/** A judge answer that passed validation, with the structured output verbatim and its cost. */
+interface JudgeAnswer<T> extends JudgeCall {
+  readonly value: T;
+  readonly raw: unknown;
+}
+
+/** A judge call that produced no valid answer; `call` is its cost when the runner returned. */
+interface JudgeFailure {
+  readonly message: string;
+  readonly call?: JudgeCall;
+}
+
+/** The spend of a judge grade: the sum over its calls. */
+function spendOf(calls: readonly JudgeCall[]): JudgeSpend {
   const tokens: TokenUsage = { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 };
   let costUsd = 0;
-  for (const answer of answers) {
-    costUsd += answer.costUsd;
-    tokens.input += answer.tokens.input;
-    tokens.output += answer.tokens.output;
-    tokens.cacheRead += answer.tokens.cacheRead;
-    tokens.cacheWrite += answer.tokens.cacheWrite;
+  for (const call of calls) {
+    costUsd += call.costUsd;
+    tokens.input += call.tokens.input;
+    tokens.output += call.tokens.output;
+    tokens.cacheRead += call.tokens.cacheRead;
+    tokens.cacheWrite += call.tokens.cacheWrite;
   }
-  return { costUsd, tokens, calls: answers.length };
+  return { costUsd, tokens, calls: calls.length };
 }
 
 /** Validates a judge's structured output; the error is a message for the grade detail. */
@@ -81,7 +91,7 @@ function judgeRequest(ctx: JudgeContext, query: JudgeQuery, folder: RunFolder): 
  * removes it afterwards, also when `use` throws. A folder that cannot be created is an error
  * message for the grade detail.
  */
-export async function inJudgeFolder<T>(
+async function inJudgeFolder<T>(
   ctx: JudgeContext,
   source: RunFolder | undefined,
   use: (folder: RunFolder) => Promise<T>,
@@ -100,16 +110,17 @@ export async function inJudgeFolder<T>(
 }
 
 /**
- * Runs one judge query in `folder` and validates its structured output. Returns an error message for
- * anything the judge got wrong (bad outcome, missing or invalid answer) and for a runner that
- * failed for another reason; rethrows `RunnerInfraError` so the caller can retry.
+ * Runs one judge query in `folder` and validates its structured output. Returns a failure for
+ * anything the judge got wrong (bad outcome, missing or invalid answer), with the call's cost,
+ * and for a runner that failed for another reason; rethrows `RunnerInfraError` so the caller can
+ * retry.
  */
-export async function askJudge<T>(
+async function askJudge<T>(
   ctx: JudgeContext,
   query: JudgeQuery,
   folder: RunFolder,
   validate: JudgeValidator<T>,
-): Promise<Result<JudgeAnswer<T>, string>> {
+): Promise<Result<JudgeAnswer<T>, JudgeFailure>> {
   let result: ResultEvent;
   let tokens: TokenUsage;
   try {
@@ -119,16 +130,55 @@ export async function askJudge<T>(
     ));
   } catch (error) {
     if (error instanceof RunnerInfraError) throw error;
-    return err(`judge could not run: ${messageOf(error)}`);
+    return err({ message: `judge could not run: ${messageOf(error)}` });
   }
+  const call: JudgeCall = { costUsd: result.costUsd, tokens };
   if (result.outcome !== 'completed') {
-    return err(`judge run ended with outcome ${result.outcome}`);
+    return err({ message: `judge run ended with outcome ${result.outcome}`, call });
   }
   const raw = result.structuredOutput;
-  if (raw === undefined) return err('judge returned no structured output');
+  if (raw === undefined) return err({ message: 'judge returned no structured output', call });
   const valid = validate(raw);
-  if (!valid.ok) return err(`judge answer is invalid: ${valid.error}`);
-  return ok({ value: valid.value, raw, costUsd: result.costUsd, tokens });
+  if (!valid.ok) return err({ message: `judge answer is invalid: ${valid.error}`, call });
+  return ok({ value: valid.value, raw, ...call });
+}
+
+/** Every repeat's answer and their spend, or why a repeat failed and what was spent until then. */
+type JudgeRepeats<T> = Result<
+  { readonly answers: JudgeAnswer<T>[]; readonly spend: JudgeSpend },
+  { readonly message: string; readonly spend?: JudgeSpend }
+>;
+
+/**
+ * Asks `query` `repeats` times in one judge folder (see `inJudgeFolder`), stopping at the first
+ * repeat that fails. The failure keeps the spend of every call that returned, the failing one
+ * included; `RunnerInfraError` propagates.
+ */
+export async function askRepeats<T>(
+  ctx: JudgeContext,
+  query: JudgeQuery,
+  source: RunFolder | undefined,
+  validate: JudgeValidator<T>,
+  repeats: number,
+): Promise<JudgeRepeats<T>> {
+  const answers: JudgeAnswer<T>[] = [];
+  const calls: JudgeCall[] = [];
+  const asked = await inJudgeFolder(ctx, source, async (folder) => {
+    for (let repeat = 1; repeat <= repeats; repeat++) {
+      const answer = await askJudge(ctx, query, folder, validate);
+      if (!answer.ok) {
+        if (answer.error.call !== undefined) calls.push(answer.error.call);
+        const which = repeats > 1 ? ` (repeat ${String(repeat)} of ${String(repeats)})` : '';
+        return `${answer.error.message}${which}`;
+      }
+      answers.push(answer.value);
+      calls.push(answer.value);
+    }
+    return undefined;
+  });
+  const failure = asked.ok ? asked.value : asked.error;
+  if (failure === undefined) return ok({ answers, spend: spendOf(calls) });
+  return err({ message: failure, ...(calls.length === 0 ? {} : { spend: spendOf(calls) }) });
 }
 
 export function messageOf(error: unknown): string {
