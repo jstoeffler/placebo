@@ -32,12 +32,20 @@ const ZERO_USAGE: TokenUsage = { input: 0, output: 0, cacheRead: 0, cacheWrite: 
 const RATE_LIMIT_ERRORS = new Set(['rate_limit', 'overloaded']);
 const RATE_LIMIT_STATUSES = new Set([429, 529]);
 const RATE_LIMIT_TEXT = /\b(429|529)\b|rate[ _-]?limit|overloaded|too many requests/i;
+/** Assistant errors, HTTP statuses and texts that mean "not logged in, or the account cannot pay". */
+const AUTH_ERRORS = new Set(['authentication_failed', 'billing_error']);
+const AUTH_STATUSES = new Set([401, 403]);
+const AUTH_TEXT =
+  /\b(401|403)\b|invalid[ _-]?(x-)?api[ _-]?key|not logged in|authenticat|credit balance|billing|insufficient[ _-]?(quota|credits?|funds|balance)/i;
 const NETWORK_TEXT =
   /ECONNRESET|ECONNREFUSED|ENOTFOUND|ETIMEDOUT|EAI_AGAIN|ENETUNREACH|EHOSTUNREACH|socket hang up|fetch failed|connection error|network error/i;
 const SPAWN_TEXT =
   /ENOENT|EACCES|spawn|executable not found|native binary|failed to start|exited with code/i;
 
-/** What a thrown error or an error result says about infrastructure, if anything. */
+/**
+ * What a thrown error or an error result says about infrastructure, if anything. Authentication
+ * and billing come first: a 403 about credit must not be retried as if it were a rate limit.
+ */
 export function infraErrorFrom(
   text: string,
   options: { status?: number | null; retryAfterMs?: number; cause?: unknown } = {},
@@ -46,6 +54,8 @@ export function infraErrorFrom(
   const retry = retryAfterMs === undefined ? {} : { retryAfterMs };
   const cause = options.cause === undefined ? {} : { cause: options.cause };
   const status = options.status ?? undefined;
+  if ((status !== undefined && AUTH_STATUSES.has(status)) || AUTH_TEXT.test(text))
+    return new RunnerInfraError('auth', text, cause);
   if ((status !== undefined && RATE_LIMIT_STATUSES.has(status)) || RATE_LIMIT_TEXT.test(text))
     return new RunnerInfraError('rate_limited', text, { ...retry, ...cause });
   if (NETWORK_TEXT.test(text)) return new RunnerInfraError('network', text, cause);
@@ -205,7 +215,8 @@ export class StreamTranslator {
 
   /**
    * Ends the run from its result message. Throws `RunnerInfraError` when the result says the
-   * API was rate limited or unreachable; otherwise the result is the run's outcome.
+   * API was rate limited or unreachable, or refused the credentials or the account's billing;
+   * otherwise the result is the run's outcome.
    */
   finish(options: { timedOut: boolean }): RunnerResult {
     const raw = this.#rawResult;
@@ -280,6 +291,9 @@ export class StreamTranslator {
     const text = [raw.result ?? '', ...(raw.errors ?? [])].join(' ').trim();
     const retry =
       this.#lastRetryDelayMs === undefined ? {} : { retryAfterMs: this.#lastRetryDelayMs };
+    if (this.#lastAssistantError !== undefined && AUTH_ERRORS.has(this.#lastAssistantError)) {
+      throw new RunnerInfraError('auth', text || this.#lastAssistantError);
+    }
     if (this.#lastAssistantError !== undefined && RATE_LIMIT_ERRORS.has(this.#lastAssistantError)) {
       throw new RunnerInfraError('rate_limited', text || this.#lastAssistantError, retry);
     }

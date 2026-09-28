@@ -282,6 +282,67 @@ describe('runExperiment', () => {
     });
   });
 
+  it('fails at once on an auth error: no retry, and a message saying how to log in', async () => {
+    const auth = new RunnerInfraError('auth', 'API Error: 401 Invalid API key · Please run /login');
+    const plan = (request: RunRequest) =>
+      isSubject(request) ? { infraError: auth } : defaultPlan(request);
+    const h = setup({ plan, suite: { runs: 1, parallelism: 1 } });
+    const result = await runExperiment(h.input);
+    if (result.ok) throw new Error('expected infra_exhausted');
+    const firstRun = h.events.find((event) => event.type === 'run_started');
+    expect(result.error).toEqual({
+      type: 'infra_exhausted',
+      experimentId: expect.any(String) as unknown,
+      completedRuns: 0,
+      totalRuns: 4,
+      runId: firstRun?.type === 'run_started' ? firstRun.runId : undefined,
+      reason: 'auth',
+      attempts: 1,
+      message:
+        'Claude Code could not authenticate or bill this account: API Error: 401 Invalid API key · Please run /login. Run `claude` once interactively and log in, or set ANTHROPIC_API_KEY, then run the experiment again.',
+    });
+    expect(h.sleeps).toEqual([]);
+    expect(h.runner.requests.filter(isSubject)).toHaveLength(1);
+    expect(typesOf(h.events)).not.toContain('run_retried');
+    await expect(h.store.list()).resolves.toEqual([]);
+  });
+
+  it('fails at once when a judge or a comparison hits an auth error', async () => {
+    const auth = new RunnerInfraError('auth', 'credit balance is too low');
+    const judgeFails = setup({
+      plan: (request) =>
+        request.prompt.includes('Rounds half up?') ? { infraError: auth } : defaultPlan(request),
+      suite: { runs: 1, parallelism: 1 },
+      options: { tasks: ['refund' as TaskId] },
+    });
+    const graded = await runExperiment(judgeFails.input);
+    expect(graded.ok ? undefined : graded.error).toMatchObject({
+      type: 'infra_exhausted',
+      reason: 'auth',
+      attempts: 1,
+      completedRuns: 0,
+    });
+    expect(judgeFails.sleeps).toEqual([]);
+
+    const comparisonFails = setup({
+      plan: (request) =>
+        !isSubject(request) && !request.prompt.includes('Rounds half up?')
+          ? { infraError: auth }
+          : defaultPlan(request),
+      suite: { runs: 1 },
+      options: { tasks: ['refund' as TaskId] },
+    });
+    const compared = await runExperiment(comparisonFails.input);
+    expect(compared.ok ? undefined : compared.error).toMatchObject({
+      type: 'infra_exhausted',
+      reason: 'auth',
+      attempts: 1,
+      completedRuns: 2,
+      message: expect.stringContaining('Run `claude` once interactively') as unknown,
+    });
+    expect(comparisonFails.sleeps).toEqual([]);
+  });
+
   it('injects hidden files only after the runner returned', async () => {
     const order: string[] = [];
     const plan = (request: RunRequest) => {
@@ -547,6 +608,19 @@ describe('runExperiment selection and pins', () => {
         totalRuns: 8,
         message: 'the Claude Code version could not be read: ENOENT claude',
       },
+    });
+  });
+
+  it('says how to log in when the Claude Code version lookup hits an auth error', async () => {
+    const h = setup();
+    h.runner.claudeCodeVersion = () =>
+      Promise.reject(new RunnerInfraError('auth', 'Not logged in'));
+    const result = await runExperiment(h.input);
+    expect(result.ok ? undefined : result.error).toMatchObject({
+      type: 'infra_exhausted',
+      reason: 'auth',
+      attempts: 1,
+      message: expect.stringContaining('or set ANTHROPIC_API_KEY') as unknown,
     });
   });
 

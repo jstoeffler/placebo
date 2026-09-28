@@ -15,7 +15,10 @@ interface Progress {
  * with outcome `failed` or `crashed`, counted against the pass rate.
  */
 export type ExperimentError =
-  /** An infrastructure error (spawn failure, rate limit, network) survived every attempt. */
+  /**
+   * An infrastructure error (spawn failure, rate limit, network) survived every attempt, or an
+   * `auth` error ended the experiment at its first occurrence, with a message saying how to log in.
+   */
   | (Progress & {
       readonly type: 'infra_exhausted';
       /** The run whose attempts ran out; absent when it was the Claude Code version lookup or a comparison. */

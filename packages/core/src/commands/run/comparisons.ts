@@ -11,7 +11,7 @@ import type { Reporter } from '../../ports/reporter.js';
 import type { RunStore } from '../../ports/run-store.js';
 import { RunnerInfraError, type Runner } from '../../ports/runner.js';
 import type { Sleep } from './perform-run.js';
-import { backoffMs } from './retry.js';
+import { backoffMs, isLastAttempt } from './retry.js';
 
 export interface ComparisonContext {
   readonly experiment: Experiment;
@@ -119,7 +119,7 @@ async function compareWithRetries(
       return { type: 'graded', grades };
     } catch (error) {
       if (!(error instanceof RunnerInfraError)) throw error;
-      if (attempt + 1 >= ctx.maxInfraAttempts) {
+      if (isLastAttempt(error, attempt, ctx.maxInfraAttempts)) {
         return { type: 'infra_exhausted', error, attempts: attempt + 1 };
       }
       const delayMs = backoffMs(attempt, error.retryAfterMs, jitter);

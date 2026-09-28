@@ -23,7 +23,7 @@ import {
   type RunnerResult,
 } from '../../ports/runner.js';
 import type { RunSlot } from './plan.js';
-import { backoffMs } from './retry.js';
+import { backoffMs, isLastAttempt } from './retry.js';
 
 /** Which run folders stay on disk after grading (brief §11). */
 export type KeepRunFolders = 'all' | 'reviewable' | 'none';
@@ -181,7 +181,7 @@ async function attemptRun(
       await removeFolder(ctx, folder);
       if (aborted(ctx)) return { type: 'aborted' };
       if (!(error instanceof RunnerInfraError)) throw error;
-      if (attempt + 1 >= ctx.maxInfraAttempts) {
+      if (isLastAttempt(error, attempt, ctx.maxInfraAttempts)) {
         return { type: 'infra_exhausted', error, attempts: attempt + 1 };
       }
       retries += 1;
@@ -293,7 +293,7 @@ async function gradeWithRetries(
       return { type: 'graded', grades, retries: attempt };
     } catch (error) {
       if (!(error instanceof RunnerInfraError)) throw error;
-      if (attempt + 1 >= ctx.maxInfraAttempts) {
+      if (isLastAttempt(error, attempt, ctx.maxInfraAttempts)) {
         return { type: 'infra_exhausted', error, attempts: attempt + 1 };
       }
       const delayMs = backoffMs(attempt, error.retryAfterMs, agent.random);

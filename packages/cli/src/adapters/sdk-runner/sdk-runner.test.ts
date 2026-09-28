@@ -328,6 +328,10 @@ describe('SdkRunner outcomes and infrastructure errors', () => {
     ['Claude Code native binary not found', 'spawn_failed'],
     ['API Error: 429 rate_limit_error, retry after 12 seconds', 'rate_limited'],
     ['getaddrinfo ENOTFOUND api.anthropic.com', 'network'],
+    ['Invalid API key · Please run /login', 'auth'],
+    ['Not logged in · Please run /login', 'auth'],
+    ['API Error: 401 {"type":"authentication_error"}', 'auth'],
+    ['API Error: 403 Forbidden', 'auth'],
     ['something odd', 'other'],
   ])('rejects with a RunnerInfraError when %j is thrown before init', async (message, reason) => {
     const fake = fakeQuery([], { thenThrow: new Error(message) });
@@ -382,6 +386,40 @@ describe('SdkRunner outcomes and infrastructure errors', () => {
     const messages = withResult(withError, { is_error: true, result: 'API Error: 500' });
     await expect(runWith(messages)).rejects.toBeInstanceOf(RunnerInfraError);
   });
+
+  it('rejects with auth when the result is an API error with status 401 or 403', async () => {
+    for (const status of [401, 403]) {
+      const messages = withResult(subject, {
+        is_error: true,
+        api_error_status: status,
+        result: 'API Error',
+      });
+      await expect(runWith(messages)).rejects.toMatchObject({
+        name: 'RunnerInfraError',
+        reason: 'auth',
+      });
+    }
+  });
+
+  it.each([
+    ['Invalid API key · Please run /login'],
+    ['Credit balance is too low'],
+    ['Your organization has insufficient quota; check your billing settings'],
+  ])('rejects with auth when the error result says %j', async (text) => {
+    const messages = withResult(subject, { is_error: true, result: text });
+    await expect(runWith(messages)).rejects.toMatchObject({ reason: 'auth', message: text });
+  });
+
+  it.each(['authentication_failed', 'billing_error'])(
+    'rejects with auth when the last assistant message carries a %s error',
+    async (error) => {
+      const withError = subject.map((message) =>
+        message.type === 'assistant' ? { ...message, error } : message,
+      );
+      const messages = withResult(withError, { is_error: true, result: '' });
+      await expect(runWith(messages)).rejects.toMatchObject({ reason: 'auth', message: error });
+    },
+  );
 
   it('records other API errors in a success result as a crash', async () => {
     const messages = withResult(subject, {
