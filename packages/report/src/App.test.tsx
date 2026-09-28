@@ -300,7 +300,7 @@ describe('run detail', () => {
     );
   });
 
-  it('shows the message of a grader that could not score', () => {
+  it('shows the message and the spend of a grader that could not score', () => {
     const failed = results.runs.find((candidate) =>
       candidate.grades.some((grade) => grade.detail.type === 'error'),
     )!;
@@ -308,7 +308,18 @@ describe('run detail', () => {
     const message = screen.getByText(
       'The judge answer failed its schema: answers has 2 items, the checklist has 3.',
     );
-    expect(message.closest('article')?.querySelector('.grade-score')?.textContent).toBe('error');
+    const article = message.closest('article');
+    expect(article?.querySelector('.grade-score')?.textContent).toBe('error');
+    const detail = failed.grades.find((grade) => grade.detail.type === 'error')?.detail;
+    const spend = detail?.type === 'error' ? detail.spend : undefined;
+    if (spend === undefined || !(article instanceof HTMLElement)) {
+      throw new Error('expected an error grade with spend');
+    }
+    const facts = within(article);
+    expect(facts.getByText('Judge cost').nextElementSibling?.textContent).toBe(
+      formatCurrency(spend.costUsd),
+    );
+    expect(facts.getByText('Judge calls').nextElementSibling?.textContent).toBe('1');
   });
 
   it('steps to the next and previous run within the filter', async () => {

@@ -89,7 +89,12 @@ function GradeBody({
     case 'comparison':
       return <ComparisonBody detail={detail} filter={filter} />;
     case 'error':
-      return <p className="grade-error">{detail.message}</p>;
+      return (
+        <>
+          <p className="grade-error">{detail.message}</p>
+          {detail.spend !== undefined && <Spend spend={detail.spend} />}
+        </>
+      );
     case 'review':
       return (
         <>

@@ -460,6 +460,7 @@ function buildRun(opts: {
       detail: {
         type: 'error',
         message: 'The judge answer failed its schema: answers has 2 items, the checklist has 3.',
+        spend: judgeSpend(task.prompt, 'answers'),
       },
     });
   } else if (opts.withChecklist) {
