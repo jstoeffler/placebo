@@ -91,9 +91,7 @@ export class ProgressRenderer implements Reporter {
     const { colors, tty } = this.#options;
     switch (event.type) {
       case 'snapshot_ready':
-        return [
-          `snapshot ${event.snapshotId} ${event.cached === true ? 'ready (cached)' : 'ready'}`,
-        ];
+        return [`snapshot ${event.snapshotId} ${event.cached ? 'ready (cached)' : 'ready'}`];
       case 'experiment_started':
         this.#totalRuns = event.totalRuns;
         if (tty) this.#startTimer();

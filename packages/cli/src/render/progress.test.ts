@@ -138,7 +138,7 @@ describe('ProgressRenderer, terminal', () => {
     });
     expect(take()).toContain('retry    refund · none · run 2 · attempt 2 failed (network)');
 
-    progress.report({ type: 'snapshot_ready', snapshotId: 's' });
+    progress.report({ type: 'snapshot_ready', snapshotId: 's', cached: false });
     expect(take()).toContain('snapshot s ready\n');
 
     progress.report({ type: 'run_finished', runId: RUN, outcome: 'failed' });
