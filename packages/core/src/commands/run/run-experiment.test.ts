@@ -353,7 +353,7 @@ describe('runExperiment', () => {
       type: 'infra_exhausted',
       reason: 'auth',
       attempts: 1,
-      completedRuns: 0,
+      completedRuns: 1,
     });
     expect(judgeFails.sleeps).toEqual([]);
 
@@ -720,10 +720,54 @@ describe('runExperiment grading and comparison retries', () => {
       type: 'infra_exhausted',
       reason: 'network',
       attempts: 2,
-      completedRuns: 0,
+      completedRuns: 1,
     });
-    await expect(h.store.list()).resolves.toEqual([]);
-    expect(await h.executor.listRunFolders()).toEqual([]);
+    const [saved] = await h.store.list();
+    expect(saved?.infraRetries).toBe(1);
+    expect(saved?.grades.find((grade) => grade.grader.type === 'checklist')?.detail).toEqual({
+      type: 'error',
+      message: 'grading stopped on an infrastructure error (network): socket hang up',
+    });
+  });
+
+  it('saves a run with error grades when a judge is rejected, then ends the experiment', async () => {
+    const rejected = new RunnerInfraError('invalid_request', 'is not a valid JSON Schema');
+    const plan = (request: RunRequest) =>
+      isSubject(request) ? defaultPlan(request) : { infraError: rejected };
+    const h = setup({
+      plan,
+      suite: { runs: 1, parallelism: 1 },
+      options: { tasks: ['refund' as TaskId] },
+    });
+    const result = await runExperiment(h.input);
+    if (result.ok) throw new Error('expected infra_exhausted');
+    expect(result.error).toMatchObject({
+      type: 'infra_exhausted',
+      reason: 'invalid_request',
+      attempts: 1,
+      completedRuns: 1,
+      totalRuns: 2,
+    });
+    expect(h.sleeps).toEqual([]);
+
+    const stored = await h.store.list();
+    expect(stored).toHaveLength(1);
+    const [run] = stored;
+    expect(run?.outcome).toBe('completed');
+    expect(run?.grades.map((grade) => [grade.grader.type, grade.detail.type])).toEqual([
+      ['command', 'command'],
+      ['file_modified', 'check'],
+      ['checklist', 'error'],
+    ]);
+    expect(run?.grades[2]?.detail).toEqual({
+      type: 'error',
+      message:
+        'grading stopped on an infrastructure error (invalid_request): is not a valid JSON Schema',
+    });
+    expect(h.events.filter((event) => event.type === 'run_finished')).toEqual([
+      { type: 'run_finished', runId: run?.id, outcome: 'completed' },
+    ]);
+    expect(h.events.at(-1)).toMatchObject({ type: 'experiment_finished', completedRuns: 1 });
   });
 
   it('retries comparisons after a backoff and gives up after maxInfraAttempts', async () => {
@@ -771,6 +815,15 @@ describe('runExperiment grading and comparison retries', () => {
       completedRuns: 2,
     });
     expect(exhausted.ok ? undefined : exhausted.error).not.toHaveProperty('runId');
+    const saved = await always.store.list();
+    const compared = saved.find((run) => run.arm.kind === 'treatment');
+    expect(compared?.grades.at(-1)).toMatchObject({
+      grader: { type: 'comparison' },
+      detail: {
+        type: 'error',
+        message: 'grading stopped on an infrastructure error (rate_limited): slow down',
+      },
+    });
   });
 
   it('stops before comparisons when aborted after the last run', async () => {

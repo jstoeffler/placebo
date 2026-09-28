@@ -192,6 +192,7 @@ export async function runExperiment(
         finished.push(end.run);
         return 'continue';
       }
+      if (end.type === 'infra_exhausted' && end.run !== undefined) finished.push(end.run);
       // The first infrastructure or executor failure explains the stop better than an abort.
       if (stop.end === undefined || stop.end.type === 'aborted') {
         stop.end = end;

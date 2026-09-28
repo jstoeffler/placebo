@@ -3,7 +3,7 @@ status: accepted
 ---
 # Completed runs are durable, so an interrupted experiment can be resumed
 
-An experiment can take hours and cost real money, and it can stop part way: Ctrl-C, a rate limit that outlasts the retries, an expired login, a laptop going to sleep. Throwing away what finished would waste that spend. So every run is saved the moment it is graded, with its content-addressed run key (ADR 0006), and a run that did not finish is never saved: a run cut short by the abort signal is discarded, not stored as `failed`, because it says nothing about the arm.
+An experiment can take hours and cost real money, and it can stop part way: Ctrl-C, a rate limit that outlasts the retries, an expired login, a laptop going to sleep. Throwing away what finished would waste that spend. So every run is saved the moment it is graded, with its content-addressed run key (ADR 0006), and a run that did not finish is never saved: a run cut short by the abort signal is discarded, not stored as `failed`, because it says nothing about the arm. A run whose agent finished is saved even when grading gives up on an infrastructure error, with an error grade for each grader that could not run: its spend is real and its change can still be reviewed.
 
 An interrupted experiment therefore keeps every run it completed, and `placebo report` works on it: the results cover the runs that exist, with ranges as wide as that data warrants. Comparisons, which need every run of a task, are the only step missing.
 

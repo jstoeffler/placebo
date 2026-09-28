@@ -8,6 +8,7 @@ import { RunnerInfraError, type RunRequest } from '../ports/runner.js';
 import { sampleRun } from '../testing/fixtures.js';
 import { fixedClock, stubExecutor, task, type StubExecutor } from '../testing/grading.js';
 import { gradeComparisons, type ComparisonInput } from './comparison.js';
+import { ComparisonInfraError } from './grading-infra-error.js';
 import { COMPARISON_SYSTEM_PROMPT } from './judge-prompts.js';
 
 const TREATMENT = {
@@ -338,11 +339,37 @@ describe('gradeComparisons', () => {
     expect(await gradeComparisons(i)).toEqual([]);
   });
 
-  it('lets RunnerInfraError propagate', async () => {
+  it('throws a ComparisonInfraError on RunnerInfraError, after removing the judge folder', async () => {
     const error = new RunnerInfraError('network', 'offline');
     const { input: i, executor } = input(() => ({ infraError: error }));
-    await expect(gradeComparisons(i)).rejects.toBe(error);
+    const thrown = await gradeComparisons(i).catch((caught: unknown) => caught);
+    expect(thrown).toBeInstanceOf(ComparisonInfraError);
+    expect(thrown).toMatchObject({ reason: 'network', message: 'offline', cause: error });
     expect(executor.calls.filter((call) => call.type === 'remove')).toHaveLength(1);
     expect(executor.openJudgeFolders.size).toBe(0);
+  });
+
+  it('carries the grades to save when giving up: those produced, then an error per pairing left', async () => {
+    const error = new RunnerInfraError('auth', 'credit balance is too low');
+    const { input: i, runner } = input(() =>
+      runner.requests.length === 1 ? pick('a') : { infraError: error },
+    );
+    const thrown = await gradeComparisons(i).catch((caught: unknown) => caught);
+    if (!(thrown instanceof ComparisonInfraError))
+      throw new Error('expected a ComparisonInfraError');
+    expect(thrown.grades.map((graded) => graded.runId)).toEqual(['t1', 't2', 't3']);
+    expect(thrown.grades[0]?.grade.detail.type).toBe('comparison');
+    for (const graded of thrown.grades.slice(1)) {
+      expect(graded.grade).toEqual({
+        grader: { type: 'comparison', index: 1 },
+        kind: 'judge',
+        score: 0,
+        detail: {
+          type: 'error',
+          message: 'grading stopped on an infrastructure error (auth): credit balance is too low',
+        },
+      });
+    }
+    expect(runner.requests).toHaveLength(2);
   });
 });
