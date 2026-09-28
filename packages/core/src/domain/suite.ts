@@ -143,7 +143,10 @@ export const Suite = z
     limits: Limits.optional(),
     margins: Margins.prefault({}),
     variants: z
-      .record(VariantName, Variant)
+      .record(VariantName, Variant, {
+        // Zod reports a bad key as "Invalid key in record"; the key's own message says why.
+        error: (issue) => (issue.code === 'invalid_key' ? issue.issues[0]?.message : undefined),
+      })
       .refine((variants) => Object.keys(variants).length > 0, {
         error: 'at least one variant is required',
       }),

@@ -23,10 +23,16 @@ export const TaskId = z
   .brand<'TaskId'>();
 export type TaskId = z.infer<typeof TaskId>;
 
-/** A variant name as written in the suite; `control` is reserved for the control arm. */
+/**
+ * A variant name as written in the suite: starts with a letter; `control` is reserved for the
+ * control arm.
+ */
 export const VariantName = z
   .string()
-  .regex(SLUG, { error: `variant name ${SLUG_MESSAGE}` })
+  .regex(/^[a-z][a-z0-9_-]*$/, {
+    error:
+      'variant name must start with a lowercase letter, so it never reads as a number or a run count, followed by lowercase letters, digits, "-" or "_"',
+  })
   .refine((name) => name !== 'control', { error: 'variant name "control" is reserved' })
   .brand<'VariantName'>();
 export type VariantName = z.infer<typeof VariantName>;

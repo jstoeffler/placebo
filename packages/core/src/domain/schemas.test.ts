@@ -159,6 +159,17 @@ describe('Suite', () => {
       'runs: Invalid input: expected int, received number',
     ]);
   });
+
+  it('requires variant names that start with a letter and are not "control"', () => {
+    const patch = { patch: 'variants/x.patch' };
+    expect(issuesOf(Suite, { ...suite, variants: { '2x': patch } })).toEqual([
+      'variants.2x: variant name must start with a lowercase letter, so it never reads as a number or a run count, followed by lowercase letters, digits, "-" or "_"',
+    ]);
+    expect(issuesOf(Suite, { ...suite, variants: { control: patch } })).toEqual([
+      'variants.control: variant name "control" is reserved',
+    ]);
+    expect(Suite.parse({ ...suite, variants: { v2: patch } }).variants).toHaveProperty('v2');
+  });
 });
 
 describe('Arm', () => {

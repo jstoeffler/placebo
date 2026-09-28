@@ -11,6 +11,12 @@ describe('ids', () => {
     expect(TaskId.safeParse(id).success).toBe(false);
   });
 
+  it.each(['2x', '0', '-x', 'Rules', ''])('rejects variant name %j', (name) => {
+    expect(VariantName.safeParse(name).error?.issues.map((issue) => issue.message)).toEqual([
+      'variant name must start with a lowercase letter, so it never reads as a number or a run count, followed by lowercase letters, digits, "-" or "_"',
+    ]);
+  });
+
   it('reserves "control" as a variant name', () => {
     const result = VariantName.safeParse('control');
     expect(result.error?.issues[0]?.message).toBe('variant name "control" is reserved');
