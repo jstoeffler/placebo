@@ -1,34 +1,11 @@
-import { execFileSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
-import { mkdir, mkdtemp, readFile, realpath, rm, writeFile } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
-import { dirname, join } from 'node:path';
+import { readFile, rm, writeFile } from 'node:fs/promises';
+import { join } from 'node:path';
 import { Results } from '@placebo-eval/core/results';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { Host } from '../host.js';
-import { main } from '../program.js';
 import { RESULTS_PLACEHOLDER } from '../report-files.js';
-
-const GIT_ENV = {
-  ...process.env,
-  GIT_CONFIG_GLOBAL: '/dev/null',
-  GIT_CONFIG_NOSYSTEM: '1',
-  GIT_AUTHOR_NAME: 'Ada',
-  GIT_AUTHOR_EMAIL: 'ada@example.com',
-  GIT_COMMITTER_NAME: 'Ada',
-  GIT_COMMITTER_EMAIL: 'ada@example.com',
-};
-
-function git(cwd: string, args: string[]): string {
-  return execFileSync('git', args, { cwd, env: GIT_ENV, encoding: 'utf8' });
-}
-
-async function put(root: string, files: Record<string, string>): Promise<void> {
-  for (const [path, content] of Object.entries(files)) {
-    await mkdir(dirname(join(root, path)), { recursive: true });
-    await writeFile(join(root, path), content);
-  }
-}
+import { commitFiles, placebo, put, type Ran, tempRepo } from './test-support.js';
 
 let temp: string;
 let repo: string;
@@ -58,15 +35,8 @@ function suiteYaml(overrides: { commit?: string; tasks?: string } = {}): string 
 }
 
 beforeEach(async () => {
-  temp = await realpath(await mkdtemp(join(tmpdir(), 'placebo-run-')));
-  repo = join(temp, 'repo');
-  home = join(temp, 'home');
-  await mkdir(repo);
-  git(repo, ['init', '-q', '-b', 'main']);
-  await put(repo, { 'CLAUDE.md': 'Keep it short.\n', 'README.md': '# tiny\n' });
-  git(repo, ['add', '-A']);
-  git(repo, ['commit', '-q', '-m', 'tiny']);
-  commit = git(repo, ['rev-parse', 'HEAD']).trim();
+  ({ temp, repo, home } = await tempRepo());
+  commit = await commitFiles(repo, { 'CLAUDE.md': 'Keep it short.\n', 'README.md': '# tiny\n' });
   const patch = [
     'diff --git a/CLAUDE.md b/CLAUDE.md',
     'deleted file mode 100644',
@@ -88,44 +58,13 @@ afterEach(async () => {
   await rm(temp, { recursive: true, force: true });
 });
 
-interface Ran {
-  readonly stdout: string;
-  readonly stderr: string;
-  readonly exitCode: number | undefined;
-  readonly exits: number[];
-}
-
-async function placebo(args: string[], host: Partial<Host> = {}): Promise<Ran> {
-  let stdout = '';
-  let stderr = '';
-  let exitCode: number | undefined;
-  const exits: number[] = [];
-  await main(
-    ['node', 'placebo', ...args],
-    {
-      stdout: (text) => (stdout += text),
-      stderr: (text) => (stderr += text),
-      setExitCode: (code) => (exitCode = code),
-    },
-    {
-      cwd: repo,
-      env: { PLACEBO_HOME: home },
-      home,
-      stdoutIsTTY: false,
-      stderrIsTTY: false,
-      columns: undefined,
-      onInterrupt: () => () => undefined,
-      exit: (code) => exits.push(code),
-      reportTemplate: template,
-      ...host,
-    },
-  );
-  return { stdout, stderr, exitCode, exits };
+function run(args: string[], host: Partial<Host> = {}): Promise<Ran> {
+  return placebo(args, { repo, home }, { reportTemplate: template, ...host });
 }
 
 describe('placebo run', () => {
   it('runs the suite, prints the card and writes results and report', async () => {
-    const ran = await placebo(['run', '--runner', 'fake', '--seed', '7', '--no-color']);
+    const ran = await run(['run', '--runner', 'fake', '--seed', '7', '--no-color']);
     expect(ran.stderr).toContain('seed 7');
     expect(ran.exitCode).toBe(0);
     expect(ran.stdout).toMatch(/none vs control {12}1 run × 1 task {4}model claude-sonnet-5/);
@@ -145,16 +84,7 @@ describe('placebo run', () => {
 
   it('warns about configuration above the run folders and records it', async () => {
     await put(home, { 'CLAUDE.md': 'personal' });
-    const ran = await placebo([
-      'run',
-      '--runner',
-      'fake',
-      '--out',
-      'out',
-      '--quiet',
-      '--keep',
-      'none',
-    ]);
+    const ran = await run(['run', '--runner', 'fake', '--out', 'out', '--quiet', '--keep', 'none']);
     expect(ran.exitCode).toBe(0);
     expect(ran.stderr).toContain(
       `warning: Claude Code loads configuration from above the run folders into every arm: ${join(home, 'CLAUDE.md')}`,
@@ -172,7 +102,7 @@ describe('placebo run', () => {
 
   it('exits 1 with the completed runs when the experiment ends early', async () => {
     await put(join(repo, '.placebo'), { 'suite.yaml': suiteYaml({ commit: 'ffffffffff' }) });
-    const ran = await placebo(['run', '--runner', 'fake']);
+    const ran = await run(['run', '--runner', 'fake']);
     expect(ran.exitCode).toBe(1);
     expect(ran.stderr).toMatch(
       /error: the snapshot could not be prepared: .*\(0\/2 runs completed\)/,
@@ -180,7 +110,7 @@ describe('placebo run', () => {
   }, 60_000);
 
   it('stops after runs in flight on Ctrl-C and exits at once on a second', async () => {
-    const ran = await placebo(['run', '--runner', 'fake'], {
+    const ran = await run(['run', '--runner', 'fake'], {
       onInterrupt: (handler) => {
         handler();
         handler();
@@ -197,7 +127,7 @@ describe('placebo run', () => {
 describe('placebo run usage errors', () => {
   it('exits 2 when there is no suite', async () => {
     await rm(join(repo, '.placebo'), { recursive: true });
-    const ran = await placebo(['run']);
+    const ran = await run(['run']);
     expect(ran.exitCode).toBe(2);
     expect(ran.stderr).toContain('run placebo init to create one');
   });
@@ -206,7 +136,7 @@ describe('placebo run usage errors', () => {
     await put(join(repo, '.placebo'), {
       'suite.yaml': suiteYaml({ tasks: '  - id: Bad\n    prompt: ""\n    graders: []' }),
     });
-    const ran = await placebo(['run']);
+    const ran = await run(['run']);
     expect(ran.exitCode).toBe(2);
     expect(ran.stderr.trimEnd().split('\n')).toEqual([
       expect.stringMatching(/^suite\.yaml:\d+ tasks\[0\]\.id: task id must be lowercase/),
@@ -218,7 +148,7 @@ describe('placebo run usage errors', () => {
   });
 
   it('exits 2 for a task or variant the suite does not have', async () => {
-    const ran = await placebo(['run', '--task', 'nope', '--variant', 'none']);
+    const ran = await run(['run', '--task', 'nope', '--variant', 'none']);
     expect(ran.exitCode).toBe(2);
     expect(ran.stderr).toBe('the suite has no task "nope" (it has add-notes)\n');
   });
@@ -233,11 +163,9 @@ describe('placebo run usage errors', () => {
       ['--runner', 'docker'],
       ['--unknown'],
     ]) {
-      const ran = await placebo(['run', ...args]);
+      const ran = await run(['run', ...args]);
       expect(ran.exitCode, args.join(' ')).toBe(2);
     }
-    expect((await placebo(['run', '--runner', 'docker'])).stderr).toContain(
-      'expected one of sdk, cli',
-    );
+    expect((await run(['run', '--runner', 'docker'])).stderr).toContain('expected one of sdk, cli');
   });
 });

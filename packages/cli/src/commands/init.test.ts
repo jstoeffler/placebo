@@ -1,84 +1,34 @@
-import { execFileSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
-import { mkdir, mkdtemp, readFile, realpath, rm, writeFile } from 'node:fs/promises';
-import { tmpdir } from 'node:os';
-import { dirname, join } from 'node:path';
+import { readFile, rm, writeFile } from 'node:fs/promises';
+import { join } from 'node:path';
 import type { Options } from '@anthropic-ai/claude-agent-sdk';
 import { FileSuiteSource, loadSuite, parseSuite } from '@placebo-eval/core';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import type { QueryFunction } from '../adapters/sdk-runner/sdk-runner.js';
 import type { Host } from '../host.js';
-import { main } from '../program.js';
 import { RESULTS_PLACEHOLDER } from '../report-files.js';
-
-const GIT_ENV = {
-  ...process.env,
-  GIT_CONFIG_GLOBAL: '/dev/null',
-  GIT_CONFIG_NOSYSTEM: '1',
-  GIT_AUTHOR_NAME: 'Ada',
-  GIT_AUTHOR_EMAIL: 'ada@example.com',
-  GIT_COMMITTER_NAME: 'Ada',
-  GIT_COMMITTER_EMAIL: 'ada@example.com',
-};
-
-function git(cwd: string, args: string[]): string {
-  return execFileSync('git', args, { cwd, env: GIT_ENV, encoding: 'utf8' });
-}
-
-async function put(root: string, files: Record<string, string>): Promise<void> {
-  for (const [path, content] of Object.entries(files)) {
-    await mkdir(dirname(join(root, path)), { recursive: true });
-    await writeFile(join(root, path), content);
-  }
-}
+import { commitFiles, placebo, put, type Ran, tempRepo } from './test-support.js';
 
 let temp: string;
 let repo: string;
 let commit: string;
 
+let home: string;
+
 async function makeRepo(files: Record<string, string>): Promise<void> {
-  await put(repo, files);
-  git(repo, ['add', '-A']);
-  git(repo, ['commit', '-q', '-m', 'files']);
-  commit = git(repo, ['rev-parse', 'HEAD']).trim();
+  commit = await commitFiles(repo, files);
 }
 
 beforeEach(async () => {
-  temp = await realpath(await mkdtemp(join(tmpdir(), 'placebo-init-')));
-  repo = join(temp, 'repo');
-  await mkdir(repo);
-  git(repo, ['init', '-q', '-b', 'main']);
+  ({ temp, repo, home } = await tempRepo());
 });
 
 afterEach(async () => {
   await rm(temp, { recursive: true, force: true });
 });
 
-async function placebo(args: string[], host: Partial<Host> = {}) {
-  let stdout = '';
-  let stderr = '';
-  let exitCode: number | undefined;
-  await main(
-    ['node', 'placebo', ...args],
-    {
-      stdout: (text) => (stdout += text),
-      stderr: (text) => (stderr += text),
-      setExitCode: (code) => (exitCode = code),
-    },
-    {
-      cwd: repo,
-      env: { PLACEBO_HOME: join(temp, 'home') },
-      home: join(temp, 'home'),
-      stdoutIsTTY: false,
-      stderrIsTTY: false,
-      onInterrupt: () => () => undefined,
-      modelQuery: () => {
-        throw new Error('no network in tests');
-      },
-      ...host,
-    },
-  );
-  return { stdout, stderr, exitCode };
+function run(args: string[], host: Partial<Host> = {}): Promise<Ran> {
+  return placebo(args, { repo, home }, host);
 }
 
 const PINNED = ['init', '--model', 'claude-sonnet-5', '--judge-model', 'claude-opus-5-5'];
@@ -92,7 +42,7 @@ describe('placebo init', () => {
       'pnpm-lock.yaml': 'lockfileVersion: 9\n',
       'README.md': '# shop\n',
     });
-    const ran = await placebo(PINNED);
+    const ran = await run(PINNED);
     expect(ran.exitCode).toBe(0);
     const suiteDir = join(repo, '.placebo');
     const yaml = await readFile(join(suiteDir, 'suite.yaml'), 'utf8');
@@ -167,10 +117,10 @@ describe('placebo init', () => {
 
   it('writes a suite placebo run can run with the fake runner', async () => {
     await makeRepo({ 'CLAUDE.md': 'Be brief.\n', 'README.md': '# shop\n' });
-    expect((await placebo(PINNED)).exitCode).toBe(0);
+    expect((await run(PINNED)).exitCode).toBe(0);
     const template = join(temp, 'template.html');
     await writeFile(template, RESULTS_PLACEHOLDER);
-    const ran = await placebo(['run', '--runner', 'fake', '--runs', '1', '--seed', '1'], {
+    const ran = await run(['run', '--runner', 'fake', '--runs', '1', '--seed', '1'], {
       reportTemplate: template,
     });
     expect(ran.stderr).not.toContain('error');
@@ -180,7 +130,7 @@ describe('placebo init', () => {
 
   it('writes no none variant when the repo has no configuration to strip', async () => {
     await makeRepo({ 'README.md': '# shop\n' });
-    const ran = await placebo(PINNED);
+    const ran = await run(PINNED);
     expect(ran.exitCode).toBe(0);
     expect(existsSync(join(repo, '.placebo', 'variants'))).toBe(false);
     const yaml = await readFile(join(repo, '.placebo', 'suite.yaml'), 'utf8');
@@ -193,17 +143,17 @@ describe('placebo init', () => {
   it('refuses when .placebo/ exists unless --force', async () => {
     await makeRepo({ 'CLAUDE.md': 'x\n' });
     await put(repo, { '.placebo/suite.yaml': 'old' });
-    const refused = await placebo(PINNED);
+    const refused = await run(PINNED);
     expect(refused.exitCode).toBe(2);
     expect(refused.stderr).toContain('already exists; pass --force');
     expect(await readFile(join(repo, '.placebo', 'suite.yaml'), 'utf8')).toBe('old');
-    const forced = await placebo([...PINNED, '--force']);
+    const forced = await run([...PINNED, '--force']);
     expect(forced.exitCode).toBe(0);
     expect(await readFile(join(repo, '.placebo', 'suite.yaml'), 'utf8')).toContain(commit);
   });
 
   it('refuses a repo with no commit', async () => {
-    const ran = await placebo(PINNED);
+    const ran = await run(PINNED);
     expect(ran.exitCode).toBe(2);
     expect(ran.stderr).toContain('has no commit yet');
   });
@@ -211,7 +161,7 @@ describe('placebo init', () => {
   it('notes uncommitted changes, since the experiment runs the commit', async () => {
     await makeRepo({ 'README.md': '# shop\n' });
     await writeFile(join(repo, 'README.md'), '# edited\n');
-    expect((await placebo(PINNED)).stdout).toContain('uncommitted changes are not part');
+    expect((await run(PINNED)).stdout).toContain('uncommitted changes are not part');
   });
 
   it('asks Claude Code for the default and Opus, and says what it cost', async () => {
@@ -227,7 +177,7 @@ describe('placebo init', () => {
         yield { type: 'result', total_cost_usd: 0.004 };
       })();
     };
-    const ran = await placebo(['init'], { modelQuery });
+    const ran = await run(['init'], { modelQuery });
     expect(ran.exitCode).toBe(0);
     expect(calls.map((options) => options.model)).toEqual([undefined, 'opus']);
     expect(calls[0]?.cwd).toBe(repo);
@@ -250,7 +200,7 @@ describe('placebo init', () => {
         yield { type: 'system', subtype: 'init', model, claude_code_version: '2.1.283', tools: [] };
       })();
     };
-    const ran = await placebo(['init'], { modelQuery });
+    const ran = await run(['init'], { modelQuery });
     expect(ran.stdout).toContain(
       'the current Opus is also the subject model (claude-opus-5-5); a model judging its own work favours it, so the judge is the current Sonnet',
     );
@@ -263,7 +213,7 @@ describe('placebo init', () => {
 
   it('asks only for what the flags leave out, and warns when both are the same', async () => {
     await makeRepo({ 'README.md': '# shop\n' });
-    const ran = await placebo([
+    const ran = await run([
       'init',
       '--model',
       'claude-opus-5-5',
@@ -276,7 +226,7 @@ describe('placebo init', () => {
 
   it('exits 1 and names the flags when Claude Code cannot be asked', async () => {
     await makeRepo({ 'README.md': '# shop\n' });
-    const ran = await placebo(['init', '--judge-model', 'claude-opus-5-5']);
+    const ran = await run(['init', '--judge-model', 'claude-opus-5-5']);
     expect(ran.exitCode).toBe(1);
     expect(ran.stderr).toContain(
       'error: could not ask Claude Code for the model IDs: no network in tests',

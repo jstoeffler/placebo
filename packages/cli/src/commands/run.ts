@@ -1,38 +1,30 @@
 import { randomInt } from 'node:crypto';
-import { existsSync } from 'node:fs';
-import { join, relative, resolve } from 'node:path';
+import { join, resolve } from 'node:path';
 import {
   describeWarning,
   type KeepRunFolders,
-  loadSuite,
   MAX_SEED,
-  type Results,
   runExperiment,
-  SUITE_FILE,
   type TaskId,
   type VariantName,
-  type Warning,
 } from '@placebo-eval/core';
-import { Results as ResultsSchema } from '@placebo-eval/core/results';
 import {
   createExecutor,
   createRunner,
-  createSuiteSource,
   ObservedRunStore,
   openStore,
   resolveRepo,
   type RunnerKind,
   workspaceOf,
-  type Workspace,
 } from '../composition.js';
-import { ancestorConfiguration, foldersRootOf } from '../data-dir.js';
 import { EXIT, UsageError } from '../errors.js';
 import type { Host, Io } from '../host.js';
 import { colorsFor } from '../render/colors.js';
 import { renderResults } from '../render/card.js';
 import { ProgressRenderer } from '../render/progress.js';
-import { locateReportTemplate, writeArtifacts, type Artifacts } from '../report-files.js';
+import { locateReportTemplate, writeArtifacts } from '../report-files.js';
 import { VERSION } from '../version.js';
+import { ancestorWarnings, artifactLines, loadSuiteOrExplain, withWarnings } from './shared.js';
 
 export interface RunFlags {
   readonly suite?: string;
@@ -89,13 +81,7 @@ export async function runCommand(flags: RunFlags, io: Io, host: Host): Promise<n
     ...(flags.quiet === undefined ? {} : { quiet: flags.quiet }),
   });
 
-  const ancestors = await ancestorConfiguration(
-    foldersRootOf(workspace.dataDir),
-    host.env,
-    host.home,
-  );
-  const extraWarnings: Warning[] =
-    ancestors.length === 0 ? [] : [{ type: 'ancestor_configuration', paths: ancestors }];
+  const extraWarnings = await ancestorWarnings(workspace, host);
   for (const warning of extraWarnings) {
     progress.report({
       type: 'message',
@@ -171,20 +157,6 @@ export async function runCommand(flags: RunFlags, io: Io, host: Host): Promise<n
   }
 }
 
-/** Loads the suite, turning every problem into a usage error that lists them one per line. */
-async function loadSuiteOrExplain(
-  workspace: Workspace,
-): Promise<Extract<Awaited<ReturnType<typeof loadSuite>>, { ok: true }>['value']> {
-  if (!existsSync(join(workspace.suiteDir, SUITE_FILE))) {
-    throw new UsageError(
-      `no suite at ${join(workspace.suiteDir, SUITE_FILE)}; run placebo init to create one, or pass --suite <dir>`,
-    );
-  }
-  const loaded = await loadSuite(createSuiteSource(workspace));
-  if (!loaded.ok) throw new UsageError(loaded.error.message);
-  return loaded.value;
-}
-
 function checkSelection(
   what: string,
   selected: readonly string[] | undefined,
@@ -198,21 +170,4 @@ function checkSelection(
         .join('\n'),
     );
   }
-}
-
-/** The results with warnings the cli found, each once, validated again. */
-function withWarnings(results: Results, extra: readonly Warning[]): Results {
-  const seen = new Set(results.warnings.map((warning) => JSON.stringify(warning)));
-  const added = extra.filter((warning) => !seen.has(JSON.stringify(warning)));
-  if (added.length === 0) return results;
-  return ResultsSchema.parse({ ...results, warnings: [...results.warnings, ...added] });
-}
-
-/** `report: …` and `results: …`, relative to the current directory when inside it. */
-function artifactLines(artifacts: Artifacts, cwd: string): string {
-  const shown = (path: string): string => {
-    const rel = relative(cwd, path);
-    return rel.startsWith('..') || rel === '' ? path : rel;
-  };
-  return `report: ${shown(artifacts.report)}\nresults: ${shown(artifacts.results)}\n`;
 }

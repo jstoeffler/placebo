@@ -1,6 +1,8 @@
 import { Command, CommanderError } from 'commander';
 import pc from 'picocolors';
+import { cleanCommand, type CleanFlags } from './commands/clean.js';
 import { initCommand, type InitFlags } from './commands/init.js';
+import { reportCommand, type ReportFlags } from './commands/report.js';
 import { runCommand, type RunFlags } from './commands/run.js';
 import { EXIT, UsageError } from './errors.js';
 import { type Host, type Io, processHost } from './host.js';
@@ -80,19 +82,36 @@ function createProgram(io: Io, hostOverrides: Partial<Host> = {}): Command {
     .option('--quiet', 'print no progress, only warnings and the results')
     .action(action(io, (flags: RunFlags) => runCommand(flags, io, host)));
 
-  for (const [name, description] of [
-    ['review', 'serve the report locally with blinded review mode'],
-    ['report', 'regenerate the HTML report from the run store'],
-    ['clean', 'remove kept run folders'],
-  ] as const) {
-    program
-      .command(name)
-      .description(description)
-      .action(() => {
-        io.stderr(`${pc.yellow(`placebo ${name}: not implemented yet`)}\n`);
-        io.setExitCode(NOT_IMPLEMENTED_EXIT_CODE);
-      });
-  }
+  program
+    .command('review')
+    .description('serve the report locally with blinded review mode')
+    .action(() => {
+      io.stderr(`${pc.yellow('placebo review: not implemented yet')}\n`);
+      io.setExitCode(NOT_IMPLEMENTED_EXIT_CODE);
+    });
+
+  program
+    .command('report')
+    .description('regenerate the HTML report from the run store')
+    .argument('[experiment]', 'experiment id (default: the newest)')
+    .option('--suite <dir>', 'suite folder (default: .placebo at the repo root)')
+    .option('--out <dir>', 'report folder (default: .placebo/reports/<experiment id>)')
+    .option('--no-color', 'print without colour')
+    .action(
+      action(io, (experiment: string | undefined, flags: ReportFlags) =>
+        reportCommand(experiment, flags, io, host),
+      ),
+    );
+
+  program
+    .command('clean')
+    .description('remove kept run folders')
+    .option('--suite <dir>', 'suite folder (default: .placebo at the repo root)')
+    .option('--experiment <id>', "only this experiment's run folders")
+    .option('--snapshots', 'also remove snapshots')
+    .option('--dry-run', 'list what would be removed, remove nothing')
+    .action(action(io, (flags: CleanFlags) => cleanCommand(flags, io, host)));
+
   return program;
 }
 
