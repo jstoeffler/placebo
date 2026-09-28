@@ -60,8 +60,8 @@ export interface RunContext {
 /** How one run ended, from the experiment's point of view. */
 export type RunEnd =
   | { readonly type: 'finished'; readonly run: Run }
-  /** The signal fired; `run` is the in-flight run, saved ungraded, if the agent had started. */
-  | { readonly type: 'aborted'; readonly run?: Run }
+  /** The signal fired; nothing of this run was saved and its run folder is gone. */
+  | { readonly type: 'aborted' }
   | {
       readonly type: 'infra_exhausted';
       readonly error: RunnerInfraError;
@@ -133,8 +133,9 @@ function subjectRequest(
  *    grading retries the grading alone, with the same backoff.
  *
  * The agent failing is never an error here: it is a run with its outcome. When `signal` fires,
- * no new attempt starts; a run whose agent had started is saved ungraded with the outcome the
- * runner gave it (`failed` when it was cut short).
+ * no new attempt starts, and a run whose agent was in flight is not a run at all: it is never
+ * saved, emits no `run_finished`, and its folder is removed whatever `keepRunFolders` says, since
+ * it holds no reviewable result.
  */
 export async function performRun(ctx: RunContext, slot: RunSlot): Promise<RunEnd> {
   const task = ctx.tasks.get(slot.taskId);
@@ -213,21 +214,22 @@ interface FinishedAgent {
 async function finishRun(ctx: RunContext, agent: FinishedAgent): Promise<RunEnd> {
   const { slot, task, folder, events } = agent;
   const outcome = agent.result.result.outcome;
+  if (aborted(ctx)) {
+    await removeFolder(ctx, folder);
+    return { type: 'aborted' };
+  }
   const change = await executorStep('the change could not be computed', () =>
     ctx.executor.computeChange(folder),
   );
-  const stopped = aborted(ctx);
-  let grades: Grade[] = [];
-  let retries = agent.retries;
-  if (!stopped) {
-    ctx.reporter.report({ type: 'grading_started', runId: slot.runId });
-    const graded = await gradeWithRetries(ctx, agent, change);
-    if (graded.type === 'infra_exhausted') {
-      await removeFolder(ctx, folder);
-      return graded;
-    }
-    grades = graded.grades;
-    retries += graded.retries;
+  if (aborted(ctx)) {
+    await removeFolder(ctx, folder);
+    return { type: 'aborted' };
+  }
+  ctx.reporter.report({ type: 'grading_started', runId: slot.runId });
+  const graded = await gradeWithRetries(ctx, agent, change);
+  if (graded.type === 'infra_exhausted') {
+    await removeFolder(ctx, folder);
+    return graded;
   }
 
   const kept = keepsRunFolder(ctx.keepRunFolders, task);
@@ -243,14 +245,14 @@ async function finishRun(ctx: RunContext, agent: FinishedAgent): Promise<RunEnd>
     measurements: deriveMeasurements(events, change),
     events: [...events],
     change,
-    grades,
+    grades: graded.grades,
     ...(kept ? { runFolder: folder.path } : {}),
-    infraRetries: retries,
+    infraRetries: agent.retries + graded.retries,
   };
   await ctx.store.save(run);
   ctx.reporter.report({ type: 'run_finished', runId: run.id, outcome });
   if (!kept) await removeFolder(ctx, folder);
-  return stopped ? { type: 'aborted', run } : { type: 'finished', run };
+  return { type: 'finished', run };
 }
 
 type Graded =

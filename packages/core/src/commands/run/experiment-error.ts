@@ -25,7 +25,7 @@ export type ExperimentError =
     })
   /** The executor could not prepare the snapshot or a run folder, compute a change or remove a folder. */
   | (Progress & { readonly type: 'executor_failed' })
-  /** The abort signal fired; runs in flight ended as `failed` and no new run started. */
+  /** The abort signal fired; runs in flight were discarded unsaved and no new run started. */
   | (Progress & { readonly type: 'aborted' })
   /** The task filter selects no task of the suite, or names a task the suite does not have. */
   | (Progress & { readonly type: 'no_tasks' })

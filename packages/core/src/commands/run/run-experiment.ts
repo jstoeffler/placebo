@@ -38,7 +38,7 @@ export interface RunExperimentOptions {
   readonly variants?: readonly VariantName[];
   /** Which run folders stay after grading; `all` by default (brief §11). */
   readonly keepRunFolders?: KeepRunFolders;
-  /** Stops the experiment: runs in flight end as `failed`, no new run starts. */
+  /** Stops the experiment: no new run starts and runs in flight are discarded, never saved. */
   readonly signal?: AbortSignal;
   /** Attempts per run before an infrastructure error ends the experiment; 5 by default. */
   readonly maxInfraAttempts?: number;
@@ -85,8 +85,9 @@ export interface RunExperimentOutput {
  * 5. Assembles and validates the results.
  *
  * Ends early with an `ExperimentError` when infrastructure errors outlast the retries, the
- * executor fails, or `options.signal` aborts; runs saved until then stay in the store. The
- * agent's own failures are runs, never errors. Only bugs throw.
+ * executor fails, or `options.signal` aborts; runs saved until then stay in the store, and a run
+ * the abort cut short is never saved. The agent's own failures are runs, never errors. Only bugs
+ * throw.
  */
 export async function runExperiment(
   input: RunExperimentInput,

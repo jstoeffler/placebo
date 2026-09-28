@@ -367,43 +367,53 @@ describe('runExperiment', () => {
     expect((await h.executor.listRunFolders()).length).toBe(4 - expectedRemoved);
   });
 
-  it('stops on abort: no new run starts and the run in flight is saved as failed', async () => {
-    const controller = new AbortController();
-    let started = 0;
-    const plan = (request: RunRequest) => {
-      if (!isSubject(request)) return defaultPlan(request);
-      started += 1;
-      if (started < 3) return defaultPlan(request);
-      return {
-        steps: [
-          {
-            wait: () => {
-              controller.abort();
-              return new Promise(() => undefined);
+  it.each(['all', 'none'] as const)(
+    'stops on abort: no new run starts and the run in flight is discarded (keepRunFolders %s)',
+    async (keepRunFolders) => {
+      const controller = new AbortController();
+      let started = 0;
+      const plan = (request: RunRequest) => {
+        if (!isSubject(request)) return defaultPlan(request);
+        started += 1;
+        if (started < 3) return defaultPlan(request);
+        return {
+          steps: [
+            {
+              wait: () => {
+                controller.abort();
+                return new Promise(() => undefined);
+              },
             },
-          },
-        ],
+          ],
+        };
       };
-    };
-    const h = setup({
-      plan,
-      suite: { runs: 2, parallelism: 1 },
-      options: { signal: controller.signal },
-    });
-    const result = await runExperiment({
-      ...h.input,
-      options: { ...h.input.options, signal: controller.signal },
-    });
-    if (result.ok) throw new Error('expected aborted');
-    expect(result.error).toMatchObject({ type: 'aborted', completedRuns: 2, totalRuns: 8 });
-    expect(started).toBe(3);
-    const stored = await h.store.list();
-    expect(stored).toHaveLength(3);
-    const inFlight = stored.find((run) => run.grades.length === 0);
-    expect(inFlight?.outcome).toBe('failed');
-    expect(typesOf(h.events).filter((type) => type === 'run_started')).toHaveLength(3);
-    expect(typesOf(h.events)).not.toContain('comparisons_started');
-  });
+      const h = setup({
+        plan,
+        suite: { runs: 2, parallelism: 1 },
+        options: { signal: controller.signal, keepRunFolders },
+      });
+      const result = await runExperiment(h.input);
+      if (result.ok) throw new Error('expected aborted');
+      expect(result.error).toMatchObject({ type: 'aborted', completedRuns: 2, totalRuns: 8 });
+      expect(started).toBe(3);
+      const stored = await h.store.list();
+      expect(stored).toHaveLength(2);
+      expect(stored.every((run) => run.grades.length > 0)).toBe(true);
+      const runStarted = h.events.flatMap((event) =>
+        event.type === 'run_started' ? [event.runId] : [],
+      );
+      const runFinished = h.events.flatMap((event) =>
+        event.type === 'run_finished' ? [event.runId] : [],
+      );
+      expect(runStarted).toHaveLength(3);
+      expect([...runFinished].sort()).toEqual(stored.map((run) => run.id).sort());
+      expect(runFinished).not.toContain(runStarted[2]);
+      expect(h.events.at(-1)).toMatchObject({ type: 'experiment_finished', completedRuns: 2 });
+      expect(typesOf(h.events)).not.toContain('comparisons_started');
+      const folders = await h.executor.listRunFolders();
+      expect(folders).toHaveLength(keepRunFolders === 'all' ? 2 : 0);
+    },
+  );
 
   it('ends at once when the signal fired before anything started', async () => {
     const controller = new AbortController();
