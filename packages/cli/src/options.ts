@@ -24,6 +24,7 @@ function integer(min: number, max = Number.MAX_SAFE_INTEGER): (value: string) =>
 
 export const positiveInteger = integer(1);
 export const seedValue = integer(0, MAX_SEED);
+export const portNumber = integer(0, 65_535);
 
 /** Collects a repeatable option into a list. */
 export function collect(value: string, previous: readonly string[] | undefined): string[] {

@@ -1,6 +1,6 @@
-import { Results } from '@placebo-eval/core/results';
+import { Results, ReviewSession } from '@placebo-eval/core/results';
 import { describe, expect, it } from 'vitest';
-import { fixture, fixtureText } from '../testing/fixtures.js';
+import { fixture, fixtureText, reviewFixture } from '../testing/fixtures.js';
 import { embedResults, RESULTS_PLACEHOLDER, serializeForEmbedding } from './embed.js';
 import { formatPath, loadResults, readMode } from './load.js';
 
@@ -28,6 +28,23 @@ describe('fixtures', () => {
     expect(details.some((d) => d.type === 'review')).toBe(true);
   });
 
+  it('review is a blinded session with items, comparisons and one answered item', () => {
+    const session = reviewFixture();
+    expect(ReviewSession.safeParse(session).success).toBe(true);
+    expect(session.items.length).toBeGreaterThan(0);
+    expect(session.comparisons.length).toBeGreaterThan(0);
+    expect(session.items.filter((item) => item.answered)).toHaveLength(1);
+    const text = fixtureText('review');
+    for (const word of [
+      'control',
+      'treatment',
+      'tests-first',
+      '"none"',
+      session.experimentId + '-',
+    ])
+      expect(text).not.toContain(word);
+  });
+
   it('minimal has one treatment, one task and one run per arm', () => {
     const results = fixture('minimal');
     expect(results.verdictCards).toHaveLength(1);
@@ -49,6 +66,19 @@ describe('loadResults', () => {
     if (loaded.state === 'loaded') expect(loaded.mode).toBe('report');
     const review = loadResults(fixtureText('minimal'), 'review');
     expect(review.state === 'loaded' && review.mode).toBe('review');
+  });
+
+  it('loads a review session in review mode, and names its first issue', () => {
+    const loaded = loadResults(fixtureText('review'), 'review');
+    expect(loaded.state).toBe('review');
+    if (loaded.state === 'review') expect(loaded.session.items.length).toBeGreaterThan(0);
+    const broken = { ...reviewFixture(), items: [{ token: 'x' }] };
+    const invalid = loadResults(JSON.stringify(broken), 'review');
+    expect(invalid).toMatchObject({ state: 'invalid', path: 'items[0].taskId' });
+    expect(loadResults(fixtureText('review'))).toEqual({
+      state: 'invalid',
+      reason: 'the embedded results have no schemaVersion',
+    });
   });
 
   it.each([

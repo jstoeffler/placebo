@@ -33,6 +33,7 @@ export * from './ports/runner.js';
 export * from './ports/suite-source.js';
 
 // statistics
+export * from './statistics/agreement.js';
 export * from './statistics/format.js';
 export * from './statistics/metric-row.js';
 export * from './statistics/values.js';

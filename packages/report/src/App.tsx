@@ -1,10 +1,13 @@
 import { RESULTS_SCHEMA_VERSION } from '@placebo-eval/core/results';
-import { useEffect, useMemo, type ReactNode } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { ReportProvider, useReport } from './context.js';
 import type { Loaded } from './data/load.js';
 import { buildIndex } from './data/model.js';
 import { formatTimestamp } from './format.js';
 import { toHash, useRoute, type Route } from './route.js';
+import { ReviewApp } from './review/ReviewApp.js';
+import { Agreement } from './views/Agreement.js';
+import { Frame, Message } from './views/Frame.js';
 import { Pins } from './views/Pins.js';
 import { RunDetail } from './views/RunDetail.js';
 import { RunList } from './views/RunList.js';
@@ -12,7 +15,9 @@ import { TaskBreakdown } from './views/TaskBreakdown.js';
 import { VerdictCard } from './views/VerdictCard.js';
 import { Warnings } from './views/Warnings.js';
 
-export function App({ loaded }: { readonly loaded: Loaded }) {
+export function App(props: { readonly loaded: Loaded }) {
+  // Review mode swaps in the full results once the reviewer finishes the pass.
+  const [loaded, setLoaded] = useState(props.loaded);
   switch (loaded.state) {
     case 'absent':
       return (
@@ -57,6 +62,15 @@ export function App({ loaded }: { readonly loaded: Loaded }) {
       );
     case 'loaded':
       return <Loaded loaded={loaded} />;
+    case 'review':
+      return (
+        <ReviewApp
+          session={loaded.session}
+          onFinished={(results) => {
+            setLoaded({ state: 'loaded', results, mode: 'report' });
+          }}
+        />
+      );
   }
 }
 
@@ -110,6 +124,7 @@ function View({ route }: { readonly route: Route }) {
             tick is zero and the shaded band is the margin, the smallest difference that would
             matter.
           </p>
+          {results.agreement !== undefined && <Agreement agreement={results.agreement} />}
           <Pins experiment={results.experiment} />
         </>
       );
@@ -141,42 +156,5 @@ function Nav({ route }: { readonly route: Route }) {
         ))}
       </ul>
     </nav>
-  );
-}
-
-function Frame(props: {
-  readonly children: ReactNode;
-  readonly nav?: ReactNode;
-  readonly meta?: ReactNode;
-}) {
-  return (
-    <>
-      <a className="skip" href="#main">
-        Skip to content
-      </a>
-      <header className="masthead">
-        <div className="masthead-inner">
-          <p className="wordmark">Placebo</p>
-          {props.meta !== undefined && <p className="masthead-meta">{props.meta}</p>}
-          {props.nav}
-        </div>
-      </header>
-      <main id="main" className="page">
-        {props.children}
-      </main>
-    </>
-  );
-}
-
-function Message(props: {
-  readonly title: string;
-  readonly alert?: boolean;
-  readonly children: ReactNode;
-}) {
-  return (
-    <section className="message" role={props.alert === true ? 'alert' : undefined}>
-      <h1>{props.title}</h1>
-      {props.children}
-    </section>
   );
 }

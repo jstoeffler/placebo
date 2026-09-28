@@ -1136,6 +1136,462 @@ select {
   display: none;
 }
 
+/* Reviews in the run detail ------------------------------------------------------------------ */
+
+.review-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  max-width: var(--measure);
+}
+
+.review-entry {
+  border-top: 1px solid var(--rule-strong);
+  padding: 0.625rem 0 1rem;
+}
+
+.review-entry > * + * {
+  margin-top: 0.5rem;
+}
+
+.review-by .quiet {
+  margin-left: 0.5rem;
+  font-size: var(--step--1);
+}
+
+/* Agreement ----------------------------------------------------------------------------------- */
+
+.agreement h2 {
+  scroll-margin-top: 5rem;
+}
+
+.agreement > .quiet {
+  max-width: var(--measure);
+}
+
+.agreement-caption {
+  text-align: left;
+  font-family: var(--serif);
+  font-size: var(--step-1);
+  font-weight: 600;
+  padding-bottom: 0.5rem;
+}
+
+.agreement-table .agreement-question {
+  font-weight: 400;
+  white-space: normal;
+  min-width: 16rem;
+}
+
+.tally-marks {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.625rem;
+}
+
+/* One square per answer compared, filled when the two sides agreed: counts stay countable. */
+.marks {
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  max-width: 6.5rem;
+}
+
+.mark {
+  width: 0.5rem;
+  height: 0.5rem;
+  border: 1px solid var(--ink-3);
+  border-radius: 1px;
+}
+
+.mark.agreed {
+  background: var(--ink-2);
+  border-color: var(--ink-2);
+}
+
+/* Review mode --------------------------------------------------------------------------------- */
+
+.review-bar {
+  margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  height: 100%;
+  font-size: var(--step--1);
+}
+
+.review-who .link-button {
+  margin-left: 0.5rem;
+}
+
+.review-progress {
+  display: grid;
+  gap: 0.2rem;
+  min-width: 9rem;
+  color: var(--ink-2);
+}
+
+.progress-rule {
+  display: block;
+  height: 2px;
+  background: var(--rule);
+}
+
+.progress-rule > span {
+  display: block;
+  height: 100%;
+  background: var(--ink);
+  transition: width 240ms ease-out;
+}
+
+.button-primary {
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--bg);
+  font-weight: 600;
+}
+
+.button-primary:hover {
+  background: var(--ink-2);
+}
+
+.button:disabled {
+  cursor: default;
+  opacity: 0.45;
+}
+
+.review-problem {
+  border-left: 3px solid var(--harms);
+  padding: 0.25rem 0 0.25rem 1rem;
+  color: var(--harms);
+  max-width: var(--measure);
+}
+
+.confirm {
+  max-width: var(--measure);
+  border-top: 2px solid var(--ink);
+  padding-top: 0.875rem;
+}
+
+.confirm > * + * {
+  margin-top: 0.75rem;
+}
+
+.confirm-actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.name-form {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+}
+
+.name-form .field span {
+  color: var(--ink-3);
+  font-size: var(--step--1);
+}
+
+.name-form input,
+.note-input,
+.reason textarea {
+  font: inherit;
+  color: var(--ink);
+  background: var(--bg);
+  border: 1px solid var(--rule-strong);
+  border-radius: 3px;
+  padding: 0.3rem 0.5rem;
+}
+
+.name-form input {
+  min-width: 16rem;
+}
+
+.review-layout {
+  display: grid;
+  grid-template-columns: 14rem minmax(0, 1fr);
+  gap: 2.5rem;
+  align-items: start;
+}
+
+.queue {
+  position: sticky;
+  top: 4.5rem;
+  max-height: calc(100vh - 6rem);
+  overflow: auto;
+}
+
+.queue ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--rule);
+}
+
+.queue-entry {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  width: 100%;
+  padding: 0.45rem 0.5rem 0.45rem 0.625rem;
+  border: 0;
+  border-bottom: 1px solid var(--rule);
+  border-left: 2px solid transparent;
+  background: none;
+  color: var(--ink);
+  font: inherit;
+  font-size: var(--step--1);
+  text-align: left;
+  cursor: pointer;
+}
+
+.queue-entry:hover {
+  background: var(--surface);
+}
+
+.queue-entry[aria-current='true'] {
+  border-left-color: var(--ink);
+  background: var(--surface);
+}
+
+.queue-task {
+  font-family: var(--mono);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.queue-label {
+  grid-row: 2;
+  color: var(--ink-2);
+}
+
+.queue-state {
+  grid-row: 1 / span 2;
+  grid-column: 2;
+  align-self: center;
+  color: var(--ink-3);
+}
+
+.queue-entry.answered .queue-state {
+  color: var(--helps);
+}
+
+.review-main .run-head {
+  margin-top: 0;
+}
+
+.review-entry-view > section {
+  margin-top: 2.5rem;
+}
+
+.review-done {
+  color: var(--helps);
+  margin-bottom: 0.75rem;
+}
+
+.questions {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  border-top: 1px solid var(--rule-strong);
+}
+
+.question {
+  margin: 0;
+  padding: 0.625rem 0.5rem 0.75rem;
+  border: 0;
+  border-bottom: 1px solid var(--rule);
+  display: grid;
+  gap: 0.5rem;
+}
+
+.question:focus-within {
+  background: var(--surface);
+}
+
+.question legend {
+  float: left;
+  width: 100%;
+  padding: 0;
+  font-family: var(--serif);
+  font-size: var(--step-1);
+  line-height: 1.4;
+}
+
+/* Two options joined into one control: yes/no, or a/b. */
+.toggle {
+  display: inline-flex;
+  width: max-content;
+  border: 1px solid var(--rule-strong);
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.toggle-option {
+  position: relative;
+  cursor: pointer;
+}
+
+.toggle-option + .toggle-option {
+  border-left: 1px solid var(--rule-strong);
+}
+
+.toggle-option input {
+  position: absolute;
+  opacity: 0;
+  inset: 0;
+  margin: 0;
+  cursor: pointer;
+}
+
+.toggle-option span {
+  display: block;
+  min-width: 4.5rem;
+  padding: 0.25rem 0.875rem;
+  text-align: center;
+  font-weight: 500;
+}
+
+.toggle-option input:checked + span {
+  background: var(--ink);
+  color: var(--bg);
+}
+
+.toggle-option input:focus-visible + span {
+  outline: 2px solid var(--accent);
+  outline-offset: -3px;
+}
+
+fieldset:disabled .toggle-option {
+  cursor: default;
+  opacity: 0.6;
+}
+
+.note-input {
+  width: 100%;
+  font-size: var(--step--1);
+}
+
+.save-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.5rem 1rem;
+  margin-top: 1rem;
+}
+
+.save-hint {
+  color: var(--ink-3);
+  font-size: var(--step--1);
+}
+
+.save-error {
+  color: var(--harms);
+  font-size: var(--step--1);
+}
+
+.checks-heading {
+  margin-top: 2rem;
+}
+
+.choice {
+  margin-top: 1.5rem;
+  padding: 0.875rem 1rem 1rem;
+  background: var(--surface);
+  border-radius: 3px;
+  max-width: 52rem;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.choice-options {
+  margin: 0;
+  padding: 0;
+  border: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem 1rem;
+}
+
+.choice-options legend {
+  float: left;
+  font-family: var(--serif);
+  font-size: var(--step-1);
+  font-weight: 600;
+  padding: 0;
+  margin-right: 0.5rem;
+}
+
+.choice .toggle {
+  background: var(--bg);
+}
+
+.choice .save-bar {
+  margin-top: 0;
+}
+
+.reason {
+  display: grid;
+  gap: 0.25rem;
+}
+
+.reason span {
+  color: var(--ink-3);
+  font-size: var(--step--1);
+}
+
+.reason textarea {
+  resize: vertical;
+}
+
+.sides {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 2rem;
+  margin-top: 2rem;
+  align-items: start;
+}
+
+.side {
+  min-width: 0;
+  border-top: 2px solid var(--rule-strong);
+  padding-top: 0.75rem;
+}
+
+.side-chosen {
+  border-top-color: var(--ink);
+}
+
+.side-name {
+  font-size: var(--step-2);
+}
+
+@media (max-width: 64rem) {
+  .sides,
+  .review-layout {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .queue {
+    position: static;
+    max-height: 14rem;
+  }
+}
+
+@media (max-width: 48rem) {
+  .review-bar {
+    gap: 0.75rem;
+  }
+
+  .review-who {
+    display: none;
+  }
+}
+
 @media (max-width: 40rem) {
   .masthead-inner,
   .page {
