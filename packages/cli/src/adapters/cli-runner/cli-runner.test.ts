@@ -2,7 +2,7 @@ import { mkdtempSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import type { RunRequest, RunnerEvent } from '@placebo-eval/core';
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { StreamProtocolError } from '../sdk-runner/stream.js';
 import {
   cliMessages,
@@ -17,6 +17,15 @@ import {
   withResult,
 } from '../sdk-runner/test-support.js';
 import { cliArgs, CliRunner, parseClaudeVersion } from './cli-runner.js';
+
+/** A promise and the function that resolves it. */
+function withResolvers(): { promise: Promise<void>; resolve: () => void } {
+  let resolve = (): void => undefined;
+  const promise = new Promise<void>((done) => {
+    resolve = done;
+  });
+  return { promise, resolve };
+}
 
 const FAKE_CLAUDE = new URL('fixtures/fake-claude.mjs', import.meta.url).pathname;
 
@@ -335,20 +344,33 @@ describe('CliRunner outcomes and infrastructure errors', () => {
   });
 
   it('kills claude after limits.maxDurationMs and records a failed run', async () => {
-    const { runner, dir } = setup({ stream: started, hang: true });
-    const request = { ...SUBJECT_REQUEST, cwd: dir, limits: { maxDurationMs: 300 } };
-    const result = await runner.run(request, () => undefined);
-    expect(result.result.outcome).toBe('failed');
+    // Only the runner's own timer is faked, and it fires once claude has started, however
+    // slowly the child process comes up.
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+    try {
+      const { runner, dir } = setup({ stream: started, hang: true });
+      const request = { ...SUBJECT_REQUEST, cwd: dir, limits: { maxDurationMs: 300 } };
+      const init = withResolvers();
+      const running = runner.run(request, (event) => {
+        if (event.type === 'system_init') init.resolve();
+      });
+      await init.promise;
+      await vi.advanceTimersByTimeAsync(300);
+      expect((await running).result.outcome).toBe('failed');
+    } finally {
+      vi.useRealTimers();
+    }
   });
+
   it('kills claude when request.signal fires and records a failed run', async () => {
     const { runner, dir } = setup({ stream: started, hang: true });
     const controller = new AbortController();
     const running = runner.run(
       { ...SUBJECT_REQUEST, cwd: dir, signal: controller.signal },
-      () => undefined,
+      (event) => {
+        if (event.type === 'system_init') controller.abort();
+      },
     );
-    await new Promise((resolve) => setTimeout(resolve, 300));
-    controller.abort();
     expect((await running).result.outcome).toBe('failed');
   });
 
@@ -365,11 +387,12 @@ describe('CliRunner outcomes and infrastructure errors', () => {
 
     const silent = setup({ hang: true });
     const late = new AbortController();
+    // `run` spawns claude before its first await, so aborting now stops a running child that
+    // has printed nothing.
     const running = silent.runner.run(
       { ...SUBJECT_REQUEST, cwd: silent.dir, signal: late.signal },
       () => undefined,
     );
-    await new Promise((resolve) => setTimeout(resolve, 300));
     late.abort(new Error('stopped before init'));
     await expect(running).rejects.toThrow('stopped before init');
   });

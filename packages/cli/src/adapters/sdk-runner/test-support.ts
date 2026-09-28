@@ -89,8 +89,8 @@ export interface FakeQuery {
 
 /**
  * A fake `query` yielding the given messages, then throwing `thenThrow` if given. With
- * `hang`, it waits after the messages until the abort signal fires, then throws an AbortError
- * as the SDK does.
+ * `hang`, it waits after the messages until the abort signal fires (at once if it already has),
+ * then throws an AbortError as the SDK does.
  */
 export function fakeQuery(
   messages: readonly unknown[],
@@ -107,6 +107,7 @@ export function fakeQuery(
       const signal = params.options.abortController?.signal;
       if (options.hang === true && signal !== undefined) {
         await new Promise((resolve) => {
+          if (signal.aborted) resolve(undefined);
           signal.addEventListener('abort', resolve, { once: true });
         });
         const aborted = new Error('Claude Code process aborted by user');

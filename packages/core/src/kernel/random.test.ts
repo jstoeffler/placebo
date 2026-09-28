@@ -25,16 +25,26 @@ describe('createSeededRandom', () => {
     expect(createSeededRandom(1).next()).not.toBe(createSeededRandom(2).next());
   });
 
-  it('stays in [0, 1) and is roughly uniform', () => {
+  it('stays in [0, 1) and is uniform by a chi-square test', () => {
+    // 10 equal buckets give a chi-square statistic with 9 degrees of freedom. A uniform source
+    // exceeds 27.88 with probability 0.001, so a failure means a biased generator. The seed is
+    // fixed, so the statistic is the same on every run and machine: this cannot flake.
     const random = createSeededRandom(7);
-    const buckets = [0, 0, 0, 0];
-    for (let i = 0; i < 40_000; i++) {
+    const draws = 100_000;
+    const buckets = Array.from({ length: 10 }, () => 0);
+    let low = 1;
+    let high = 0;
+    for (let i = 0; i < draws; i++) {
       const x = random.next();
-      expect(x).toBeGreaterThanOrEqual(0);
-      expect(x).toBeLessThan(1);
-      buckets[Math.floor(x * 4)]! += 1;
+      low = Math.min(low, x);
+      high = Math.max(high, x);
+      buckets[Math.floor(x * 10)]! += 1;
     }
-    for (const count of buckets) expect(Math.abs(count - 10_000)).toBeLessThan(500);
+    expect(low).toBeGreaterThanOrEqual(0);
+    expect(high).toBeLessThan(1);
+    const expected = draws / buckets.length;
+    const chiSquare = buckets.reduce((sum, count) => sum + (count - expected) ** 2 / expected, 0);
+    expect(chiSquare).toBeLessThan(27.88);
   });
 
   it('accepts the seed bounds and rejects anything else', () => {

@@ -179,34 +179,49 @@ describe('runExperiment', () => {
   });
 
   it('never has more runs in flight than parallelism', async () => {
-    let inFlight = 0;
-    let peak = 0;
-    const plan = (request: RunRequest) => {
-      if (!isSubject(request)) return defaultPlan(request);
-      return {
-        ...defaultPlan(request),
-        steps: [
-          {
-            wait: async () => {
-              inFlight += 1;
-              peak = Math.max(peak, inFlight);
-              await new Promise((resolve) => setTimeout(resolve, 5));
-              inFlight -= 1;
+    /**
+     * Each subject run waits at a barrier that opens once `size` runs wait there, so the pool
+     * must hold that many agents at once to make progress, with no timer involved. The run
+     * count is a multiple of `size`, so the last group fills too.
+     */
+    const gated = (size: number) => {
+      const state = { inFlight: 0, peak: 0 };
+      let waiting: (() => void)[] = [];
+      const plan = (request: RunRequest) => {
+        if (!isSubject(request)) return defaultPlan(request);
+        return {
+          ...defaultPlan(request),
+          steps: [
+            {
+              wait: async () => {
+                state.inFlight += 1;
+                state.peak = Math.max(state.peak, state.inFlight);
+                await new Promise<void>((resolve) => {
+                  waiting.push(resolve);
+                  if (waiting.length === size) {
+                    for (const release of waiting) release();
+                    waiting = [];
+                  }
+                });
+                state.inFlight -= 1;
+              },
             },
-          },
-          ...(defaultPlan(request).steps ?? []),
-        ],
+            ...(defaultPlan(request).steps ?? []),
+          ],
+        };
       };
+      return { state, plan };
     };
-    const h = setup({ plan, suite: { runs: 3 }, options: { parallelism: 3 } });
-    const result = await runExperiment(h.input);
-    expect(result.ok).toBe(true);
-    expect(peak).toBe(3);
 
-    peak = 0;
-    const serial = setup({ plan, suite: { runs: 2 }, options: { parallelism: 1 } });
+    const parallel = gated(3);
+    const h = setup({ plan: parallel.plan, suite: { runs: 3 }, options: { parallelism: 3 } });
+    expect((await runExperiment(h.input)).ok).toBe(true);
+    expect(parallel.state.peak).toBe(3);
+
+    const one = gated(1);
+    const serial = setup({ plan: one.plan, suite: { runs: 2 }, options: { parallelism: 1 } });
     expect((await runExperiment(serial.input)).ok).toBe(true);
-    expect(peak).toBe(1);
+    expect(one.state.peak).toBe(1);
   });
 
   it('retries an infrastructure error from a fresh run folder after a backoff', async () => {

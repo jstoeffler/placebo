@@ -265,11 +265,10 @@ describe('SdkRunner outcomes and infrastructure errors', () => {
     const fake = fakeQuery(withoutResult(sdkMessages('timeout')), { hang: true });
     const runner = new SdkRunner({ query: fake.query, clock: steppingClock() });
     const events: RunnerEvent[] = [];
-    const running = runner.run({ ...SUBJECT_REQUEST, signal: controller.signal }, (event) =>
-      events.push(event),
-    );
-    await new Promise((resolve) => setTimeout(resolve, 10));
-    controller.abort();
+    const running = runner.run({ ...SUBJECT_REQUEST, signal: controller.signal }, (event) => {
+      events.push(event);
+      if (event.type === 'system_init') controller.abort();
+    });
     const result = await running;
     expect(fake.calls[0]?.options.abortController?.signal.aborted).toBe(true);
     expect(result.result).toMatchObject({ outcome: 'failed', costUsd: 0, stopReason: null });
@@ -294,7 +293,6 @@ describe('SdkRunner outcomes and infrastructure errors', () => {
       { ...SUBJECT_REQUEST, signal: late.signal },
       () => undefined,
     );
-    await new Promise((resolve) => setTimeout(resolve, 10));
     late.abort(new Error('stopped before init'));
     await expect(running).rejects.toThrow('stopped before init');
   });

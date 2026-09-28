@@ -1,5 +1,5 @@
 // @vitest-environment happy-dom
-import { cleanup, render, screen, waitFor, within } from '@testing-library/react';
+import { act, cleanup, render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { formatCurrency } from '@placebo-eval/core/format';
@@ -22,6 +22,26 @@ function rowTexts(card: HTMLElement): string[][] {
         .map((cell) => cell.textContent)
         .filter((text) => text !== ''),
     );
+}
+
+/**
+ * Runs `action` and returns once the route change it causes has rendered: it waits for the
+ * `hashchange` event itself rather than polling, so a slow machine cannot time it out.
+ */
+async function routed(action: () => Promise<unknown>): Promise<void> {
+  await act(async () => {
+    const changed = new Promise<void>((resolve) => {
+      window.addEventListener(
+        'hashchange',
+        () => {
+          resolve();
+        },
+        { once: true },
+      );
+    });
+    await action();
+    await changed;
+  });
 }
 
 beforeEach(() => {
@@ -190,20 +210,16 @@ describe('runs', () => {
     const user = userEvent.setup();
     renderReport('rich', '#/runs');
     expect(screen.getByText('75 runs')).toBeDefined();
-    await user.selectOptions(screen.getByLabelText('Task'), 'fix-refund-rounding');
-    await waitFor(() => {
-      expect(screen.getByText('15 of 75 runs')).toBeDefined();
-    });
-    await user.selectOptions(screen.getByLabelText('Arm'), 'tests-first');
-    await waitFor(() => {
-      expect(screen.getByText('5 of 75 runs')).toBeDefined();
-    });
+    await routed(() => user.selectOptions(screen.getByLabelText('Task'), 'fix-refund-rounding'));
+    expect(screen.getByText('15 of 75 runs')).toBeDefined();
+    await routed(() => user.selectOptions(screen.getByLabelText('Arm'), 'tests-first'));
+    expect(screen.getByText('5 of 75 runs')).toBeDefined();
     expect(window.location.hash).toBe('#/runs?task=fix-refund-rounding&arm=tests-first');
-    await user.selectOptions(screen.getByLabelText('Task'), '');
-    await user.selectOptions(screen.getByLabelText('Outcome'), 'stopped_by_permission_denial');
-    await waitFor(() => {
-      expect(screen.getByText('1 of 75 runs')).toBeDefined();
-    });
+    await routed(() => user.selectOptions(screen.getByLabelText('Task'), ''));
+    await routed(() =>
+      user.selectOptions(screen.getByLabelText('Outcome'), 'stopped_by_permission_denial'),
+    );
+    expect(screen.getByText('1 of 75 runs')).toBeDefined();
   });
 });
 
@@ -300,15 +316,11 @@ describe('run detail', () => {
     const siblings = results.runs.filter((candidate) => candidate.taskId === run.taskId);
     renderReport('rich', `#/runs/${siblings[0]!.id}?task=${run.taskId}`);
     expect(screen.getByText('1 of 15')).toBeDefined();
-    await user.click(screen.getByRole('link', { name: 'Next' }));
-    await waitFor(() => {
-      expect(screen.getByText('2 of 15')).toBeDefined();
-    });
+    await routed(() => user.click(screen.getByRole('link', { name: 'Next' })));
+    expect(screen.getByText('2 of 15')).toBeDefined();
     expect(window.location.hash).toBe(`#/runs/${siblings[1]!.id}?task=${run.taskId}`);
-    await user.click(screen.getByRole('link', { name: 'Previous' }));
-    await waitFor(() => {
-      expect(screen.getByText('1 of 15')).toBeDefined();
-    });
+    await routed(() => user.click(screen.getByRole('link', { name: 'Previous' })));
+    expect(screen.getByText('1 of 15')).toBeDefined();
   });
 
   it('hides arm names and leaves room for the review panel in review mode', () => {
