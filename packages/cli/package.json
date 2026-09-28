@@ -1,6 +1,6 @@
 {
   "name": "placebo-eval",
-  "version": "0.0.0",
+  "version": "0.1.0",
   "description": "Stop cargo-culting your CLAUDE.md. Measure whether a Claude Code configuration change actually helps.",
   "keywords": [
     "claude-code",
