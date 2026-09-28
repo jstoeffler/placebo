@@ -12,6 +12,7 @@ import {
 import { childEnv } from '../sdk-runner/env.js';
 import { READ_ONLY_TOOLS } from '../sdk-runner/sdk-runner.js';
 import { infraErrorFrom, StreamProtocolError, StreamTranslator } from '../sdk-runner/stream.js';
+import { subjectDisallowedTools, subjectEnv } from '../subject-tools.js';
 
 // The fallback runner: the user's installed `claude` in print mode with streamed JSON (brief §7).
 // `claude -p --output-format stream-json` prints the same messages the Agent SDK yields, so the
@@ -60,6 +61,9 @@ export function cliArgs(request: RunRequest): string[] {
   if (request.systemPrompt !== undefined) args.push('--append-system-prompt', request.systemPrompt);
   switch (request.tools) {
     case 'all':
+      break;
+    case 'subject':
+      args.push('--disallowedTools', subjectDisallowedTools().join(','));
       break;
     case 'none':
       args.push('--tools', '', '--disallowedTools', 'mcp__*');
@@ -113,7 +117,7 @@ export class CliRunner implements Runner {
 
   async claudeCodeVersion(): Promise<string> {
     const lines: string[] = [];
-    const exit = await this.#exec(['--version'], process.cwd(), undefined, (line) => {
+    const exit = await this.#exec(['--version'], process.cwd(), {}, undefined, (line) => {
       lines.push(line);
     });
     const version = parseClaudeVersion(lines.join('\n'));
@@ -140,6 +144,7 @@ export class CliRunner implements Runner {
     const exit = await this.#exec(
       cliArgs(request),
       request.cwd,
+      subjectEnv(request),
       request.limits.maxDurationMs,
       (line, kill) => {
         if (failure.error !== undefined) return;
@@ -186,6 +191,7 @@ export class CliRunner implements Runner {
   #exec(
     args: readonly string[],
     cwd: string,
+    env: Readonly<Record<string, string>>,
     maxDurationMs: number | undefined,
     onLine: (line: string, kill: () => void) => void,
     onTimeout?: () => void,
@@ -198,7 +204,7 @@ export class CliRunner implements Runner {
       try {
         child = this.#spawn(this.#executable, args, {
           cwd,
-          env: childEnv(this.#env),
+          env: { ...childEnv(this.#env), ...env },
           stdio: ['ignore', 'pipe', 'pipe'],
         });
       } catch (error) {

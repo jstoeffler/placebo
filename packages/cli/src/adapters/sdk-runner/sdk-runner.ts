@@ -9,6 +9,7 @@ import {
   systemClock,
 } from '@placebo-eval/core';
 import { z } from 'zod';
+import { subjectDisallowedTools, subjectEnv } from '../subject-tools.js';
 import { childEnv } from './env.js';
 import { classifyThrown, infraErrorFrom, StreamProtocolError, StreamTranslator } from './stream.js';
 
@@ -67,6 +68,8 @@ function toolOptions(tools: RunRequest['tools']): Partial<Options> {
   switch (tools) {
     case 'all':
       return {};
+    case 'subject':
+      return { disallowedTools: subjectDisallowedTools() };
     case 'none':
       return { tools: [], disallowedTools: ['mcp__*'] };
     case 'read_only':
@@ -134,7 +137,8 @@ export class SdkRunner implements Runner {
     signal?.addEventListener('abort', cutShort, { once: true });
     const notStarted = (error: unknown): unknown =>
       signal?.aborted === true ? signal.reason : classifyThrown(error);
-    const options = sdkOptions(request, childEnv(this.#env), controller);
+    const env = { ...childEnv(this.#env), ...subjectEnv(request) };
+    const options = sdkOptions(request, env, controller);
     try {
       for await (const message of this.#query({ prompt: request.prompt, options })) {
         translator.push(message);

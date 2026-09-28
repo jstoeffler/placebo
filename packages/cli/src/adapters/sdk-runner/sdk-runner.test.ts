@@ -2,7 +2,8 @@ import { readFileSync } from 'node:fs';
 import { type RunnerEvent, RunnerInfraError } from '@placebo-eval/core';
 import { describe, expect, it } from 'vitest';
 import { childEnv, PARENT_SESSION_VARIABLES } from './env.js';
-import { bundledClaudeCodeVersion, SdkRunner } from './sdk-runner.js';
+import { subjectDisallowedTools } from '../subject-tools.js';
+import { bundledClaudeCodeVersion, type QueryFunction, SdkRunner } from './sdk-runner.js';
 import { outcomeOf, parseRetryAfterMs, StreamProtocolError } from './stream.js';
 import {
   fakeQuery,
@@ -12,6 +13,10 @@ import {
   sdkMessages,
   steppingClock,
   SUBJECT_REQUEST,
+  isRemainder,
+  mainLoopUsage,
+  modelUsageTotals,
+  sumUsage,
   withoutResult,
   withResult,
 } from './test-support.js';
@@ -108,6 +113,28 @@ describe('SdkRunner options', () => {
     });
   });
 
+  it('maps a subject run: the escaping tools disallowed, background execution off', async () => {
+    const { options } = await runWith(sdkMessages('sync-subagent'), {
+      ...SUBJECT_REQUEST,
+      tools: 'subject',
+    });
+    expect(options.disallowedTools).toEqual(subjectDisallowedTools());
+    expect(options).not.toHaveProperty('tools');
+    expect(options).not.toHaveProperty('allowedTools');
+    expect(options.env).toMatchObject({ CLAUDE_CODE_DISABLE_BACKGROUND_TASKS: '1' });
+    for (const name of PARENT_SESSION_VARIABLES) expect(options.env).not.toHaveProperty(name);
+  });
+
+  it('leaves background execution on when the suite allows background work', async () => {
+    const { options } = await runWith(sdkMessages('background-subagent'), {
+      ...SUBJECT_REQUEST,
+      tools: 'subject',
+      backgroundWork: true,
+    });
+    expect(options.disallowedTools).toEqual(subjectDisallowedTools());
+    expect(options.env).not.toHaveProperty('CLAUDE_CODE_DISABLE_BACKGROUND_TASKS');
+  });
+
   it('takes turn and budget limits from the suite, with the request maxTurns winning', async () => {
     const limits = { maxTurns: 30, maxBudgetUsd: 2.5 };
     const fromSuite = await runWith(sdkMessages('subject'), { ...SUBJECT_REQUEST, limits });
@@ -118,6 +145,30 @@ describe('SdkRunner options', () => {
       maxTurns: 3,
     });
     expect(overridden.options.maxTurns).toBe(3);
+  });
+});
+
+describe('SdkRunner duration', () => {
+  it('measures wall clock from starting Claude Code to its exit and keeps the reported duration', async () => {
+    const messages = sdkMessages('subject');
+    const start = Date.parse('2026-09-27T12:00:00.000Z');
+    let now = start;
+    const clock = { now: () => new Date(now) };
+    const query: QueryFunction = () =>
+      (async function* () {
+        for (const message of messages) {
+          await Promise.resolve();
+          yield message;
+        }
+        // Claude Code keeps running for five minutes after its result, then exits.
+        now = start + 300_000;
+      })();
+    const runner = new SdkRunner({ query, clock, env: PARENT_ENV });
+    const { result } = await runner.run(SUBJECT_REQUEST, () => undefined);
+    const reported = messages.find((message) => message.type === 'result')?.duration_ms;
+    expect(result.durationMs).toBe(300_000);
+    expect(result.reportedDurationMs).toBe(reported);
+    expect(result.reportedDurationMs).toBeLessThan(300_000);
   });
 });
 
@@ -134,8 +185,10 @@ describe('SdkRunner translation of recorded runs', () => {
       'usage',
       'assistant_text',
       'usage',
+      'usage',
       'result',
     ]);
+    expect(events.at(-2)).toMatchObject({ type: 'usage', remainder: true });
     expect(events[0]).toMatchObject({
       model: 'claude-haiku-4-5-20251001',
       claudeCodeVersion: '2.1.283',
@@ -153,20 +206,13 @@ describe('SdkRunner translation of recorded runs', () => {
     expect(result.result).not.toHaveProperty('structuredOutput');
   });
 
-  it('sums per-turn usage to the main-loop usage the result reports', async () => {
+  it('sums per-turn usage to the main-loop usage the result reports, and the remainder to its modelUsage', async () => {
     for (const scenario of ['subject', 'judge', 'read-only-judge', 'max-turns'] as const) {
       const messages = sdkMessages(scenario);
-      const raw = messages.find((message) => message.type === 'result')?.usage as Record<
-        string,
-        number
-      >;
-      const { result } = await runWith(messages);
-      expect(result.usage).toEqual({
-        input: raw.input_tokens,
-        output: raw.output_tokens,
-        cacheRead: raw.cache_read_input_tokens,
-        cacheWrite: raw.cache_creation_input_tokens,
-      });
+      const raw = messages.find((message) => message.type === 'result');
+      const { result, events } = await runWith(messages);
+      expect(sumUsage(events.filter((event) => !isRemainder(event)))).toEqual(mainLoopUsage(raw));
+      expect(result.usage).toEqual(modelUsageTotals(raw));
     }
   });
 
@@ -216,18 +262,29 @@ describe('SdkRunner translation of recorded runs', () => {
 
   it('reads Claude Code usage from assistant messages when no message_delta arrives', async () => {
     const messages = sdkMessages('subject').filter((message) => message.type !== 'stream_event');
-    const { result } = await runWith(messages);
-    expect(result.usage.input).toBe(26);
-    expect(result.usage.output).toBeGreaterThan(0);
+    const { events } = await runWith(messages);
+    const streamed = sumUsage(events.filter((event) => !isRemainder(event)));
+    expect(streamed.input).toBe(26);
+    expect(streamed.output).toBeGreaterThan(0);
   });
 
-  it('ignores messages before system init and after the result', async () => {
+  it('emits no remainder and estimates nothing when the result carries no modelUsage', async () => {
+    const { events, result } = await runWith(
+      withResult(sdkMessages('subject'), { modelUsage: undefined }),
+    );
+    expect(events.filter(isRemainder)).toEqual([]);
+    expect(result.result).toMatchObject({
+      costEstimated: false,
+      reportedCostUsd: result.result.costUsd,
+    });
+  });
+
+  it('ignores messages before system init', async () => {
     const messages = sdkMessages('subject');
     const { events } = await runWith([
       { type: 'rate_limit_event', rate_limit_info: {} },
       { type: 'assistant', not: 'parsed' },
       ...messages,
-      { type: 'assistant', after: 'result' },
     ]);
     expect(events[0]?.type).toBe('system_init');
     expect(events.at(-1)?.type).toBe('result');

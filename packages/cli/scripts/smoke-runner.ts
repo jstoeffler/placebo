@@ -1,7 +1,8 @@
 /* eslint-disable no-console -- a script whose output is the point. */
 // Smoke run of both runners against the real Claude Code, spending real tokens. Never part of
 // Vitest. Run with `pnpm --filter placebo-eval smoke`; add `--record` to rewrite the recorded
-// fixtures under src/adapters/*/fixtures from this run (home and temp paths are replaced).
+// fixtures under src/adapters/*/fixtures from this run (home and temp paths are replaced), and
+// `--scenario=a,b` to run only those scenarios.
 import { spawn, type ChildProcess } from 'node:child_process';
 import { mkdirSync, mkdtempSync, realpathSync, writeFileSync } from 'node:fs';
 import { homedir, tmpdir } from 'node:os';
@@ -19,6 +20,10 @@ import { SdkRunner } from '../src/adapters/sdk-runner/sdk-runner.js';
 const MODEL = 'claude-haiku-4-5-20251001';
 const record = process.argv.includes('--record');
 const only = process.argv.find((arg) => arg.startsWith('--only='))?.slice('--only='.length);
+const scenarios = process.argv
+  .find((arg) => arg.startsWith('--scenario='))
+  ?.slice('--scenario='.length)
+  .split(',');
 const adapters = new URL('../src/adapters/', import.meta.url);
 
 const JUDGE_SCHEMA = {
@@ -88,6 +93,25 @@ const SCENARIOS: readonly Scenario[] = [
   },
   { name: 'max-turns', request: (cwd) => ({ ...subject(cwd), limits: { maxTurns: 1 } }) },
   { name: 'timeout', request: (cwd) => ({ ...subject(cwd), limits: { maxDurationMs: 4000 } }) },
+  {
+    name: 'sync-subagent',
+    request: (cwd) => ({
+      ...subject(cwd),
+      prompt:
+        'Use the Agent tool exactly once, with subagent_type general-purpose, to have a subagent add a comment line at the top of hello.txt saying hi. Wait for its result, then reply done.',
+      tools: 'subject',
+    }),
+  },
+  {
+    name: 'background-subagent',
+    request: (cwd) => ({
+      ...subject(cwd),
+      prompt:
+        "Use the Agent tool exactly once, with run_in_background true and subagent_type general-purpose, to have a subagent run the shell command 'sleep 5' and then add a comment line at the top of hello.txt saying hi. Right after launching it, reply launched and end your turn without waiting for it.",
+      tools: 'subject',
+      backgroundWork: true,
+    }),
+  },
 ];
 
 function runFolder(): string {
@@ -179,6 +203,7 @@ async function main(): Promise<void> {
     if (only !== undefined && !only.split(',').includes(name)) continue;
     console.log(`\n=== ${name} runner, claudeCodeVersion() = ${await runner.claudeCodeVersion()}`);
     for (const scenario of SCENARIOS) {
+      if (scenarios !== undefined && !scenarios.includes(scenario.name)) continue;
       recorded = [];
       recordedLines = [];
       const dir = runFolder();

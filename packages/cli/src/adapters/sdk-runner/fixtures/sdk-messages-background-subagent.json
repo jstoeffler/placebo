@@ -1,0 +1,1711 @@
+[
+  {
+    "type": "system",
+    "subtype": "init",
+    "cwd": "/tmp/placebo-smoke",
+    "session_id": "66bc33e9-600d-4806-93c8-df904842689f",
+    "tools": [
+      "Task",
+      "Bash",
+      "Edit",
+      "NotebookEdit",
+      "Read",
+      "ReportFindings",
+      "Skill",
+      "TaskCreate",
+      "TaskGet",
+      "TaskList",
+      "TaskStop",
+      "TaskUpdate",
+      "ToolSearch",
+      "WebFetch",
+      "WebSearch",
+      "Write"
+    ],
+    "mcp_servers": [],
+    "model": "claude-haiku-4-5-20251001",
+    "permissionMode": "bypassPermissions",
+    "slash_commands": [
+      "deep-research",
+      "design",
+      "design-sync",
+      "dataviz",
+      "update-config",
+      "verify",
+      "debug",
+      "code-review",
+      "simplify",
+      "batch",
+      "fewer-permission-prompts",
+      "doctor",
+      "loop",
+      "schedule",
+      "claude-api",
+      "workflow-authoring",
+      "run",
+      "run-skill-generator",
+      "advisor",
+      "agents",
+      "auto-mode-setup",
+      "autocompact",
+      "clear",
+      "color",
+      "compact",
+      "config",
+      "output-style",
+      "context",
+      "effort",
+      "fast",
+      "focus",
+      "heapdump",
+      "init",
+      "mcp",
+      "import",
+      "model",
+      "__remote-workflow",
+      "workflow-launch-exec",
+      "reload-plugins",
+      "reload-skills",
+      "rename",
+      "ultrareview",
+      "security-review",
+      "usage-credits",
+      "extra-usage",
+      "usage",
+      "insights",
+      "recap",
+      "skill-doctor",
+      "goal",
+      "design-consent",
+      "design-revoke",
+      "list-agents",
+      "team-onboarding"
+    ],
+    "terminal_slash_commands": ["doctor", "color", "focus", "reload-plugins"],
+    "apiKeySource": "none",
+    "claude_code_version": "2.1.283",
+    "output_style": "default",
+    "agents": ["claude", "Explore", "general-purpose", "Plan", "statusline-setup"],
+    "skills": [
+      "deep-research",
+      "design",
+      "design-sync",
+      "dataviz",
+      "update-config",
+      "verify",
+      "debug",
+      "code-review",
+      "simplify",
+      "batch",
+      "fewer-permission-prompts",
+      "doctor",
+      "loop",
+      "schedule",
+      "claude-api",
+      "workflow-authoring",
+      "run",
+      "run-skill-generator"
+    ],
+    "plugins": [
+      {
+        "name": "agents-md",
+        "path": "builtin",
+        "source": "agents-md@builtin"
+      },
+      {
+        "name": "telemetry",
+        "path": "builtin",
+        "source": "telemetry@builtin"
+      }
+    ],
+    "capabilities": [
+      "interrupt_receipt_v1",
+      "interrupt_cancel_queued_v1",
+      "msg_lifecycle_v1",
+      "mcp_read_resource_v1",
+      "mcp_tool_ui_meta_v1"
+    ],
+    "analytics_disabled": false,
+    "product_feedback_disabled": false,
+    "uuid": "17dec92d-5a0e-4d55-beec-95d352920d43",
+    "memory_paths": {
+      "auto": "/home/user/.claude/projects/-tmp-placebo-smoke/memory/"
+    },
+    "messaging_socket_path": "/tmp/cc-socks/50753.sock",
+    "fast_mode_state": "off",
+    "fast_mode_disabled_reason": "sdk_opt_in_required",
+    "per_turn_effort_active": false,
+    "view_mode": "default"
+  },
+  {
+    "type": "system",
+    "subtype": "status",
+    "status": "requesting",
+    "session_id": "66bc33e9-600d-4806-93c8-df904842689f",
+    "uuid": "6df6532d-efbf-4bdb-98ae-cf4de8493bba"
+  },
+  {
+    "type": "rate_limit_event",
+    "rate_limit_info": {
+      "status": "allowed",
+      "resetsAt": 1790585400,
+      "rateLimitType": "five_hour",
+      "overageStatus": "rejected",
+      "overageDisabledReason": "out_of_credits",
+      "isUsingOverage": false,
+      "unifiedWindows": {
+        "five_hour": {
+          "utilization": 0.3,
+          "resetsAt": 1790585400
+        },
+        "seven_day": {
+          "utilization": 0.31,
+          "resetsAt": 1791039600
+        }
+      }
+    },
+    "uuid": "967b9ff6-5783-40c2-960a-38a9afb65907",
+    "session_id": "66bc33e9-600d-4806-93c8-df904842689f"
+  },
+  {
+    "type": "stream_event",
+    "event": {
+      "type": "message_start",
+      "message": {
+        "model": "claude-haiku-4-5-20251001",
+        "id": "msg_011CfVVNZbP7cMFK22unddSL",
+        "type": "message",
+        "role": "assistant",
+        "content": [],
+        "container": null,
+        "stop_reason": null,
+        "stop_sequence": null,
+        "stop_details": null,
+        "usage": {
+          "input_tokens": 10,
+          "cache_creation_input_tokens": 19890,
+          "cache_read_input_tokens": 0,
+          "cache_creation": {
+            "ephemeral_5m_input_tokens": 0,
+            "ephemeral_1h_input_tokens": 19890
+          },
+          "output_tokens": 3,
+          "service_tier": "standard",
+          "inference_geo": "not_available"
+        },
+        "input_transformations": [],
+        "diagnostics": null,
+        "context_management": null
+      }
+    },
+    "session_id": "66bc33e9-600d-4806-93c8-df904842689f",
+    "parent_tool_use_id": null,
+    "uuid": "24d06a3f-3bc7-4cac-bc9c-932e91f900af",
+    "ttft_ms": 987,
+    "thinking_display": "updates"
+  },
+  {
+    "type": "assistant",
+    "message": {
+      "model": "claude-haiku-4-5-20251001",
+      "id": "msg_011CfVVNZbP7cMFK22unddSL",
+      "type": "message",
+      "role": "assistant",
+      "content": [
+        {
+          "type": "thinking",
+          "thinking": "",
+          "signature": "EsUHCrIBCBIYAipAzlJAjXIpofDT91zrB+1B5tYHJ6KNIvVRGlDQQ+0VNbG9JzApcKMtWHdZYGld9Cp95NfmtapqF9vsl9DvmwgtgjIZY2xhdWRlLWhhaWt1LTQtNS0yMDI1MTAwMTgAQgh0aGlua2luZ1okNWFjYTIyNTAtMDE1YS00NzA1LWIyMWQtNzk4Y2U1MjkxODMzchC8TScu+/6SODomOmNow4wkiAEBqAH5vujVBrABAhIMFoufkDzwS77J/Zh2GgzXMEYSSjywmSw9uP8iMA43W3W3n30H5Wnbsa0VD7RzfHawnsqA0YgkJfnve1kDsHYYyQ3Tv3u7TsjzQa8uwyq/BR5VIbe8R2/U3VbtdyPUt/LUHvHppSCf3DTm823gGiOwyJ8thIhnF0KaODRCSjscwlBKPRqQLSuxSoeG37Gj3F5ghunWG5vVsC1gowxMPO04HGi81NOpbUv0uBk+u1D3bs3Ocwhqq2GFW4KrB42+wg77zn0r9pN8pXU9CM9KE5A4lqEz1BDzD2Ik4Fwam8Y8XZIePTo3OEIM4XTUsLYHgvCGVSp8yIf9eyGHbxheDQ+HWtKb0dm15WoPoMu3XNkm6uO2Mm3Ez6V31eP3cWE3YjWZq0tqHZRTsN1kIbDEG+dv99y6TLLUdrccxmbWewFI4upQLPyD2eHuJ36qYL9+dw5R+PJ+JG9EGE+Egr7BRZo6h8UEg2XJdFdRVuFSqu71jMIqh/u1V+h4rea+9ORANQewxLJ/NDEHm6ggLWO6ycezwTtdz7nCFxWuRBId1HkV8zzNrKYVxtIni2FPcGT8Pc01AFyEOdZuF6k/0QvWItbJEFqscau6Z6NLYNyh5v2Hozblh/C69Dsb91Pp2AhOb5zID4fLhZWHjSSBTawTDFR6mp2uE7rGFpwhGg85//9CQMBoaTd3aRGUxKjPcO2vaNuKrxNvE082lZ+4ajCyym+9J4MOWNP8+h6wZ3qytc0U/HDletEUA1q6/KBcDfEufJHv6UuGDucLymvd5Ye10EqZboGv73tgvJHUW5JMBGvRNrFM3YKJjefFNDiPh6mbMSaMnWYul7Go2siFiPkQ1YnOMjwMwA2Dcohfb8fASwPDFYduLBF/sr1JBsYtWqEpza3KVH0eM50xgcDbPTP63/sHTZkYTJokNEvHzhQmQ6+qFJGAOzwNIrsg3K8MYerNG7E6MSTAR43RSdXwxEyonfzNUsZG3KIxEEj539s2nANz63uQYS03ZV71jWIlsbDSpw41XyphDsGRBxjPQkFRctwYAQ=="
+        }
+      ],
+      "container": null,
+      "stop_reason": null,
+      "stop_sequence": null,
+      "stop_details": null,
+      "usage": {
+        "input_tokens": 10,
+        "cache_creation_input_tokens": 19890,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 19890
+        },
+        "output_tokens": 3,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "input_transformations": [],
+      "diagnostics": null,
+      "context_management": null
+    },
+    "parent_tool_use_id": null,
+    "session_id": "66bc33e9-600d-4806-93c8-df904842689f",
+    "uuid": "b90074fb-87d7-4d3b-bae5-956ed38466ce",
+    "timestamp": "2026-09-28T08:04:09.478Z",
+    "request_id": "req_011CfVVNZEZnuoCeEUn2aUMy"
+  },
+  {
+    "type": "assistant",
+    "message": {
+      "model": "claude-haiku-4-5-20251001",
+      "id": "msg_011CfVVNZbP7cMFK22unddSL",
+      "type": "message",
+      "role": "assistant",
+      "content": [
+        {
+          "type": "tool_use",
+          "id": "toolu_01Eedg9497TcV5uBgwKizULj",
+          "name": "Agent",
+          "input": {
+            "description": "Sleep then add comment to hello.txt",
+            "subagent_type": "general-purpose",
+            "run_in_background": true,
+            "prompt": "Run the shell command 'sleep 5', then add a comment line at the top of hello.txt that says \"hi\". Use the Bash tool for the sleep command and the Edit tool to add the comment line to the file."
+          },
+          "caller": {
+            "type": "direct"
+          }
+        }
+      ],
+      "container": null,
+      "stop_reason": null,
+      "stop_sequence": null,
+      "stop_details": null,
+      "usage": {
+        "input_tokens": 10,
+        "cache_creation_input_tokens": 19890,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 19890
+        },
+        "output_tokens": 3,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "input_transformations": [],
+      "diagnostics": null,
+      "context_management": null
+    },
+    "parent_tool_use_id": null,
+    "session_id": "66bc33e9-600d-4806-93c8-df904842689f",
+    "uuid": "9d5b532c-7668-4697-be2e-dacb89c4769b",
+    "timestamp": "2026-09-28T08:04:10.553Z",
+    "request_id": "req_011CfVVNZEZnuoCeEUn2aUMy",
+    "wire_tool_inputs": {
+      "toolu_01Eedg9497TcV5uBgwKizULj": {
+        "description": "Sleep then add comment to hello.txt",
+        "subagent_type": "general-purpose",
+        "run_in_background": true,
+        "prompt": "Run the shell command 'sleep 5', then add a comment line at the top of hello.txt that says \"hi\". Use the Bash tool for the sleep command and the Edit tool to add the comment line to the file."
+      }
+    }
+  },
+  {
+    "type": "system",
+    "subtype": "background_tasks_changed",
+    "tasks": [
+      {
+        "task_id": "a636c81dcb1908cd3",
+        "task_type": "local_agent",
+        "description": "Sleep then add comment to hello.txt"
+      }
+    ],
+    "uuid": "712296dd-8d05-4a61-af33-2f6b041c954a",
+    "session_id": "66bc33e9-600d-4806-93c8-df904842689f"
+  },
+  {
+    "type": "system",
+    "subtype": "task_started",
+    "task_id": "a636c81dcb1908cd3",
+    "tool_use_id": "toolu_01Eedg9497TcV5uBgwKizULj",
+    "description": "Sleep then add comment to hello.txt",
+    "subagent_type": "general-purpose",
+    "is_backgrounded": true,
+    "spawn_depth": 1,
+    "task_type": "local_agent",
+    "prompt": "Run the shell command 'sleep 5', then add a comment line at the top of hello.txt that says \"hi\". Use the Bash tool for the sleep command and the Edit tool to add the comment line to the file.",
+    "uuid": "a121a4f4-b17a-47df-84b9-e9afda6faaa1",
+    "session_id": "66bc33e9-600d-4806-93c8-df904842689f"
+  },
+  {
+    "type": "user",
+    "message": {
+      "role": "user",
+      "content": [
+        {
+          "tool_use_id": "toolu_01Eedg9497TcV5uBgwKizULj",
+          "type": "tool_result",
+          "content": [
+            {
+              "type": "text",
+              "text": "Async agent launched successfully. (This tool result is internal metadata — never quote or paste any part of it, including the agentId below, into a user-facing reply.)\nagentId: a636c81dcb1908cd3 (internal ID - do not mention to user. Use SendMessage with to: 'a636c81dcb1908cd3', summary: '<5-10 word recap>' to continue this agent.)\nThe agent is working in the background. You will be notified automatically when it completes. You know nothing about its results until that notification arrives — do not report, assume, or predict them; continue other work or respond to the user in the meantime.\nDo not duplicate this agent's work — avoid working with the same files or topics it is using.\noutput_file: /private/tmp/claude-501/-tmp-placebo-smoke/66bc33e9-600d-4806-93c8-df904842689f/tasks/a636c81dcb1908cd3.output\nDo NOT Read or tail this file via the shell tool — it is the full subagent JSONL transcript and reading it will overflow your context. If the user asks for progress, say the agent is still running; you'll get a completion notification."
+            }
+          ]
+        }
+      ]
+    },
+    "parent_tool_use_id": null,
+    "session_id": "66bc33e9-600d-4806-93c8-df904842689f",
+    "uuid": "aeff5f72-d2a3-4e42-81d4-508bae43eac6",
+    "timestamp": "2026-09-28T08:04:10.574Z",
+    "tool_use_result": {
+      "isAsync": true,
+      "status": "async_launched",
+      "agentId": "a636c81dcb1908cd3",
+      "description": "Sleep then add comment to hello.txt",
+      "resolvedModel": "claude-haiku-4-5-20251001",
+      "prompt": "Run the shell command 'sleep 5', then add a comment line at the top of hello.txt that says \"hi\". Use the Bash tool for the sleep command and the Edit tool to add the comment line to the file.",
+      "outputFile": "/private/tmp/claude-501/-tmp-placebo-smoke/66bc33e9-600d-4806-93c8-df904842689f/tasks/a636c81dcb1908cd3.output",
+      "canReadOutputFile": true
+    }
+  },
+  {
+    "type": "stream_event",
+    "event": {
+      "type": "message_delta",
+      "delta": {
+        "stop_reason": "tool_use",
+        "stop_sequence": null,
+        "stop_details": null,
+        "container": null
+      },
+      "usage": {
+        "input_tokens": 10,
+        "cache_creation_input_tokens": 19890,
+        "cache_read_input_tokens": 0,
+        "output_tokens": 365,
+        "output_tokens_details": {
+          "thinking_tokens": 196
+        },
+        "iterations": [
+          {
+            "input_tokens": 10,
+            "output_tokens": 365,
+            "cache_read_input_tokens": 0,
+            "cache_creation_input_tokens": 19890,
+            "cache_creation": {
+              "ephemeral_5m_input_tokens": 0,
+              "ephemeral_1h_input_tokens": 19890
+            },
+            "type": "message"
+          }
+        ]
+      },
+      "context_management": {
+        "applied_edits": []
+      }
+    },
+    "session_id": "66bc33e9-600d-4806-93c8-df904842689f",
+    "parent_tool_use_id": null,
+    "uuid": "63ddbd76-a529-4cc7-babd-ec72cde31018"
+  },
+  {
+    "type": "system",
+    "subtype": "status",
+    "status": "requesting",
+    "session_id": "66bc33e9-600d-4806-93c8-df904842689f",
+    "uuid": "521643b0-4837-4f0f-870c-4b770059a3c5"
+  },
+  {
+    "type": "stream_event",
+    "event": {
+      "type": "message_start",
+      "message": {
+        "model": "claude-haiku-4-5-20251001",
+        "id": "msg_011CfVVNqenUBL9MxuKvTm68",
+        "type": "message",
+        "role": "assistant",
+        "content": [],
+        "container": null,
+        "stop_reason": null,
+        "stop_sequence": null,
+        "stop_details": null,
+        "usage": {
+          "input_tokens": 8,
+          "cache_creation_input_tokens": 733,
+          "cache_read_input_tokens": 19890,
+          "cache_creation": {
+            "ephemeral_5m_input_tokens": 0,
+            "ephemeral_1h_input_tokens": 733
+          },
+          "output_tokens": 6,
+          "service_tier": "standard",
+          "inference_geo": "not_available"
+        },
+        "input_transformations": [],
+        "diagnostics": null,
+        "context_management": null
+      }
+    },
+    "session_id": "66bc33e9-600d-4806-93c8-df904842689f",
+    "parent_tool_use_id": null,
+    "uuid": "11dffe08-7a67-4b05-b5af-d6c53df34bd8",
+    "ttft_ms": 877,
+    "thinking_display": "updates"
+  },
+  {
+    "type": "assistant",
+    "message": {
+      "model": "claude-haiku-4-5-20251001",
+      "id": "msg_011CfVVNqenUBL9MxuKvTm68",
+      "type": "message",
+      "role": "assistant",
+      "content": [
+        {
+          "type": "thinking",
+          "thinking": "",
+          "signature": "EscDCrIBCBIYAipADrgWKGcjTTkDFIjCkuqdWFJyS1c1MyXZ+4RWIMC4VRa3AAVWQfeZMWsdPZDTJGcd9vIj2IgTJGGUPgF+ACFNMDIZY2xhdWRlLWhhaWt1LTQtNS0yMDI1MTAwMTgAQgh0aGlua2luZ1okNWFjYTIyNTAtMDE1YS00NzA1LWIyMWQtNzk4Y2U1MjkxODMzchC8TScu+/6SODomOmNow4wkiAEBqAH7vujVBrABAhIM+2VhdlZnjNPlyrJnGgxLyTsozSMdYvmbtyAiMCmRUTld6LoJBeecPdZL+Ah7i9g0Y61mwm5NLqSDk2OvdejZkLsjXPaTzoUV3OpXWCrBAe2DqGcY0E/5gChECY0prBE1Y+SGGMawtjpjBmNeMq2ugpbKThA3P4ILkqaOqn5CDB8utquPSQ2WZNhJVRVSe/EEEMd/3/jAAmySRsLfkcHQTthVyXVT90WdHccL+FKMf1cV0fCyZszIfxMj7vnkRXTs2qkYwBS9Y2/u0I3qURH8B9xogDmBw8pubKb84WCG4294FGrlNtEjLcNysUmp66rrQw84Cd3yOJMXbhRoOdyYe5Mag98+W5d55PiIPrAETqkYAQ=="
+        }
+      ],
+      "container": null,
+      "stop_reason": null,
+      "stop_sequence": null,
+      "stop_details": null,
+      "usage": {
+        "input_tokens": 8,
+        "cache_creation_input_tokens": 733,
+        "cache_read_input_tokens": 19890,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 733
+        },
+        "output_tokens": 6,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "input_transformations": [],
+      "diagnostics": null,
+      "context_management": null
+    },
+    "parent_tool_use_id": null,
+    "session_id": "66bc33e9-600d-4806-93c8-df904842689f",
+    "uuid": "526ea767-3ee7-43aa-b3c6-16d4a96f2709",
+    "timestamp": "2026-09-28T08:04:11.743Z",
+    "request_id": "req_011CfVVNq63pfnGRxmJGZs1a"
+  },
+  {
+    "type": "assistant",
+    "message": {
+      "model": "claude-haiku-4-5-20251001",
+      "id": "msg_011CfVVNqenUBL9MxuKvTm68",
+      "type": "message",
+      "role": "assistant",
+      "content": [
+        {
+          "type": "text",
+          "text": "Launched"
+        }
+      ],
+      "container": null,
+      "stop_reason": null,
+      "stop_sequence": null,
+      "stop_details": null,
+      "usage": {
+        "input_tokens": 8,
+        "cache_creation_input_tokens": 733,
+        "cache_read_input_tokens": 19890,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 733
+        },
+        "output_tokens": 6,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "input_transformations": [],
+      "diagnostics": null,
+      "context_management": null
+    },
+    "parent_tool_use_id": null,
+    "session_id": "66bc33e9-600d-4806-93c8-df904842689f",
+    "uuid": "0da964b2-30c9-47d7-aacc-dbc9c0546b87",
+    "timestamp": "2026-09-28T08:04:11.763Z",
+    "request_id": "req_011CfVVNq63pfnGRxmJGZs1a"
+  },
+  {
+    "type": "stream_event",
+    "event": {
+      "type": "message_delta",
+      "delta": {
+        "stop_reason": "end_turn",
+        "stop_sequence": null,
+        "stop_details": null,
+        "container": null
+      },
+      "usage": {
+        "input_tokens": 8,
+        "cache_creation_input_tokens": 733,
+        "cache_read_input_tokens": 19890,
+        "output_tokens": 50,
+        "output_tokens_details": {
+          "thinking_tokens": 42
+        },
+        "iterations": [
+          {
+            "input_tokens": 8,
+            "output_tokens": 50,
+            "cache_read_input_tokens": 19890,
+            "cache_creation_input_tokens": 733,
+            "cache_creation": {
+              "ephemeral_5m_input_tokens": 0,
+              "ephemeral_1h_input_tokens": 733
+            },
+            "type": "message"
+          }
+        ]
+      },
+      "context_management": {
+        "applied_edits": []
+      }
+    },
+    "session_id": "66bc33e9-600d-4806-93c8-df904842689f",
+    "parent_tool_use_id": null,
+    "uuid": "712fb098-5a28-45be-a298-968ba59d2c2e"
+  },
+  {
+    "duration_api_ms": 5787,
+    "stop_reason": "end_turn",
+    "session_id": "66bc33e9-600d-4806-93c8-df904842689f",
+    "total_cost_usd": 0.046372000000000003,
+    "usage": {
+      "input_tokens": 18,
+      "cache_creation_input_tokens": 20623,
+      "cache_read_input_tokens": 19890,
+      "output_tokens": 415,
+      "output_tokens_details": {
+        "thinking_tokens": 238
+      },
+      "server_tool_use": {
+        "web_search_requests": 0,
+        "web_fetch_requests": 0
+      },
+      "service_tier": "standard",
+      "cache_creation": {
+        "ephemeral_1h_input_tokens": 20623,
+        "ephemeral_5m_input_tokens": 0
+      },
+      "inference_geo": "not_available",
+      "iterations": [
+        {
+          "input_tokens": 8,
+          "output_tokens": 50,
+          "cache_read_input_tokens": 19890,
+          "cache_creation_input_tokens": 733,
+          "cache_creation": {
+            "ephemeral_5m_input_tokens": 0,
+            "ephemeral_1h_input_tokens": 733
+          },
+          "type": "message"
+        }
+      ],
+      "speed": "standard"
+    },
+    "modelUsage": {
+      "claude-haiku-4-5-20251001": {
+        "inputTokens": 982,
+        "outputTokens": 431,
+        "cacheReadInputTokens": 19890,
+        "cacheCreationInputTokens": 20623,
+        "webSearchRequests": 0,
+        "costUSD": 0.046372000000000003,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000,
+        "thinkingTokens": 238,
+        "canonicalModel": "claude-haiku-4-5",
+        "provider": "firstParty",
+        "costBasis": "list"
+      }
+    },
+    "permission_denials": [],
+    "terminal_reason": "completed",
+    "fast_mode_state": "off",
+    "fast_mode_disabled_reason": "sdk_opt_in_required",
+    "subagent_stats": {
+      "spawned": 1,
+      "requested": {
+        "background": 1,
+        "foreground": 0,
+        "unset": 0
+      },
+      "started_in_background": 1,
+      "max_depth": 1,
+      "spawned_by_subagents": 0,
+      "completed": 0,
+      "failed": 0,
+      "killed": {
+        "parent": 0,
+        "user": 0,
+        "system": 0
+      },
+      "refused": {
+        "depth_limit": 0,
+        "concurrency_limit": 0,
+        "budget": 0
+      },
+      "by_type": {
+        "general-purpose": 1
+      }
+    },
+    "is_error": false,
+    "num_turns": 2,
+    "subtype": "success",
+    "api_error_status": null,
+    "result": "Launched",
+    "ttft_ms": 2642,
+    "type": "result",
+    "duration_ms": 4962,
+    "uuid": "9638f04e-d4bd-418c-b20e-1434ff0764d2",
+    "ttft_stream_ms": 1008,
+    "time_to_request_ms": 21,
+    "first_content_frame_ms": 1009,
+    "queued_turn_count": 0,
+    "result_index": 0
+  },
+  {
+    "type": "assistant",
+    "message": {
+      "model": "claude-haiku-4-5-20251001",
+      "id": "msg_011CfVVNqaZycVbqn2p1ARX6",
+      "type": "message",
+      "role": "assistant",
+      "content": [
+        {
+          "type": "thinking",
+          "thinking": "",
+          "signature": "Eo0FCrIBCBIYAipAeMz5FJYEGczCz1z4RBG5faJwXaqxnubMmid0U2nyWl9fnY3CQTnZNeWbbpxx6hGCL3KJQBqDnRKH6rHVgPXIaTIZY2xhdWRlLWhhaWt1LTQtNS0yMDI1MTAwMTgAQgh0aGlua2luZ1okNWFjYTIyNTAtMDE1YS00NzA1LWIyMWQtNzk4Y2U1MjkxODMzchC8TScu+/6SODomOmNow4wkiAEBqAH8vujVBrABAhIMgjz8+fB74X+CpkxmGgzo5jGTVPP0rIier0YiMDIo8ETg2RoYkH5Aw4CjyhmFBcdjyzgr02IWlcWck+xgDgEJahb1cIl0rDE5i7RilCqHAwmmunHQNKpKLKINWUUuf/54Rql1AF9j4q+sjQokgz1ELAMJ9BZNv/1mB804JWSAJkcRfx4mekpR/1Fvxaz8phxTgCIbZh9OoKHLzspC+TdgP6UlbA/MRi1rzknBDI3AjRlIvzoYSX2/goTKa/4Xhr7Ir+DiOBvL8rCgySQGfqkQc8H8xKJNBjTY9F06CJExpYY6HlwE82kDqCGO0MPstW+GuWEiz8z1JtL0ruUb6vd1GTVUHryQr+95067agj9/CMx1BP6DivOfkD5OUXAk/kc2l23mHEvMSap5HMRtQ0fXNLJ2uMsmStbqZ4AyaMoEBY2kdkIHp9UHkVtzDjqv8z0VACxYHjEBDhF7SNmJv1nwAVebvMjsv5xT6WL4Vk+8XvppPSSVUjGaJuwcc70UlxSWwmNU9FCDOfXgSLa9INSeMG31NLndyHMgaJXTLLUtFbKsK3WEVEP/rqugrFwz1wsAtzKfon+PRu0I5oc7Mcs3/iJxQzeZdTe2Bd3hfKdW1jdwWRFykhcYAQ=="
+        }
+      ],
+      "container": null,
+      "stop_reason": null,
+      "stop_sequence": null,
+      "stop_details": null,
+      "usage": {
+        "input_tokens": 10,
+        "cache_creation_input_tokens": 12973,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 12973,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 1,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "input_transformations": [],
+      "diagnostics": null,
+      "context_management": null
+    },
+    "parent_tool_use_id": "toolu_01Eedg9497TcV5uBgwKizULj",
+    "session_id": "66bc33e9-600d-4806-93c8-df904842689f",
+    "uuid": "bfe54752-9c47-4333-bb21-779b0e4526b4",
+    "timestamp": "2026-09-28T08:04:12.428Z",
+    "request_id": "req_011CfVVNq5ZEtGQ6gV9uXoo4",
+    "subagent_type": "general-purpose",
+    "task_description": "Sleep then add comment to hello.txt"
+  },
+  {
+    "type": "assistant",
+    "message": {
+      "model": "claude-haiku-4-5-20251001",
+      "id": "msg_011CfVVNqaZycVbqn2p1ARX6",
+      "type": "message",
+      "role": "assistant",
+      "content": [
+        {
+          "type": "text",
+          "text": "I'll help you run the sleep command and then add a comment to hello.txt. Let me start with the sleep command."
+        }
+      ],
+      "container": null,
+      "stop_reason": null,
+      "stop_sequence": null,
+      "stop_details": null,
+      "usage": {
+        "input_tokens": 10,
+        "cache_creation_input_tokens": 12973,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 12973,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 1,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "input_transformations": [],
+      "diagnostics": null,
+      "context_management": null
+    },
+    "parent_tool_use_id": "toolu_01Eedg9497TcV5uBgwKizULj",
+    "session_id": "66bc33e9-600d-4806-93c8-df904842689f",
+    "uuid": "a8330205-553a-4d21-8619-f71337199ae8",
+    "timestamp": "2026-09-28T08:04:12.744Z",
+    "request_id": "req_011CfVVNq5ZEtGQ6gV9uXoo4",
+    "subagent_type": "general-purpose",
+    "task_description": "Sleep then add comment to hello.txt"
+  },
+  {
+    "type": "assistant",
+    "message": {
+      "model": "claude-haiku-4-5-20251001",
+      "id": "msg_011CfVVNqaZycVbqn2p1ARX6",
+      "type": "message",
+      "role": "assistant",
+      "content": [
+        {
+          "type": "tool_use",
+          "id": "toolu_01N5CdyoM2Grb8xXd9N9rDG5",
+          "name": "Bash",
+          "input": {
+            "command": "sleep 5",
+            "description": "Sleep for 5 seconds"
+          },
+          "caller": {
+            "type": "direct"
+          }
+        }
+      ],
+      "container": null,
+      "stop_reason": null,
+      "stop_sequence": null,
+      "stop_details": null,
+      "usage": {
+        "input_tokens": 10,
+        "cache_creation_input_tokens": 12973,
+        "cache_read_input_tokens": 0,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 12973,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 1,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "input_transformations": [],
+      "diagnostics": null,
+      "context_management": null
+    },
+    "parent_tool_use_id": "toolu_01Eedg9497TcV5uBgwKizULj",
+    "session_id": "66bc33e9-600d-4806-93c8-df904842689f",
+    "uuid": "7fca787d-3654-465d-af84-3b646816d721",
+    "timestamp": "2026-09-28T08:04:13.021Z",
+    "request_id": "req_011CfVVNq5ZEtGQ6gV9uXoo4",
+    "subagent_type": "general-purpose",
+    "task_description": "Sleep then add comment to hello.txt"
+  },
+  {
+    "type": "system",
+    "subtype": "task_progress",
+    "task_id": "a636c81dcb1908cd3",
+    "tool_use_id": "toolu_01Eedg9497TcV5uBgwKizULj",
+    "description": "Running Sleep for 5 seconds",
+    "subagent_type": "general-purpose",
+    "usage": {
+      "total_tokens": 13192,
+      "tool_uses": 1,
+      "duration_ms": 2460
+    },
+    "last_tool_name": "Bash",
+    "uuid": "ee1a7ca9-029c-44f5-9498-b1a955304e1e",
+    "session_id": "66bc33e9-600d-4806-93c8-df904842689f"
+  },
+  {
+    "type": "system",
+    "subtype": "task_started",
+    "task_id": "bab7w08rt",
+    "owned_by_subagent": true,
+    "tool_use_id": "toolu_01N5CdyoM2Grb8xXd9N9rDG5",
+    "description": "Sleep for 5 seconds",
+    "is_backgrounded": false,
+    "task_type": "local_bash",
+    "uuid": "c8abad94-cd87-4564-ad76-5a3857df9ccc",
+    "session_id": "66bc33e9-600d-4806-93c8-df904842689f"
+  },
+  {
+    "type": "system",
+    "subtype": "task_notification",
+    "task_id": "bab7w08rt",
+    "tool_use_id": "toolu_01N5CdyoM2Grb8xXd9N9rDG5",
+    "status": "completed",
+    "output_file": "",
+    "summary": "Sleep for 5 seconds",
+    "uuid": "bf80e53d-8328-4bea-85e3-f8179ded01de",
+    "session_id": "66bc33e9-600d-4806-93c8-df904842689f"
+  },
+  {
+    "type": "user",
+    "message": {
+      "role": "user",
+      "content": [
+        {
+          "tool_use_id": "toolu_01N5CdyoM2Grb8xXd9N9rDG5",
+          "type": "tool_result",
+          "content": "(Bash completed with no output)",
+          "is_error": false
+        }
+      ]
+    },
+    "parent_tool_use_id": "toolu_01Eedg9497TcV5uBgwKizULj",
+    "session_id": "66bc33e9-600d-4806-93c8-df904842689f",
+    "uuid": "4b460f2a-39a7-48a2-b512-06f961cf373a",
+    "timestamp": "2026-09-28T08:04:18.790Z",
+    "subagent_type": "general-purpose",
+    "task_description": "Sleep then add comment to hello.txt"
+  },
+  {
+    "type": "assistant",
+    "message": {
+      "model": "claude-haiku-4-5-20251001",
+      "id": "msg_011CfVVPSdTpHqUJNkQVqntr",
+      "type": "message",
+      "role": "assistant",
+      "content": [
+        {
+          "type": "thinking",
+          "thinking": "",
+          "signature": "EtsDCrIBCBIYAipAFlnWV7CVbzz0n5b5r1zyj/8V4Nn+xD672uzIQTKpnKEurFi4+KIEb7QFCh3WyQ/scwnRso+8KN7aCFPADhyrnDIZY2xhdWRlLWhhaWt1LTQtNS0yMDI1MTAwMTgAQgh0aGlua2luZ1okNWFjYTIyNTAtMDE1YS00NzA1LWIyMWQtNzk4Y2U1MjkxODMzchC8TScu+/6SODomOmNow4wkiAEBqAGEv+jVBrABAhIMYL5Oy/ND9hAd8gU+GgxNNZy9W1Nxman+3rQiMAh7o3en9oyF0+7ZOUfU9SUI9qnLjdmuv1rIzrzECePhv4BSezD8bmc1HffXtVFOKCrVAbwt5UGm2TiqwF3XluUeRDxWyNZaIq2zEXLXnQR2+8xN6ktJGvHh/knvC+Q+fadRn78iyB9tnIsDRZLldzDEyi8FukUSUUpd9F/WSEDkIyiAURHOayTrfzzc9zhhOVLpqc0x9/+iEE0NCPdwWF25oqI3FHroWbUFIfTFooQnq4n6HX9lE8E/ZVxXbSJxzE5AZ3F+8mQLdw+srS8htbV/WQwqeJ8IakCxyXCiw7olyYj1bIS2daoi0F3l4joSqTCh/38E4qJcHObTfTRESNF/2WDZQ9P3qBgB"
+        }
+      ],
+      "container": null,
+      "stop_reason": null,
+      "stop_sequence": null,
+      "stop_details": null,
+      "usage": {
+        "input_tokens": 8,
+        "cache_creation_input_tokens": 722,
+        "cache_read_input_tokens": 12973,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 722,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 6,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "input_transformations": [],
+      "diagnostics": null,
+      "context_management": null
+    },
+    "parent_tool_use_id": "toolu_01Eedg9497TcV5uBgwKizULj",
+    "session_id": "66bc33e9-600d-4806-93c8-df904842689f",
+    "uuid": "55757e69-6425-4c8a-af72-a98cddf9c470",
+    "timestamp": "2026-09-28T08:04:20.451Z",
+    "request_id": "req_011CfVVPSAgrbjY4jErp3cHK",
+    "subagent_type": "general-purpose",
+    "task_description": "Sleep then add comment to hello.txt"
+  },
+  {
+    "type": "assistant",
+    "message": {
+      "model": "claude-haiku-4-5-20251001",
+      "id": "msg_011CfVVPSdTpHqUJNkQVqntr",
+      "type": "message",
+      "role": "assistant",
+      "content": [
+        {
+          "type": "text",
+          "text": "Now let me read the hello.txt file to see its current contents:"
+        }
+      ],
+      "container": null,
+      "stop_reason": null,
+      "stop_sequence": null,
+      "stop_details": null,
+      "usage": {
+        "input_tokens": 8,
+        "cache_creation_input_tokens": 722,
+        "cache_read_input_tokens": 12973,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 722,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 6,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "input_transformations": [],
+      "diagnostics": null,
+      "context_management": null
+    },
+    "parent_tool_use_id": "toolu_01Eedg9497TcV5uBgwKizULj",
+    "session_id": "66bc33e9-600d-4806-93c8-df904842689f",
+    "uuid": "6bfd1ffa-229e-4bc3-948a-b40c934673f1",
+    "timestamp": "2026-09-28T08:04:20.637Z",
+    "request_id": "req_011CfVVPSAgrbjY4jErp3cHK",
+    "subagent_type": "general-purpose",
+    "task_description": "Sleep then add comment to hello.txt"
+  },
+  {
+    "type": "assistant",
+    "message": {
+      "model": "claude-haiku-4-5-20251001",
+      "id": "msg_011CfVVPSdTpHqUJNkQVqntr",
+      "type": "message",
+      "role": "assistant",
+      "content": [
+        {
+          "type": "tool_use",
+          "id": "toolu_015TEruGoi7k8QV5aYDGTWNh",
+          "name": "Read",
+          "input": {
+            "file_path": "/tmp/placebo-smoke/hello.txt"
+          },
+          "caller": {
+            "type": "direct"
+          }
+        }
+      ],
+      "container": null,
+      "stop_reason": null,
+      "stop_sequence": null,
+      "stop_details": null,
+      "usage": {
+        "input_tokens": 8,
+        "cache_creation_input_tokens": 722,
+        "cache_read_input_tokens": 12973,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 722,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 6,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "input_transformations": [],
+      "diagnostics": null,
+      "context_management": null
+    },
+    "parent_tool_use_id": "toolu_01Eedg9497TcV5uBgwKizULj",
+    "session_id": "66bc33e9-600d-4806-93c8-df904842689f",
+    "uuid": "89201457-add0-4f91-9987-7197be601b00",
+    "timestamp": "2026-09-28T08:04:21.581Z",
+    "request_id": "req_011CfVVPSAgrbjY4jErp3cHK",
+    "subagent_type": "general-purpose",
+    "task_description": "Sleep then add comment to hello.txt"
+  },
+  {
+    "type": "system",
+    "subtype": "task_progress",
+    "task_id": "a636c81dcb1908cd3",
+    "tool_use_id": "toolu_01Eedg9497TcV5uBgwKizULj",
+    "description": "Reading hello.txt",
+    "subagent_type": "general-purpose",
+    "usage": {
+      "total_tokens": 13883,
+      "tool_uses": 2,
+      "duration_ms": 11021
+    },
+    "last_tool_name": "Read",
+    "uuid": "296b35ef-bec8-46a9-9921-6b3a81e73c4f",
+    "session_id": "66bc33e9-600d-4806-93c8-df904842689f"
+  },
+  {
+    "type": "user",
+    "message": {
+      "role": "user",
+      "content": [
+        {
+          "tool_use_id": "toolu_015TEruGoi7k8QV5aYDGTWNh",
+          "type": "tool_result",
+          "content": "1\thello\n2\t"
+        }
+      ]
+    },
+    "parent_tool_use_id": "toolu_01Eedg9497TcV5uBgwKizULj",
+    "session_id": "66bc33e9-600d-4806-93c8-df904842689f",
+    "uuid": "bc07a737-8d83-4666-8665-0640400292de",
+    "timestamp": "2026-09-28T08:04:21.608Z",
+    "subagent_type": "general-purpose",
+    "task_description": "Sleep then add comment to hello.txt"
+  },
+  {
+    "type": "assistant",
+    "message": {
+      "model": "claude-haiku-4-5-20251001",
+      "id": "msg_011CfVVPebo5WpZS8tTsdkFj",
+      "type": "message",
+      "role": "assistant",
+      "content": [
+        {
+          "type": "thinking",
+          "thinking": "",
+          "signature": "EswDCrIBCBIYAipAiKdkVJ8QF/LktiXDISX/bZC/XjvCcA2H/9zxSnjDfAJ6NLb/h+TJMMUa/3Ieir1obOD9QUoZtniryduaxSv9ijIZY2xhdWRlLWhhaWt1LTQtNS0yMDI1MTAwMTgAQgh0aGlua2luZ1okNWFjYTIyNTAtMDE1YS00NzA1LWIyMWQtNzk4Y2U1MjkxODMzchC8TScu+/6SODomOmNow4wkiAEBqAGGv+jVBrABAhIM9Fk3cO32vxeDb14zGgzV2J4P8eSF6kH0bo4iMFQwhh5bXuu2jwcGv0BeDzsl5tSGyXf0VcWGnZhqQDx1F3lEk7P/mjXVCMWLx42aQirGAc4syGXL/vqsksmaY8kWUURm3wQoV4XzCfv8WfilKLWhC/MOZXgfetfXMMw1tZ9/qooAkITYDc7ZDVpKjxVekL9+tVOTSrddj17troVEKPrKL3dzmU2rMLtdTzZMaaYpQT0kiV542XLTdVL6zTuh+l4+1TrMHzgbDVRsqPg2CGdwhE8H8gW34EREHqQVlAAtZXtVnyMzNW5EoiBL5wc8QRpYScMZ+N82fBAXyUCekgqboY11JpP6qiawhkngZHo2o3FCJp2HTRgB"
+        }
+      ],
+      "container": null,
+      "stop_reason": null,
+      "stop_sequence": null,
+      "stop_details": null,
+      "usage": {
+        "input_tokens": 8,
+        "cache_creation_input_tokens": 224,
+        "cache_read_input_tokens": 13695,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 224,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 1,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "input_transformations": [],
+      "diagnostics": null,
+      "context_management": null
+    },
+    "parent_tool_use_id": "toolu_01Eedg9497TcV5uBgwKizULj",
+    "session_id": "66bc33e9-600d-4806-93c8-df904842689f",
+    "uuid": "d5e46889-a240-49a6-8947-f891a3f42c4e",
+    "timestamp": "2026-09-28T08:04:22.845Z",
+    "request_id": "req_011CfVVPeCEWtbMnYB8aBiPd",
+    "subagent_type": "general-purpose",
+    "task_description": "Sleep then add comment to hello.txt"
+  },
+  {
+    "type": "assistant",
+    "message": {
+      "model": "claude-haiku-4-5-20251001",
+      "id": "msg_011CfVVPebo5WpZS8tTsdkFj",
+      "type": "message",
+      "role": "assistant",
+      "content": [
+        {
+          "type": "text",
+          "text": "Now I'll add the comment line at the top of the file:"
+        }
+      ],
+      "container": null,
+      "stop_reason": null,
+      "stop_sequence": null,
+      "stop_details": null,
+      "usage": {
+        "input_tokens": 8,
+        "cache_creation_input_tokens": 224,
+        "cache_read_input_tokens": 13695,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 224,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 1,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "input_transformations": [],
+      "diagnostics": null,
+      "context_management": null
+    },
+    "parent_tool_use_id": "toolu_01Eedg9497TcV5uBgwKizULj",
+    "session_id": "66bc33e9-600d-4806-93c8-df904842689f",
+    "uuid": "8ecb0cd8-1214-4eeb-badb-0061070fc7f5",
+    "timestamp": "2026-09-28T08:04:23.056Z",
+    "request_id": "req_011CfVVPeCEWtbMnYB8aBiPd",
+    "subagent_type": "general-purpose",
+    "task_description": "Sleep then add comment to hello.txt"
+  },
+  {
+    "type": "assistant",
+    "message": {
+      "model": "claude-haiku-4-5-20251001",
+      "id": "msg_011CfVVPebo5WpZS8tTsdkFj",
+      "type": "message",
+      "role": "assistant",
+      "content": [
+        {
+          "type": "tool_use",
+          "id": "toolu_017SqyBXTEq1s8jCJXtR2okZ",
+          "name": "Edit",
+          "input": {
+            "replace_all": false,
+            "file_path": "/tmp/placebo-smoke/hello.txt",
+            "old_string": "hello",
+            "new_string": "# hi\nhello"
+          },
+          "caller": {
+            "type": "direct"
+          }
+        }
+      ],
+      "container": null,
+      "stop_reason": null,
+      "stop_sequence": null,
+      "stop_details": null,
+      "usage": {
+        "input_tokens": 8,
+        "cache_creation_input_tokens": 224,
+        "cache_read_input_tokens": 13695,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 224,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 1,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "input_transformations": [],
+      "diagnostics": null,
+      "context_management": null
+    },
+    "parent_tool_use_id": "toolu_01Eedg9497TcV5uBgwKizULj",
+    "session_id": "66bc33e9-600d-4806-93c8-df904842689f",
+    "uuid": "627e552a-6e14-410b-b684-0372978e8b08",
+    "timestamp": "2026-09-28T08:04:23.713Z",
+    "request_id": "req_011CfVVPeCEWtbMnYB8aBiPd",
+    "subagent_type": "general-purpose",
+    "task_description": "Sleep then add comment to hello.txt"
+  },
+  {
+    "type": "system",
+    "subtype": "task_progress",
+    "task_id": "a636c81dcb1908cd3",
+    "tool_use_id": "toolu_01Eedg9497TcV5uBgwKizULj",
+    "description": "Editing hello.txt",
+    "subagent_type": "general-purpose",
+    "usage": {
+      "total_tokens": 14106,
+      "tool_uses": 3,
+      "duration_ms": 13153
+    },
+    "last_tool_name": "Edit",
+    "uuid": "f96c16c1-1134-42a9-9dfc-51687d126c3a",
+    "session_id": "66bc33e9-600d-4806-93c8-df904842689f"
+  },
+  {
+    "type": "user",
+    "message": {
+      "role": "user",
+      "content": [
+        {
+          "tool_use_id": "toolu_017SqyBXTEq1s8jCJXtR2okZ",
+          "type": "tool_result",
+          "content": "The file /tmp/placebo-smoke/hello.txt has been updated successfully. (file state is current in your context — no need to Read it back)"
+        }
+      ]
+    },
+    "parent_tool_use_id": "toolu_01Eedg9497TcV5uBgwKizULj",
+    "session_id": "66bc33e9-600d-4806-93c8-df904842689f",
+    "uuid": "14a8cc00-355c-48b4-a730-9da67659bd57",
+    "timestamp": "2026-09-28T08:04:23.730Z",
+    "subagent_type": "general-purpose",
+    "task_description": "Sleep then add comment to hello.txt"
+  },
+  {
+    "type": "assistant",
+    "message": {
+      "model": "claude-haiku-4-5-20251001",
+      "id": "msg_011CfVVPoiURSX8ZjjxoXVox",
+      "type": "message",
+      "role": "assistant",
+      "content": [
+        {
+          "type": "thinking",
+          "thinking": "",
+          "signature": "EowFCrIBCBIYAipAnlRX0/0CbWg06GrC8ji0+FCt+Im2XS6jJRx2rW5oxuCArTRyqMXy0A/53JtoMwKIsRhq3TnaegbXzXBoHbE8TzIZY2xhdWRlLWhhaWt1LTQtNS0yMDI1MTAwMTgAQgh0aGlua2luZ1okNWFjYTIyNTAtMDE1YS00NzA1LWIyMWQtNzk4Y2U1MjkxODMzchC8TScu+/6SODomOmNow4wkiAEBqAGJv+jVBrABAhIM1u/Dpha/pA37Io1ZGgwmGXc4ObDxD061cFwiMAI4JvbrqCCb3R5T34ZfKZUykMguyXEA9++9MIavRmUfsGK+DDiUHn1vJWkvw0cQyCqGA/brD7lzSCFAeHIkjotrYAsYWoA7cYHhcdQvw28/3geKGYquxhJis8koTdR/xEmCHDpv0riC39K0yyD/GtMjLX8CtZSGGYXz0lj5T2Gn24PEgrj+q6OyRFRLRaT9p6fGs5jeAUqWrk4hYQJyGW9IwA8ZQKBGMj+fdNf1fbaj7UD8YO9VhPhBNgre74ysbU7DDE8+ePzEihSOrl8U9APnmQfbfxCw6xjjdsJiOPNa5JZpF1uDZAyDjKE2Q/3BGsIN3fPOIfdb1c11DCtHPjfw68zLkoezNKNJx1/wYFt5jH748loKhGZUZlctN06KpVB88kEUex6nTdWdMzbXnUBsEppTg1Fw/eg0YaXKKXKR8BWa7DVRARWE5yhcYblPB0vqybPBFRxA4Vnw9i9awMxcbnESsYBh6/YBhHuA/MrLBl+ruB6zbXV6M8Zn1NAimjRXKPtGoBlsCXpnwFLF8lUTOC/SCj4Uu7HoCZjylp5zUrYmCBBu8UyfMG8+wXIzQvAdAJeNPBBMvxgB"
+        }
+      ],
+      "container": null,
+      "stop_reason": null,
+      "stop_sequence": null,
+      "stop_details": null,
+      "usage": {
+        "input_tokens": 8,
+        "cache_creation_input_tokens": 329,
+        "cache_read_input_tokens": 13919,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 329,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 3,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "input_transformations": [],
+      "diagnostics": null,
+      "context_management": null
+    },
+    "parent_tool_use_id": "toolu_01Eedg9497TcV5uBgwKizULj",
+    "session_id": "66bc33e9-600d-4806-93c8-df904842689f",
+    "uuid": "9076a2fa-1ae6-4247-9440-132dcc6b2a51",
+    "timestamp": "2026-09-28T08:04:25.283Z",
+    "request_id": "req_011CfVVPoLQDBe3MAhmgim4g",
+    "subagent_type": "general-purpose",
+    "task_description": "Sleep then add comment to hello.txt"
+  },
+  {
+    "type": "assistant",
+    "message": {
+      "model": "claude-haiku-4-5-20251001",
+      "id": "msg_011CfVVPoiURSX8ZjjxoXVox",
+      "type": "message",
+      "role": "assistant",
+      "content": [
+        {
+          "type": "text",
+          "text": "Done! I've completed both tasks:\n\n1. **Ran the sleep command**: The `sleep 5` command executed successfully via the Bash tool.\n2. **Added the comment line**: Added \"# hi\" as a comment at the top of hello.txt. The file now contains:\n   ```\n   # hi\n   hello\n   ```"
+        }
+      ],
+      "container": null,
+      "stop_reason": null,
+      "stop_sequence": null,
+      "stop_details": null,
+      "usage": {
+        "input_tokens": 8,
+        "cache_creation_input_tokens": 329,
+        "cache_read_input_tokens": 13919,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 329,
+          "ephemeral_1h_input_tokens": 0
+        },
+        "output_tokens": 3,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "input_transformations": [],
+      "diagnostics": null,
+      "context_management": null
+    },
+    "parent_tool_use_id": "toolu_01Eedg9497TcV5uBgwKizULj",
+    "session_id": "66bc33e9-600d-4806-93c8-df904842689f",
+    "uuid": "39a03be3-7b8d-40f2-b687-a740311b4553",
+    "timestamp": "2026-09-28T08:04:25.804Z",
+    "request_id": "req_011CfVVPoLQDBe3MAhmgim4g",
+    "subagent_type": "general-purpose",
+    "task_description": "Sleep then add comment to hello.txt"
+  },
+  {
+    "type": "system",
+    "subtype": "background_tasks_changed",
+    "tasks": [],
+    "uuid": "d2b92f53-8c93-4b85-b920-f41d2544bf0e",
+    "session_id": "66bc33e9-600d-4806-93c8-df904842689f"
+  },
+  {
+    "type": "system",
+    "subtype": "task_updated",
+    "task_id": "a636c81dcb1908cd3",
+    "patch": {
+      "status": "completed",
+      "end_time": 1790582665827
+    },
+    "uuid": "12225641-6d6e-4ed0-9e14-08d771d9f0f9",
+    "session_id": "66bc33e9-600d-4806-93c8-df904842689f"
+  },
+  {
+    "type": "system",
+    "subtype": "task_notification",
+    "task_id": "a636c81dcb1908cd3",
+    "tool_use_id": "toolu_01Eedg9497TcV5uBgwKizULj",
+    "status": "completed",
+    "output_file": "/private/tmp/claude-501/-tmp-placebo-smoke/66bc33e9-600d-4806-93c8-df904842689f/tasks/a636c81dcb1908cd3.output",
+    "summary": "Done! I've completed both tasks:\n\n1. **Ran the sleep command**: The `sleep 5` command executed successfully via the Bash tool.\n2. **Added the comment line**: Added \"# hi\" as a comment at the top of hello.txt. The file now contains:\n   ```\n   # hi\n   hello\n   ```",
+    "usage": {
+      "total_tokens": 14516,
+      "tool_uses": 3,
+      "duration_ms": 15265
+    },
+    "uuid": "8dbb2337-a4ff-46ac-b980-bbd6ad888f5e",
+    "session_id": "66bc33e9-600d-4806-93c8-df904842689f"
+  },
+  {
+    "type": "system",
+    "subtype": "init",
+    "cwd": "/tmp/placebo-smoke",
+    "session_id": "66bc33e9-600d-4806-93c8-df904842689f",
+    "tools": [
+      "Task",
+      "Bash",
+      "Edit",
+      "NotebookEdit",
+      "Read",
+      "ReportFindings",
+      "Skill",
+      "TaskCreate",
+      "TaskGet",
+      "TaskList",
+      "TaskStop",
+      "TaskUpdate",
+      "ToolSearch",
+      "WebFetch",
+      "WebSearch",
+      "Write"
+    ],
+    "mcp_servers": [],
+    "model": "claude-haiku-4-5-20251001",
+    "permissionMode": "bypassPermissions",
+    "slash_commands": [
+      "deep-research",
+      "design",
+      "design-sync",
+      "dataviz",
+      "update-config",
+      "verify",
+      "debug",
+      "code-review",
+      "simplify",
+      "batch",
+      "fewer-permission-prompts",
+      "doctor",
+      "loop",
+      "schedule",
+      "claude-api",
+      "workflow-authoring",
+      "run",
+      "run-skill-generator",
+      "advisor",
+      "agents",
+      "auto-mode-setup",
+      "autocompact",
+      "clear",
+      "color",
+      "compact",
+      "config",
+      "output-style",
+      "context",
+      "effort",
+      "fast",
+      "focus",
+      "heapdump",
+      "init",
+      "mcp",
+      "import",
+      "model",
+      "__remote-workflow",
+      "workflow-launch-exec",
+      "reload-plugins",
+      "reload-skills",
+      "rename",
+      "ultrareview",
+      "security-review",
+      "usage-credits",
+      "extra-usage",
+      "usage",
+      "insights",
+      "recap",
+      "skill-doctor",
+      "goal",
+      "design-consent",
+      "design-revoke",
+      "list-agents",
+      "team-onboarding"
+    ],
+    "terminal_slash_commands": ["doctor", "color", "focus", "reload-plugins"],
+    "apiKeySource": "none",
+    "claude_code_version": "2.1.283",
+    "output_style": "default",
+    "agents": ["claude", "Explore", "general-purpose", "Plan", "statusline-setup"],
+    "skills": [
+      "deep-research",
+      "design",
+      "design-sync",
+      "dataviz",
+      "update-config",
+      "verify",
+      "debug",
+      "code-review",
+      "simplify",
+      "batch",
+      "fewer-permission-prompts",
+      "doctor",
+      "loop",
+      "schedule",
+      "claude-api",
+      "workflow-authoring",
+      "run",
+      "run-skill-generator"
+    ],
+    "plugins": [
+      {
+        "name": "agents-md",
+        "path": "builtin",
+        "source": "agents-md@builtin"
+      },
+      {
+        "name": "telemetry",
+        "path": "builtin",
+        "source": "telemetry@builtin"
+      }
+    ],
+    "capabilities": [
+      "interrupt_receipt_v1",
+      "interrupt_cancel_queued_v1",
+      "msg_lifecycle_v1",
+      "mcp_read_resource_v1",
+      "mcp_tool_ui_meta_v1"
+    ],
+    "analytics_disabled": false,
+    "product_feedback_disabled": false,
+    "uuid": "01afb441-91b2-4fa7-8230-79fe5bfae312",
+    "memory_paths": {
+      "auto": "/home/user/.claude/projects/-tmp-placebo-smoke/memory/"
+    },
+    "messaging_socket_path": "/tmp/cc-socks/50753.sock",
+    "fast_mode_state": "off",
+    "fast_mode_disabled_reason": "sdk_opt_in_required",
+    "per_turn_effort_active": false,
+    "view_mode": "default"
+  },
+  {
+    "type": "system",
+    "subtype": "status",
+    "status": "requesting",
+    "session_id": "66bc33e9-600d-4806-93c8-df904842689f",
+    "uuid": "fc54af52-1bb7-441e-a574-156bc52fcb3f"
+  },
+  {
+    "type": "stream_event",
+    "event": {
+      "type": "message_start",
+      "message": {
+        "model": "claude-haiku-4-5-20251001",
+        "id": "msg_011CfVVPy7n4DwLggMDa6rwh",
+        "type": "message",
+        "role": "assistant",
+        "content": [],
+        "container": null,
+        "stop_reason": null,
+        "stop_sequence": null,
+        "stop_details": null,
+        "usage": {
+          "input_tokens": 10,
+          "cache_creation_input_tokens": 539,
+          "cache_read_input_tokens": 20623,
+          "cache_creation": {
+            "ephemeral_5m_input_tokens": 0,
+            "ephemeral_1h_input_tokens": 539
+          },
+          "output_tokens": 1,
+          "service_tier": "standard",
+          "inference_geo": "not_available"
+        },
+        "input_transformations": [],
+        "diagnostics": null,
+        "context_management": null
+      }
+    },
+    "session_id": "66bc33e9-600d-4806-93c8-df904842689f",
+    "parent_tool_use_id": null,
+    "uuid": "b97ff2c3-3953-4d6f-9056-9ec3e562574a",
+    "ttft_ms": 1092,
+    "thinking_display": "updates"
+  },
+  {
+    "type": "assistant",
+    "message": {
+      "model": "claude-haiku-4-5-20251001",
+      "id": "msg_011CfVVPy7n4DwLggMDa6rwh",
+      "type": "message",
+      "role": "assistant",
+      "content": [
+        {
+          "type": "thinking",
+          "thinking": "",
+          "signature": "EoYECrIBCBIYAipACFB3Wvs3KGt59tGbZ3GjWLYdpV84FJApmmy9YuGZtX064bt9pUtDdREf5+g8Qjyg3aZdLceqj35oGhyLfQQjyDIZY2xhdWRlLWhhaWt1LTQtNS0yMDI1MTAwMTgAQgh0aGlua2luZ1okNWFjYTIyNTAtMDE1YS00NzA1LWIyMWQtNzk4Y2U1MjkxODMzchC8TScu+/6SODomOmNow4wkiAEBqAGLv+jVBrABAhIM4bVaCkIFEIfUE7k5GgxvEpHEGkq1fgfKEeQiME3gYzEWM+uyNblbrQKjxyecbeLK65KzpXRAdm1jpxNoaPJeWvydLIo4hIe4NtwHnCqAAqaf82+IEpQErbXzJi+VYO5zL9hi/ILETfdJgsgA1MSMMS1c2Xb+fcoQDQHILn21oKz/TXnfzaHV2vP6NyjqQiGb9byZiq+TJZoXLcp05Ods74qDFxLegDi4s0pRWMnotGbm+t6JmHkdTJ4EJcAFO9wNvyyM5hMo0/czwTMhDZlIzvpOP57dgApwMzHUy2hlhe0/9jd3weJtlPHB4tUfaNgnBG3yHf8GkRivQnAjVPFPxgBXs9ASYxuhx7X+Y+3JRJtnPmuoRIQ3nQ+M+StuO3y8yYKgbEm+khaR4pOmrtprTXjPEyeHviXEI/oPuYP+rV1yByXwWVFIZF4a8UizVTMYAQ=="
+        }
+      ],
+      "container": null,
+      "stop_reason": null,
+      "stop_sequence": null,
+      "stop_details": null,
+      "usage": {
+        "input_tokens": 10,
+        "cache_creation_input_tokens": 539,
+        "cache_read_input_tokens": 20623,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 539
+        },
+        "output_tokens": 1,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "input_transformations": [],
+      "diagnostics": null,
+      "context_management": null
+    },
+    "parent_tool_use_id": null,
+    "session_id": "66bc33e9-600d-4806-93c8-df904842689f",
+    "uuid": "bb5aaae1-6134-4caa-af7b-50510a119c61",
+    "timestamp": "2026-09-28T08:04:27.561Z",
+    "request_id": "req_011CfVVPxgEZoC9xPZaQHAWJ"
+  },
+  {
+    "type": "assistant",
+    "message": {
+      "model": "claude-haiku-4-5-20251001",
+      "id": "msg_011CfVVPy7n4DwLggMDa6rwh",
+      "type": "message",
+      "role": "assistant",
+      "content": [
+        {
+          "type": "text",
+          "text": "Agent completed! It ran `sleep 5` and added `# hi` as a comment line at the top of hello.txt. The file now has the comment followed by its original content."
+        }
+      ],
+      "container": null,
+      "stop_reason": null,
+      "stop_sequence": null,
+      "stop_details": null,
+      "usage": {
+        "input_tokens": 10,
+        "cache_creation_input_tokens": 539,
+        "cache_read_input_tokens": 20623,
+        "cache_creation": {
+          "ephemeral_5m_input_tokens": 0,
+          "ephemeral_1h_input_tokens": 539
+        },
+        "output_tokens": 1,
+        "service_tier": "standard",
+        "inference_geo": "not_available"
+      },
+      "input_transformations": [],
+      "diagnostics": null,
+      "context_management": null
+    },
+    "parent_tool_use_id": null,
+    "session_id": "66bc33e9-600d-4806-93c8-df904842689f",
+    "uuid": "38660eeb-136d-402c-9845-98c0b2b00e99",
+    "timestamp": "2026-09-28T08:04:27.975Z",
+    "request_id": "req_011CfVVPxgEZoC9xPZaQHAWJ"
+  },
+  {
+    "type": "stream_event",
+    "event": {
+      "type": "message_delta",
+      "delta": {
+        "stop_reason": "end_turn",
+        "stop_sequence": null,
+        "stop_details": null,
+        "container": null
+      },
+      "usage": {
+        "input_tokens": 10,
+        "cache_creation_input_tokens": 539,
+        "cache_read_input_tokens": 20623,
+        "output_tokens": 116,
+        "output_tokens_details": {
+          "thinking_tokens": 70
+        },
+        "iterations": [
+          {
+            "input_tokens": 10,
+            "output_tokens": 116,
+            "cache_read_input_tokens": 20623,
+            "cache_creation_input_tokens": 539,
+            "cache_creation": {
+              "ephemeral_5m_input_tokens": 0,
+              "ephemeral_1h_input_tokens": 539
+            },
+            "type": "message"
+          }
+        ]
+      },
+      "context_management": {
+        "applied_edits": []
+      }
+    },
+    "session_id": "66bc33e9-600d-4806-93c8-df904842689f",
+    "parent_tool_use_id": null,
+    "uuid": "dde3d21f-c125-48a6-b932-3f4f96a2733e"
+  },
+  {
+    "duration_api_ms": 17313,
+    "stop_reason": "end_turn",
+    "session_id": "66bc33e9-600d-4806-93c8-df904842689f",
+    "total_cost_usd": 0.07593,
+    "usage": {
+      "input_tokens": 10,
+      "cache_creation_input_tokens": 539,
+      "cache_read_input_tokens": 20623,
+      "output_tokens": 116,
+      "output_tokens_details": {
+        "thinking_tokens": 70
+      },
+      "server_tool_use": {
+        "web_search_requests": 0,
+        "web_fetch_requests": 0
+      },
+      "service_tier": "standard",
+      "cache_creation": {
+        "ephemeral_1h_input_tokens": 539,
+        "ephemeral_5m_input_tokens": 0
+      },
+      "inference_geo": "not_available",
+      "iterations": [
+        {
+          "input_tokens": 10,
+          "output_tokens": 116,
+          "cache_read_input_tokens": 20623,
+          "cache_creation_input_tokens": 539,
+          "cache_creation": {
+            "ephemeral_5m_input_tokens": 0,
+            "ephemeral_1h_input_tokens": 539
+          },
+          "type": "message"
+        }
+      ],
+      "speed": "standard"
+    },
+    "modelUsage": {
+      "claude-haiku-4-5-20251001": {
+        "inputTokens": 1026,
+        "outputTokens": 1332,
+        "cacheReadInputTokens": 81100,
+        "cacheCreationInputTokens": 35410,
+        "webSearchRequests": 0,
+        "costUSD": 0.07593,
+        "contextWindow": 200000,
+        "maxOutputTokens": 32000,
+        "thinkingTokens": 627,
+        "canonicalModel": "claude-haiku-4-5",
+        "provider": "firstParty",
+        "costBasis": "list"
+      }
+    },
+    "permission_denials": [],
+    "terminal_reason": "completed",
+    "fast_mode_state": "off",
+    "fast_mode_disabled_reason": "sdk_opt_in_required",
+    "origin": {
+      "kind": "task-notification"
+    },
+    "subagent_stats": {
+      "spawned": 1,
+      "requested": {
+        "background": 1,
+        "foreground": 0,
+        "unset": 0
+      },
+      "started_in_background": 1,
+      "max_depth": 1,
+      "spawned_by_subagents": 0,
+      "completed": 1,
+      "failed": 0,
+      "killed": {
+        "parent": 0,
+        "user": 0,
+        "system": 0
+      },
+      "refused": {
+        "depth_limit": 0,
+        "concurrency_limit": 0,
+        "budget": 0
+      },
+      "by_type": {
+        "general-purpose": 1
+      }
+    },
+    "is_error": false,
+    "num_turns": 1,
+    "subtype": "success",
+    "api_error_status": null,
+    "result": "Agent completed! It ran `sleep 5` and added `# hi` as a comment line at the top of hello.txt. The file now has the comment followed by its original content.",
+    "ttft_ms": 1650,
+    "type": "result",
+    "duration_ms": 2086,
+    "uuid": "ee4b85a1-49b2-42f4-bf0e-8d238ab850b6",
+    "ttft_stream_ms": 1108,
+    "time_to_request_ms": 16,
+    "first_content_frame_ms": 1109,
+    "queued_turn_count": 0,
+    "result_index": 1
+  }
+]

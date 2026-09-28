@@ -1,10 +1,17 @@
 // Test support for the runner adapters: recorded messages and a fake `query`. Imported only by
 // tests; production code never imports it.
 import { readFileSync } from 'node:fs';
-import type { Clock, RunRequest } from '@placebo-eval/core';
+import type { Clock, RunnerEvent, RunRequest, TokenUsage } from '@placebo-eval/core';
 import type { QueryFunction } from './sdk-runner.js';
 
-export type RecordedScenario = 'subject' | 'judge' | 'read-only-judge' | 'max-turns' | 'timeout';
+export type RecordedScenario =
+  | 'subject'
+  | 'judge'
+  | 'read-only-judge'
+  | 'max-turns'
+  | 'timeout'
+  | 'sync-subagent'
+  | 'background-subagent';
 
 type Message = Record<string, unknown>;
 
@@ -38,6 +45,53 @@ export function withResult(messages: readonly Message[], fields: Message): Messa
 /** The recorded messages without their result message, as when the process dies. */
 export function withoutResult(messages: readonly Message[]): Message[] {
   return messages.filter((message) => message.type !== 'result');
+}
+
+/** The recorded messages up to, not including, the last result message and what follows it. */
+export function withoutLastResult(messages: readonly Message[]): Message[] {
+  const last = messages.findLastIndex((message) => message.type === 'result');
+  return messages.slice(0, last);
+}
+
+export function isRemainder(event: RunnerEvent): boolean {
+  return event.type === 'usage' && event.remainder === true;
+}
+
+/** The sum of the `usage` events among `events`. */
+export function sumUsage(events: readonly RunnerEvent[]): TokenUsage {
+  const sum = { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 };
+  for (const event of events) {
+    if (event.type !== 'usage') continue;
+    sum.input += event.input;
+    sum.output += event.output;
+    sum.cacheRead += event.cacheRead;
+    sum.cacheWrite += event.cacheWrite;
+  }
+  return sum;
+}
+
+/** The main-loop `usage` of a recorded result message. */
+export function mainLoopUsage(result: Message | undefined): TokenUsage {
+  const usage = result?.usage as Record<string, number>;
+  return {
+    input: usage.input_tokens ?? 0,
+    output: usage.output_tokens ?? 0,
+    cacheRead: usage.cache_read_input_tokens ?? 0,
+    cacheWrite: usage.cache_creation_input_tokens ?? 0,
+  };
+}
+
+/** The token totals over every model of a recorded result message's `modelUsage`. */
+export function modelUsageTotals(result: Message | undefined): TokenUsage {
+  const sum = { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 };
+  const models = result?.modelUsage as Record<string, Record<string, number>>;
+  for (const entry of Object.values(models)) {
+    sum.input += entry.inputTokens ?? 0;
+    sum.output += entry.outputTokens ?? 0;
+    sum.cacheRead += entry.cacheReadInputTokens ?? 0;
+    sum.cacheWrite += entry.cacheCreationInputTokens ?? 0;
+  }
+  return sum;
 }
 
 /** The id of the last tool call in the recorded messages. */

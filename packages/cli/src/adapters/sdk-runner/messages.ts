@@ -13,6 +13,8 @@ export const MessageUsage = z.looseObject({
   output_tokens: optionalCount,
   cache_read_input_tokens: optionalCount,
   cache_creation_input_tokens: optionalCount,
+  /** How much of `cache_creation_input_tokens` was written with the 1-hour TTL. */
+  cache_creation: z.looseObject({ ephemeral_1h_input_tokens: optionalCount }).nullish(),
 });
 export type MessageUsage = z.infer<typeof MessageUsage>;
 
@@ -60,9 +62,11 @@ export const Assistant = z.looseObject({
   type: z.literal('assistant'),
   message: z.looseObject({
     id: z.string(),
+    model: z.string().optional(),
     content: z.array(ContentBlock),
     usage: MessageUsage,
   }),
+  /** The `Agent` tool call whose subagent sent the message; null for the main loop. */
   parent_tool_use_id: z.string().nullish(),
   /** Set on the synthetic message Claude Code writes when an API request failed. */
   error: z.string().optional(),
@@ -72,6 +76,7 @@ export type Assistant = z.infer<typeof Assistant>;
 export const User = z.looseObject({
   type: z.literal('user'),
   message: z.looseObject({ content: z.union([z.string(), z.array(ContentBlock)]) }),
+  parent_tool_use_id: z.string().nullish(),
 });
 
 export const StreamEvent = z.looseObject({
@@ -79,6 +84,16 @@ export const StreamEvent = z.looseObject({
   parent_tool_use_id: z.string().nullish(),
   event: z.looseObject({ type: z.string() }),
 });
+
+/** One model's totals in a result's `modelUsage`: every call of the query, subagents included. */
+export const ModelUsageEntry = z.looseObject({
+  inputTokens: count,
+  outputTokens: count,
+  cacheReadInputTokens: count,
+  cacheCreationInputTokens: count,
+  costUSD: z.number().nonnegative(),
+});
+export type ModelUsageEntry = z.infer<typeof ModelUsageEntry>;
 
 export const ResultMessage = z.looseObject({
   type: z.literal('result'),
@@ -97,12 +112,14 @@ export const ResultMessage = z.looseObject({
     z.looseObject({ tool_name: z.string(), tool_use_id: z.string(), tool_input: z.unknown() }),
   ),
   structured_output: z.unknown().optional(),
+  /** Cumulative over the whole query, like `total_cost_usd`; read the latest result's. */
+  modelUsage: z.record(z.string(), ModelUsageEntry).optional(),
 });
 export type ResultMessage = z.infer<typeof ResultMessage>;
 
 export const MessageStart = z.looseObject({
   type: z.literal('message_start'),
-  message: z.looseObject({ id: z.string(), usage: MessageUsage }),
+  message: z.looseObject({ id: z.string(), model: z.string().optional(), usage: MessageUsage }),
 });
 export const MessageDelta = z.looseObject({ type: z.literal('message_delta'), usage: DeltaUsage });
 

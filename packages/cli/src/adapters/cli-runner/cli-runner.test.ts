@@ -13,9 +13,14 @@ import {
   steppingClock,
   SUBJECT_REQUEST,
   toNdjson,
+  isRemainder,
+  mainLoopUsage,
+  modelUsageTotals,
+  sumUsage,
   withoutResult,
   withResult,
 } from '../sdk-runner/test-support.js';
+import { subjectDisallowedTools } from '../subject-tools.js';
 import { cliArgs, CliRunner, parseClaudeVersion } from './cli-runner.js';
 
 const FAKE_CLAUDE = new URL('fixtures/fake-claude.mjs', import.meta.url).pathname;
@@ -163,6 +168,21 @@ describe('CliRunner flags', () => {
     expect(cliArgs({ ...SUBJECT_REQUEST, limits: { maxTurns: 30 }, maxTurns: 2 })).toContain('2');
   });
 
+  it('passes a subject run the escaping tools as disallowed and turns background execution off', async () => {
+    const request = { ...SUBJECT_REQUEST, tools: 'subject' } as const;
+    const args = cliArgs(request);
+    expect(args.slice(args.indexOf('--disallowedTools'), args.indexOf('--'))).toEqual([
+      '--disallowedTools',
+      subjectDisallowedTools().join(','),
+    ]);
+    expect(args).not.toContain('--tools');
+    const { recorded } = await runRecorded('sync-subagent', request);
+    expect(recorded().env).toHaveProperty('CLAUDE_CODE_DISABLE_BACKGROUND_TASKS', '1');
+    expect(recorded().env).not.toHaveProperty('CLAUDECODE');
+    const allowed = await runRecorded('background-subagent', { ...request, backgroundWork: true });
+    expect(allowed.recorded().env).not.toHaveProperty('CLAUDE_CODE_DISABLE_BACKGROUND_TASKS');
+  });
+
   it('keeps a prompt that looks like a flag after --', () => {
     const args = cliArgs({ ...SUBJECT_REQUEST, prompt: '--help' });
     expect(args.slice(-2)).toEqual(['--', '--help']);
@@ -191,8 +211,10 @@ describe('CliRunner translation', () => {
       'usage',
       'assistant_text',
       'usage',
+      'usage',
       'result',
     ]);
+    expect(events.at(-2)).toMatchObject({ type: 'usage', remainder: true });
     expect(result).toMatchObject({
       model: 'claude-haiku-4-5-20251001',
       claudeCodeVersion: '2.1.283',
@@ -200,17 +222,12 @@ describe('CliRunner translation', () => {
     });
   });
 
-  it('sums per-turn usage to the main-loop usage the result reports', async () => {
+  it('sums per-turn usage to the main-loop usage the result reports, and the remainder to its modelUsage', async () => {
     for (const scenario of ['subject', 'judge', 'read-only-judge', 'max-turns'] as const) {
-      const raw = cliMessages(scenario).find((message) => message.type === 'result')
-        ?.usage as Record<string, number>;
-      const { result } = await runRecorded(scenario);
-      expect(result.usage).toEqual({
-        input: raw.input_tokens,
-        output: raw.output_tokens,
-        cacheRead: raw.cache_read_input_tokens,
-        cacheWrite: raw.cache_creation_input_tokens,
-      });
+      const raw = cliMessages(scenario).find((message) => message.type === 'result');
+      const { result, events } = await runRecorded(scenario);
+      expect(sumUsage(events.filter((event) => !isRemainder(event)))).toEqual(mainLoopUsage(raw));
+      expect(result.usage).toEqual(modelUsageTotals(raw));
     }
   });
 

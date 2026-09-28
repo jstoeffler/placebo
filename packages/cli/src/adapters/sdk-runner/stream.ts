@@ -22,6 +22,12 @@ import {
   ToolUseBlock,
   User,
 } from './messages.js';
+import {
+  estimateCostUsd,
+  modelUsageTotals,
+  type PricedTokens,
+  ratesFrom,
+} from './cost-estimate.js';
 
 // Translates Claude Code's stream messages into `RunnerEvent`s. Shared by the SDK runner, which
 // receives the messages as objects, and the CLI runner, which parses them from NDJSON lines.
@@ -157,21 +163,32 @@ interface PendingTurn {
   readonly id: string;
   usage: MessageUsage;
   emitted: boolean;
+  /** The `Agent` tool call whose subagent took the turn; undefined for the main loop. */
+  readonly parent: string | undefined;
+  readonly model: string | undefined;
 }
 
 /**
  * Stateful translation of one run's message stream. Feed every message to `push`, then call
- * `finish` once the stream ends (or `fail` if it threw).
+ * `finish` once the stream ends (or `synthesize` if it ended without a result message).
+ *
+ * The stream is read to its end, past any result message: background work and the turns it
+ * triggers keep streaming until Claude Code exits (docs/measurement.md).
  */
 export class StreamTranslator {
   readonly #clock: Clock;
   readonly #emit: (event: RunnerEvent) => void;
   readonly #startedAt: Date;
   #init: { model: string; claudeCodeVersion: string } | undefined;
-  #rawResult: ResultMessage | undefined;
+  /** Every result message, in order; Claude Code writes one per turn of the main loop. */
+  readonly #results: ResultMessage[] = [];
   #usage: TokenUsage = ZERO_USAGE;
   /** Turns in order of first appearance, keyed by API message id. */
   readonly #turns = new Map<string, PendingTurn>();
+  /** How many of `#turns` had appeared when the last result message arrived. */
+  #turnsAtLastResult = 0;
+  /** The message id of each subagent's latest turn, by parent tool call id. */
+  readonly #subagentTurns = new Map<string, string>();
   /** The message id each stream (main loop or subagent) is currently streaming. */
   readonly #streaming = new Map<string, string>();
   #lastToolCallId: string | undefined;
@@ -201,7 +218,7 @@ export class StreamTranslator {
 
   #route(message: unknown): void {
     const envelope = Envelope.safeParse(message);
-    if (!envelope.success || this.#rawResult !== undefined) return;
+    if (!envelope.success) return;
     const { type, subtype } = envelope.data;
     if (type === 'system' && subtype === 'init') this.#onInit(SystemInit.parse(message));
     else if (!this.started) return;
@@ -210,7 +227,10 @@ export class StreamTranslator {
     } else if (type === 'assistant') this.#onAssistant(Assistant.parse(message));
     else if (type === 'user') this.#onUser(User.parse(message));
     else if (type === 'stream_event') this.#onStreamEvent(StreamEvent.parse(message));
-    else if (type === 'result') this.#rawResult = ResultMessage.parse(message);
+    else if (type === 'result') {
+      this.#results.push(ResultMessage.parse(message));
+      this.#turnsAtLastResult = this.#turns.size;
+    }
   }
 
   /**
@@ -219,7 +239,7 @@ export class StreamTranslator {
    * otherwise the result is the run's outcome.
    */
   finish(options: { timedOut: boolean }): RunnerResult {
-    const raw = this.#rawResult;
+    const raw = this.#results.at(-1);
     if (raw === undefined || this.#init === undefined) {
       throw new Error('finish() called without a system init and a result message');
     }
@@ -231,25 +251,79 @@ export class StreamTranslator {
       lastToolCallId: this.#lastToolCallId,
       timedOut: options.timedOut,
     });
+    const structuredOutput = this.#results.findLast(
+      (result) => result.structured_output !== undefined,
+    )?.structured_output;
     return this.#end({
       outcome,
-      costUsd: raw.total_cost_usd,
-      turns: raw.num_turns,
-      durationMs: raw.duration_ms,
+      ...this.#settleCost(raw),
+      turns: sum(this.#results.map((result) => result.num_turns)),
+      durationMs: this.#elapsedMs(),
+      reportedDurationMs: sum(this.#results.map((result) => result.duration_ms)),
       apiDurationMs: raw.duration_api_ms,
       stopReason: raw.stop_reason,
-      permissionDenials: raw.permission_denials.map((denial) => ({
-        tool: denial.tool_name,
-        toolCallId: denial.tool_use_id,
-        input: denial.tool_input,
-      })),
-      ...(raw.structured_output === undefined ? {} : { structuredOutput: raw.structured_output }),
+      permissionDenials: permissionDenialsOf(this.#results),
+      ...(structuredOutput === undefined ? {} : { structuredOutput }),
     });
   }
 
   /** Whether a result message arrived. */
   get hasResult(): boolean {
-    return this.#rawResult !== undefined;
+    return this.#results.length > 0;
+  }
+
+  /**
+   * The run's cost, from the last result message, which covers every model call made until then.
+   * Emits the remainder: tokens that result's `modelUsage` counts beyond the turns streamed
+   * before it. Turns streamed after it are priced at the rates `modelUsage` implies and added.
+   */
+  #settleCost(
+    last: ResultMessage,
+  ): Pick<ResultEvent, 'costUsd' | 'reportedCostUsd' | 'costEstimated'> {
+    const turns = [...this.#turns.values()];
+    const counted = turns.slice(0, this.#turnsAtLastResult);
+    const later = turns.slice(this.#turnsAtLastResult);
+    const reported = { costUsd: last.total_cost_usd, reportedCostUsd: last.total_cost_usd };
+    if (last.modelUsage === undefined) return { ...reported, costEstimated: later.length > 0 };
+    this.#emitRemainder(modelUsageTotals(last.modelUsage), counted);
+    if (later.length === 0) return { ...reported, costEstimated: false };
+    const mainModel = this.#init?.model ?? '';
+    const oneHourWrites = new Map<string, number>();
+    for (const turn of counted) {
+      const model = turn.model ?? mainModel;
+      const written = pricedTokens(turn).cacheWriteOneHour;
+      oneHourWrites.set(model, (oneHourWrites.get(model) ?? 0) + written);
+    }
+    const estimate = estimateCostUsd(
+      later.map((turn) => ({ model: turn.model, tokens: pricedTokens(turn) })),
+      ratesFrom(last.modelUsage, oneHourWrites),
+      mainModel,
+    );
+    return { ...reported, costUsd: last.total_cost_usd + estimate, costEstimated: true };
+  }
+
+  /** Emits what `totals` counts beyond `counted`, if anything, as one `remainder` usage event. */
+  #emitRemainder(totals: TokenUsage, counted: readonly PendingTurn[]): void {
+    const streamed = { ...ZERO_USAGE };
+    for (const turn of counted) {
+      const usage = tokenUsage(turn.usage);
+      streamed.input += usage.input;
+      streamed.output += usage.output;
+      streamed.cacheRead += usage.cacheRead;
+      streamed.cacheWrite += usage.cacheWrite;
+    }
+    const remainder: TokenUsage = {
+      input: Math.max(0, totals.input - streamed.input),
+      output: Math.max(0, totals.output - streamed.output),
+      cacheRead: Math.max(0, totals.cacheRead - streamed.cacheRead),
+      cacheWrite: Math.max(0, totals.cacheWrite - streamed.cacheWrite),
+    };
+    if (Object.values(remainder).every((count) => count === 0)) return;
+    this.#emitTokens(remainder, { remainder: true });
+  }
+
+  #elapsedMs(): number {
+    return Math.max(0, this.#clock.now().getTime() - this.#startedAt.getTime());
   }
 
   /**
@@ -262,7 +336,7 @@ export class StreamTranslator {
       outcome,
       costUsd: 0,
       turns: this.#turns.size,
-      durationMs: Math.max(0, this.#clock.now().getTime() - this.#startedAt.getTime()),
+      durationMs: this.#elapsedMs(),
       apiDurationMs: 0,
       stopReason: null,
       permissionDenials: [],
@@ -318,28 +392,56 @@ export class StreamTranslator {
   }
 
   #onAssistant(message: Assistant): void {
-    const { id, content, usage } = message.message;
+    const { id, model, content, usage } = message.message;
+    const parent = message.parent_tool_use_id ?? undefined;
+    const nested = parent === undefined ? {} : { parentToolUseId: parent };
     if (message.error !== undefined) this.#lastAssistantError = message.error;
+    if (parent !== undefined) this.#onSubagentTurn(parent, id);
     const turn = this.#turns.get(id);
-    if (turn === undefined) this.#turns.set(id, { id, usage, emitted: false });
+    if (turn === undefined) this.#turns.set(id, { id, usage, emitted: false, parent, model });
     else if (!turn.emitted) turn.usage = usage;
     for (const block of content) {
       const text = TextBlock.safeParse(block);
       if (text.success) {
-        this.#emit({ type: 'assistant_text', timestamp: this.#now(), text: text.data.text });
+        this.#emit({
+          type: 'assistant_text',
+          timestamp: this.#now(),
+          text: text.data.text,
+          ...nested,
+        });
         continue;
       }
       const toolUse = ToolUseBlock.safeParse(block);
       if (toolUse.success) {
         const { id: callId, name, input } = toolUse.data;
-        this.#lastToolCallId = callId;
-        this.#emit({ type: 'tool_call', timestamp: this.#now(), id: callId, name, input });
+        if (parent === undefined) this.#lastToolCallId = callId;
+        this.#emit({
+          type: 'tool_call',
+          timestamp: this.#now(),
+          id: callId,
+          name,
+          input,
+          ...nested,
+        });
       }
     }
   }
 
+  /**
+   * Subagent turns get no `message_delta` (docs/measurement.md), so a subagent's turn is
+   * complete once its next turn starts; its usage is emitted then, as streamed.
+   */
+  #onSubagentTurn(parent: string, id: string): void {
+    const previous = this.#subagentTurns.get(parent);
+    this.#subagentTurns.set(parent, id);
+    if (previous === undefined || previous === id) return;
+    const turn = this.#turns.get(previous);
+    if (turn !== undefined && !turn.emitted) this.#emitUsage(turn);
+  }
+
   #onUser(message: ReturnType<typeof User.parse>): void {
     const { content } = message.message;
+    const parent = message.parent_tool_use_id ?? undefined;
     if (typeof content === 'string') return;
     for (const block of content) {
       const toolResult = ToolResultBlock.safeParse(block);
@@ -350,6 +452,7 @@ export class StreamTranslator {
         id: toolResult.data.tool_use_id,
         output: toolResultText(toolResult.data.content),
         isError: toolResult.data.is_error ?? false,
+        ...(parent === undefined ? {} : { parentToolUseId: parent }),
       });
     }
   }
@@ -363,9 +466,12 @@ export class StreamTranslator {
     const stream = message.parent_tool_use_id ?? '';
     const start = MessageStart.safeParse(message.event);
     if (start.success) {
-      const { id, usage } = start.data.message;
+      const { id, model, usage } = start.data.message;
       this.#streaming.set(stream, id);
-      if (!this.#turns.has(id)) this.#turns.set(id, { id, usage, emitted: false });
+      if (!this.#turns.has(id)) {
+        const parent = message.parent_tool_use_id ?? undefined;
+        this.#turns.set(id, { id, usage, emitted: false, parent, model });
+      }
       return;
     }
     const delta = MessageDelta.safeParse(message.event);
@@ -380,6 +486,7 @@ export class StreamTranslator {
       cache_read_input_tokens: final.cache_read_input_tokens ?? turn.usage.cache_read_input_tokens,
       cache_creation_input_tokens:
         final.cache_creation_input_tokens ?? turn.usage.cache_creation_input_tokens,
+      cache_creation: turn.usage.cache_creation,
     };
     this.#emitUsage(turn);
   }
@@ -395,13 +502,50 @@ export class StreamTranslator {
 
   #emitUsage(turn: PendingTurn): void {
     turn.emitted = true;
-    const usage = tokenUsage(turn.usage);
+    this.#emitTokens(
+      tokenUsage(turn.usage),
+      turn.parent === undefined ? {} : { parentToolUseId: turn.parent },
+    );
+  }
+
+  #emitTokens(
+    usage: TokenUsage,
+    extra: { readonly parentToolUseId?: string; readonly remainder?: true },
+  ): void {
     this.#usage = {
       input: this.#usage.input + usage.input,
       output: this.#usage.output + usage.output,
       cacheRead: this.#usage.cacheRead + usage.cacheRead,
       cacheWrite: this.#usage.cacheWrite + usage.cacheWrite,
     };
-    this.#emit({ type: 'usage', timestamp: this.#now(), ...usage });
+    this.#emit({ type: 'usage', timestamp: this.#now(), ...usage, ...extra });
   }
+}
+
+function sum(values: readonly number[]): number {
+  return values.reduce((total, value) => total + value, 0);
+}
+
+function pricedTokens(turn: PendingTurn): PricedTokens {
+  return {
+    ...tokenUsage(turn.usage),
+    cacheWriteOneHour: turn.usage.cache_creation?.ephemeral_1h_input_tokens ?? 0,
+  };
+}
+
+/** The permission denials of every result, once each. */
+function permissionDenialsOf(results: readonly ResultMessage[]): ResultEvent['permissionDenials'] {
+  const seen = new Set<string>();
+  return results
+    .flatMap((result) => result.permission_denials)
+    .filter((denial) => {
+      if (seen.has(denial.tool_use_id)) return false;
+      seen.add(denial.tool_use_id);
+      return true;
+    })
+    .map((denial) => ({
+      tool: denial.tool_name,
+      toolCallId: denial.tool_use_id,
+      input: denial.tool_input,
+    }));
 }
