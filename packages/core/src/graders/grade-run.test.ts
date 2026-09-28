@@ -5,7 +5,7 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { FakeRunner, type FakePlan } from '../adapters/fake-runner/fake-runner.js';
 import { TreatmentArm } from '../domain/arm.js';
 import { RunnerEvent } from '../domain/events.js';
-import { CHECKLIST_JUDGE_OUTPUT_SCHEMA, Grade } from '../domain/grade.js';
+import { CHECKLIST_JUDGE_OUTPUT_SCHEMA, Grade, type JudgeSpend } from '../domain/grade.js';
 import { RunnerInfraError, type RunRequest } from '../ports/runner.js';
 import { sampleEvents } from '../testing/fixtures.js';
 import {
@@ -443,27 +443,41 @@ describe('gradeRun: checklist judge', () => {
     expect(grades[1]?.score).toBe(2);
   });
 
-  it.each<[string, (request: RunRequest) => FakePlan, string]>([
+  const oneTurn = {
+    costUsd: 0,
+    tokens: { input: 100, output: 20, cacheRead: 0, cacheWrite: 0 },
+    calls: 1,
+  };
+  const noTurn = {
+    costUsd: 0,
+    tokens: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
+    calls: 1,
+  };
+  it.each<[string, (request: RunRequest) => FakePlan, string, JudgeSpend | undefined]>([
     [
       'an answer of the wrong shape',
       () => FakeRunner.plans.judgeAnswer({ answers: [{ question: 'q', yes: 'yes' }] }),
       'judge answer is invalid: answers.0.yes: Invalid input: expected boolean, received string; answers.0.reason: Invalid input: expected string, received undefined',
+      oneTurn,
     ],
     [
       'a missing top-level field',
       () => FakeRunner.plans.judgeAnswer('yes'),
       'judge answer is invalid: (root): Invalid input: expected object, received string',
+      oneTurn,
     ],
     [
       'the wrong number of answers',
       () => answers(true),
       'judge answer is invalid: expected 2 answers, one per question, got 1',
+      oneTurn,
     ],
-    ['no structured output', () => ({}), 'judge returned no structured output'],
+    ['no structured output', () => ({}), 'judge returned no structured output', noTurn],
     [
       'a failed judge run',
       () => ({ result: { outcome: 'failed', structuredOutput: { answers: [] } } }),
       'judge run ended with outcome failed',
+      noTurn,
     ],
     [
       'a runner bug',
@@ -471,15 +485,16 @@ describe('gradeRun: checklist judge', () => {
         throw new Error('unexpected');
       },
       'judge could not run: unexpected',
+      undefined,
     ],
-  ])('scores 0 with an error detail for %s', async (_, plan, message) => {
+  ])('scores 0 with an error detail for %s', async (_, plan, message, spend) => {
     const { ctx, executor } = setup([{ type: 'checklist', questions: QUESTIONS_PATH }], { plan });
     expect(await gradeRun(ctx)).toEqual([
       {
         grader: { type: 'checklist', index: 0 },
         kind: 'judge',
         score: 0,
-        detail: { type: 'error', message },
+        detail: { type: 'error', message, ...(spend === undefined ? {} : { spend }) },
       },
     ]);
     expect(executor.calls.filter((c) => c.type === 'remove')).toHaveLength(1);
@@ -498,14 +513,23 @@ describe('gradeRun: checklist judge', () => {
     expect(runner.requests).toHaveLength(0);
   });
 
-  it('names the failing repeat', async () => {
-    const { ctx, runner } = setup([{ type: 'checklist', questions: QUESTIONS_PATH, repeats: 2 }], {
-      plan: () => (runner.requests.length === 1 ? answers(true, true) : {}),
+  it('names the failing repeat and keeps the spend of every repeat that ran', async () => {
+    const { ctx, runner } = setup([{ type: 'checklist', questions: QUESTIONS_PATH, repeats: 3 }], {
+      plan: () =>
+        runner.requests.length === 1
+          ? { ...answers(true, true), result: { ...answers(true, true).result, costUsd: 0.02 } }
+          : { result: { costUsd: 0.01 } },
     });
     const [grade] = await gradeRun(ctx);
+    expect(runner.requests).toHaveLength(2);
     expect(grade?.detail).toEqual({
       type: 'error',
-      message: 'judge returned no structured output (repeat 2 of 2)',
+      message: 'judge returned no structured output (repeat 2 of 3)',
+      spend: {
+        costUsd: 0.03,
+        tokens: { input: 100, output: 20, cacheRead: 0, cacheWrite: 0 },
+        calls: 2,
+      },
     });
   });
 

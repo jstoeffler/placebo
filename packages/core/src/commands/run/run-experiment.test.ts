@@ -96,6 +96,11 @@ describe('runExperiment', () => {
 
     const types = typesOf(h.events);
     expect(types.slice(0, 3)).toEqual(['message', 'snapshot_ready', 'experiment_started']);
+    expect(h.events[1]).toEqual({
+      type: 'snapshot_ready',
+      snapshotId: expect.any(String) as unknown,
+      cached: false,
+    });
     expect(types.filter((type) => type === 'run_started')).toHaveLength(8);
     expect(types.filter((type) => type === 'grading_started')).toHaveLength(8);
     expect(types.filter((type) => type === 'run_finished')).toHaveLength(8);
@@ -282,6 +287,67 @@ describe('runExperiment', () => {
     });
   });
 
+  it('fails at once on an auth error: no retry, and a message saying how to log in', async () => {
+    const auth = new RunnerInfraError('auth', 'API Error: 401 Invalid API key · Please run /login');
+    const plan = (request: RunRequest) =>
+      isSubject(request) ? { infraError: auth } : defaultPlan(request);
+    const h = setup({ plan, suite: { runs: 1, parallelism: 1 } });
+    const result = await runExperiment(h.input);
+    if (result.ok) throw new Error('expected infra_exhausted');
+    const firstRun = h.events.find((event) => event.type === 'run_started');
+    expect(result.error).toEqual({
+      type: 'infra_exhausted',
+      experimentId: expect.any(String) as unknown,
+      completedRuns: 0,
+      totalRuns: 4,
+      runId: firstRun?.type === 'run_started' ? firstRun.runId : undefined,
+      reason: 'auth',
+      attempts: 1,
+      message:
+        'Claude Code could not authenticate or bill this account: API Error: 401 Invalid API key · Please run /login. Run `claude` once interactively and log in, or set ANTHROPIC_API_KEY, then run the experiment again.',
+    });
+    expect(h.sleeps).toEqual([]);
+    expect(h.runner.requests.filter(isSubject)).toHaveLength(1);
+    expect(typesOf(h.events)).not.toContain('run_retried');
+    await expect(h.store.list()).resolves.toEqual([]);
+  });
+
+  it('fails at once when a judge or a comparison hits an auth error', async () => {
+    const auth = new RunnerInfraError('auth', 'credit balance is too low');
+    const judgeFails = setup({
+      plan: (request) =>
+        request.prompt.includes('Rounds half up?') ? { infraError: auth } : defaultPlan(request),
+      suite: { runs: 1, parallelism: 1 },
+      options: { tasks: ['refund' as TaskId] },
+    });
+    const graded = await runExperiment(judgeFails.input);
+    expect(graded.ok ? undefined : graded.error).toMatchObject({
+      type: 'infra_exhausted',
+      reason: 'auth',
+      attempts: 1,
+      completedRuns: 0,
+    });
+    expect(judgeFails.sleeps).toEqual([]);
+
+    const comparisonFails = setup({
+      plan: (request) =>
+        !isSubject(request) && !request.prompt.includes('Rounds half up?')
+          ? { infraError: auth }
+          : defaultPlan(request),
+      suite: { runs: 1 },
+      options: { tasks: ['refund' as TaskId] },
+    });
+    const compared = await runExperiment(comparisonFails.input);
+    expect(compared.ok ? undefined : compared.error).toMatchObject({
+      type: 'infra_exhausted',
+      reason: 'auth',
+      attempts: 1,
+      completedRuns: 2,
+      message: expect.stringContaining('Run `claude` once interactively') as unknown,
+    });
+    expect(comparisonFails.sleeps).toEqual([]);
+  });
+
   it('injects hidden files only after the runner returned', async () => {
     const order: string[] = [];
     const plan = (request: RunRequest) => {
@@ -367,43 +433,53 @@ describe('runExperiment', () => {
     expect((await h.executor.listRunFolders()).length).toBe(4 - expectedRemoved);
   });
 
-  it('stops on abort: no new run starts and the run in flight is saved as failed', async () => {
-    const controller = new AbortController();
-    let started = 0;
-    const plan = (request: RunRequest) => {
-      if (!isSubject(request)) return defaultPlan(request);
-      started += 1;
-      if (started < 3) return defaultPlan(request);
-      return {
-        steps: [
-          {
-            wait: () => {
-              controller.abort();
-              return new Promise(() => undefined);
+  it.each(['all', 'none'] as const)(
+    'stops on abort: no new run starts and the run in flight is discarded (keepRunFolders %s)',
+    async (keepRunFolders) => {
+      const controller = new AbortController();
+      let started = 0;
+      const plan = (request: RunRequest) => {
+        if (!isSubject(request)) return defaultPlan(request);
+        started += 1;
+        if (started < 3) return defaultPlan(request);
+        return {
+          steps: [
+            {
+              wait: () => {
+                controller.abort();
+                return new Promise(() => undefined);
+              },
             },
-          },
-        ],
+          ],
+        };
       };
-    };
-    const h = setup({
-      plan,
-      suite: { runs: 2, parallelism: 1 },
-      options: { signal: controller.signal },
-    });
-    const result = await runExperiment({
-      ...h.input,
-      options: { ...h.input.options, signal: controller.signal },
-    });
-    if (result.ok) throw new Error('expected aborted');
-    expect(result.error).toMatchObject({ type: 'aborted', completedRuns: 2, totalRuns: 8 });
-    expect(started).toBe(3);
-    const stored = await h.store.list();
-    expect(stored).toHaveLength(3);
-    const inFlight = stored.find((run) => run.grades.length === 0);
-    expect(inFlight?.outcome).toBe('failed');
-    expect(typesOf(h.events).filter((type) => type === 'run_started')).toHaveLength(3);
-    expect(typesOf(h.events)).not.toContain('comparisons_started');
-  });
+      const h = setup({
+        plan,
+        suite: { runs: 2, parallelism: 1 },
+        options: { signal: controller.signal, keepRunFolders },
+      });
+      const result = await runExperiment(h.input);
+      if (result.ok) throw new Error('expected aborted');
+      expect(result.error).toMatchObject({ type: 'aborted', completedRuns: 2, totalRuns: 8 });
+      expect(started).toBe(3);
+      const stored = await h.store.list();
+      expect(stored).toHaveLength(2);
+      expect(stored.every((run) => run.grades.length > 0)).toBe(true);
+      const runStarted = h.events.flatMap((event) =>
+        event.type === 'run_started' ? [event.runId] : [],
+      );
+      const runFinished = h.events.flatMap((event) =>
+        event.type === 'run_finished' ? [event.runId] : [],
+      );
+      expect(runStarted).toHaveLength(3);
+      expect([...runFinished].sort()).toEqual(stored.map((run) => run.id).sort());
+      expect(runFinished).not.toContain(runStarted[2]);
+      expect(h.events.at(-1)).toMatchObject({ type: 'experiment_finished', completedRuns: 2 });
+      expect(typesOf(h.events)).not.toContain('comparisons_started');
+      const folders = await h.executor.listRunFolders();
+      expect(folders).toHaveLength(keepRunFolders === 'all' ? 2 : 0);
+    },
+  );
 
   it('ends at once when the signal fired before anything started', async () => {
     const controller = new AbortController();
@@ -488,6 +564,14 @@ describe('runExperiment selection and pins', () => {
     expect(h.executor.calls).toEqual([]);
   });
 
+  it('says in snapshot_ready whether the snapshot came from the cache', async () => {
+    const h = setup({ executor: { snapshotCached: true }, suite: { runs: 1 } });
+    expect((await runExperiment(h.input)).ok).toBe(true);
+    expect(h.events.find((event) => event.type === 'snapshot_ready')).toMatchObject({
+      cached: true,
+    });
+  });
+
   it('ends with executor_failed when the snapshot cannot be prepared', async () => {
     const h = setup();
     h.executor.prepareSnapshot = () => Promise.reject(new Error('commit not found'));
@@ -537,6 +621,19 @@ describe('runExperiment selection and pins', () => {
         totalRuns: 8,
         message: 'the Claude Code version could not be read: ENOENT claude',
       },
+    });
+  });
+
+  it('says how to log in when the Claude Code version lookup hits an auth error', async () => {
+    const h = setup();
+    h.runner.claudeCodeVersion = () =>
+      Promise.reject(new RunnerInfraError('auth', 'Not logged in'));
+    const result = await runExperiment(h.input);
+    expect(result.ok ? undefined : result.error).toMatchObject({
+      type: 'infra_exhausted',
+      reason: 'auth',
+      attempts: 1,
+      message: expect.stringContaining('or set ANTHROPIC_API_KEY') as unknown,
     });
   });
 

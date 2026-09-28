@@ -23,7 +23,7 @@ import {
   type Sleep,
 } from './perform-run.js';
 import { planRuns, runPool } from './plan.js';
-import { DEFAULT_MAX_INFRA_ATTEMPTS, sleep as realSleep } from './retry.js';
+import { DEFAULT_MAX_INFRA_ATTEMPTS, infraMessage, sleep as realSleep } from './retry.js';
 import { selectArms, selectTasks } from './select.js';
 import { describeWarning, upfrontWarnings } from './warnings.js';
 
@@ -38,7 +38,7 @@ export interface RunExperimentOptions {
   readonly variants?: readonly VariantName[];
   /** Which run folders stay after grading; `all` by default (brief §11). */
   readonly keepRunFolders?: KeepRunFolders;
-  /** Stops the experiment: runs in flight end as `failed`, no new run starts. */
+  /** Stops the experiment: no new run starts and runs in flight are discarded, never saved. */
   readonly signal?: AbortSignal;
   /** Attempts per run before an infrastructure error ends the experiment; 5 by default. */
   readonly maxInfraAttempts?: number;
@@ -84,9 +84,10 @@ export interface RunExperimentOutput {
  *    runs.
  * 5. Assembles and validates the results.
  *
- * Ends early with an `ExperimentError` when infrastructure errors outlast the retries, the
- * executor fails, or `options.signal` aborts; runs saved until then stay in the store. The
- * agent's own failures are runs, never errors. Only bugs throw.
+ * Ends early with an `ExperimentError` when infrastructure errors outlast the retries (an `auth`
+ * error is never retried: it ends the experiment at once), the executor fails, or
+ * `options.signal` aborts; runs saved until then stay in the store, and a run the abort cut short
+ * is never saved. The agent's own failures are runs, never errors. Only bugs throw.
  */
 export async function runExperiment(
   input: RunExperimentInput,
@@ -124,7 +125,7 @@ export async function runExperiment(
   const pinned = await pin(input);
   if (!pinned.ok) return err({ ...pinned.error, ...before });
   const { snapshot, claudeCodeVersion } = pinned.value;
-  reporter.report({ type: 'snapshot_ready', snapshotId: snapshot.id });
+  reporter.report({ type: 'snapshot_ready', snapshotId: snapshot.id, cached: snapshot.cached });
 
   const experiment = Experiment.parse({
     id: experimentIdOf(started, input.seed),
@@ -228,7 +229,7 @@ export async function runExperiment(
             ...(stop.runId === undefined ? {} : { runId: stop.runId }),
             reason: stopped.error.reason,
             attempts: stopped.attempts,
-            message: stopped.error.message,
+            message: infraMessage(stopped.error),
           },
     );
   }
@@ -260,7 +261,7 @@ export async function runExperiment(
       completedRuns: finished.length,
       reason: compared.error.reason,
       attempts: compared.attempts,
-      message: compared.error.message,
+      message: infraMessage(compared.error),
     });
   }
   if (compared.type === 'aborted') return failWith(aborted(progress, finished.length));
@@ -303,7 +304,10 @@ async function pin(
       type: 'infra_exhausted',
       reason: error.reason,
       attempts: 1,
-      message: `the Claude Code version could not be read: ${error.message}`,
+      message:
+        error.reason === 'auth'
+          ? infraMessage(error)
+          : `the Claude Code version could not be read: ${error.message}`,
     });
   }
   try {

@@ -37,11 +37,8 @@ export type ProgressEvent =
   | {
       readonly type: 'snapshot_ready';
       readonly snapshotId: string;
-      /**
-       * Whether the snapshot came from the executor's cache. Absent: the `Executor` port does not
-       * report it yet.
-       */
-      readonly cached?: boolean;
+      /** Whether the snapshot came from the executor's cache rather than being built. */
+      readonly cached: boolean;
     }
   /** The agent finished; graders (hidden files, commands, judges) start on this run. */
   | { readonly type: 'grading_started'; readonly runId: RunId }

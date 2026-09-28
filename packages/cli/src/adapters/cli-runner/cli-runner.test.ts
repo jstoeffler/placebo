@@ -14,6 +14,7 @@ import {
   SUBJECT_REQUEST,
   toNdjson,
   withoutResult,
+  withResult,
 } from '../sdk-runner/test-support.js';
 import { cliArgs, CliRunner, parseClaudeVersion } from './cli-runner.js';
 
@@ -285,6 +286,30 @@ describe('CliRunner outcomes and infrastructure errors', () => {
       reason: 'rate_limited',
       retryAfterMs: 20_000,
     });
+  });
+
+  it('rejects with auth when claude is not logged in and exits before any output', async () => {
+    const { runner, dir } = setup({ exit: 1, stderr: 'Invalid API key · Please run /login' });
+    await expect(
+      runner.run({ ...SUBJECT_REQUEST, cwd: dir }, () => undefined),
+    ).rejects.toMatchObject({
+      name: 'RunnerInfraError',
+      reason: 'auth',
+      message: 'Invalid API key · Please run /login',
+    });
+  });
+
+  it('rejects with auth when the result is a 401 or a billing error', async () => {
+    const subject = cliMessages('subject');
+    for (const fields of [
+      { is_error: true, api_error_status: 401, result: 'API Error' },
+      { is_error: true, result: 'Credit balance is too low' },
+    ]) {
+      const { runner, dir } = setup({ stream: toNdjson(withResult(subject, fields)), exit: 1 });
+      await expect(
+        runner.run({ ...SUBJECT_REQUEST, cwd: dir }, () => undefined),
+      ).rejects.toMatchObject({ reason: 'auth' });
+    }
   });
 
   it('kills claude after limits.maxDurationMs and records a failed run', async () => {

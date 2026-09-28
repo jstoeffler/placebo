@@ -5,6 +5,7 @@ import {
   sampleEvents,
   sampleExperiment,
   sampleGrades,
+  sampleJudgeSpend,
   sampleMeasurements,
   sampleResults,
   sampleReview,
@@ -164,6 +165,17 @@ describe('Suite', () => {
       'runs: Invalid input: expected int, received number',
     ]);
   });
+
+  it('requires variant names that start with a letter and are not "control"', () => {
+    const patch = { patch: 'variants/x.patch' };
+    expect(issuesOf(Suite, { ...suite, variants: { '2x': patch } })).toEqual([
+      'variants.2x: variant name must start with a lowercase letter, so it never reads as a number or a run count, followed by lowercase letters, digits, "-" or "_"',
+    ]);
+    expect(issuesOf(Suite, { ...suite, variants: { control: patch } })).toEqual([
+      'variants.control: variant name "control" is reserved',
+    ]);
+    expect(Suite.parse({ ...suite, variants: { v2: patch } }).variants).toHaveProperty('v2');
+  });
 });
 
 describe('Arm', () => {
@@ -235,6 +247,25 @@ describe('Grade', () => {
       detail: { type: 'review', reviewId: 'rev-1', reviewer: 'julien', answers: [] },
     };
     expect(Grade.parse(review)).toEqual(review);
+  });
+
+  it('accepts an error detail with or without the spend of a failed judge', () => {
+    const failed = {
+      grader: { type: 'checklist', index: 0 },
+      kind: 'judge',
+      score: 0,
+      detail: { type: 'error', message: 'judge returned no structured output' },
+    };
+    expect(Grade.parse(failed)).toEqual(failed);
+    const withSpend = { ...failed, detail: { ...failed.detail, spend: sampleJudgeSpend } };
+    expect(Grade.parse(withSpend)).toEqual(withSpend);
+    expect(
+      issuesOf(Grade, { ...failed, detail: { ...failed.detail, spend: { costUsd: -1 } } }),
+    ).toEqual([
+      'detail.spend.costUsd: Too small: expected number to be >=0',
+      'detail.spend.tokens: Invalid input: expected object, received undefined',
+      'detail.spend.calls: Invalid input: expected number, received undefined',
+    ]);
   });
 
   it('ties review refs to a null index', () => {
