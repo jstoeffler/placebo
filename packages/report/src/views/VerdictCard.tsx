@@ -8,6 +8,7 @@ import { ArmLabel } from '../context.js';
 import { orderedRows } from '../data/model.js';
 import {
   formatDifference,
+  formatExcludedTasks,
   formatRange,
   formatRunsNeededNote,
   formatVerdict,
@@ -62,6 +63,7 @@ export function VerdictCard({ card, results }: { readonly card: Card; readonly r
 
 function MetricLine({ row }: { readonly row: MetricRow }) {
   const info = METRICS[row.metric];
+  const excluded = formatExcludedTasks(row);
   return (
     <tr className={`verdict-${row.verdict}`} data-metric={row.metric}>
       <th scope="row" className="metric">
@@ -69,13 +71,14 @@ function MetricLine({ row }: { readonly row: MetricRow }) {
       </th>
       <td className="num difference">{formatDifference(row)}</td>
       <td className="num range">{formatRange(row)}</td>
-      <td className="gauge-cell">
-        <Gauge row={row} />
-      </td>
+      <td className="gauge-cell">{row.taskCount > 0 && <Gauge row={row} />}</td>
       <td className="verdict">
         <span className="verdict-word">{formatVerdict(row.verdict)}</span>
       </td>
-      <td className="runs-needed">{formatRunsNeededNote(row)}</td>
+      <td className="runs-needed">
+        {formatRunsNeededNote(row)}
+        {excluded !== undefined && <span className="excluded-tasks">{excluded}</span>}
+      </td>
     </tr>
   );
 }

@@ -95,8 +95,13 @@ describe('runExperiment', () => {
     expect(results.warnings).toContainEqual({ type: 'few_tasks', taskCount: 2, threshold: 5 });
 
     const types = typesOf(h.events);
-    expect(types.slice(0, 3)).toEqual(['message', 'snapshot_ready', 'experiment_started']);
-    expect(h.events[1]).toEqual({
+    expect(types.slice(0, 4)).toEqual([
+      'message',
+      'message',
+      'snapshot_ready',
+      'experiment_started',
+    ]);
+    expect(h.events[2]).toEqual({
       type: 'snapshot_ready',
       snapshotId: expect.any(String) as unknown,
       cached: false,
@@ -374,7 +379,7 @@ describe('runExperiment', () => {
     ).toBe('grep -q round src/money.ts\n');
   });
 
-  it('warns up front: judge equals subject, patch outside the surface, few tasks', async () => {
+  it('warns up front: judge equals subject, patch outside the surface, few tasks, few runs', async () => {
     const outside =
       'diff --git a/src/app.ts b/src/app.ts\n--- a/src/app.ts\n+++ b/src/app.ts\n@@ -1 +1 @@\n-a\n+b\n';
     const h = setup({
@@ -400,6 +405,11 @@ describe('runExperiment', () => {
         level: 'warn',
         text: 'only 2 tasks (fewer than 5): results describe these tasks, not the repo in general',
       },
+      {
+        type: 'message',
+        level: 'warn',
+        text: 'only 1 run per task (fewer than 3): only large differences can be detected',
+      },
     ]);
     expect(typesOf(h.events).indexOf('message')).toBe(0);
     expect(result.value.results.warnings).toEqual(
@@ -407,6 +417,7 @@ describe('runExperiment', () => {
         { type: 'judge_equals_subject', model: 'claude-sonnet-5' },
         { type: 'patch_outside_surface', variant: 'rules', paths: ['src/app.ts'] },
         { type: 'few_tasks', taskCount: 2, threshold: 5 },
+        { type: 'few_runs', runsPerTask: 1, threshold: 3 },
       ]),
     );
     expect(result.value.results.warnings.filter((w) => w.type === 'few_tasks')).toHaveLength(1);

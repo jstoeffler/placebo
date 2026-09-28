@@ -51,6 +51,7 @@ export async function reportCommand(
       suite: loaded.suite,
       arms: experiment.arms,
       taskCount: experiment.taskIds.length,
+      runsPerTask: experiment.runsPerTask,
       patchText: (patch) => {
         const bytes = loaded.files.get(patch);
         return bytes === undefined ? '' : decoder.decode(bytes);

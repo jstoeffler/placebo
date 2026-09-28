@@ -60,12 +60,39 @@ describe('verdict card', () => {
       expect(screen.getAllByText(word, { selector: '.verdict-word' }).length).toBeGreaterThan(0);
   });
 
-  it('omits absent metrics and caps runs needed', () => {
+  it('asks for two runs per task instead of an estimate when every task has one', () => {
     renderReport('minimal');
     const card = screen.getByRole('region', { name: /^none vs control/ });
+    const note = '(at least 2 runs/task to compute a range)';
     expect(rowTexts(card)).toEqual([
-      ['pass rate', '0 pts', '[-100, +100]', 'no evidence', '(more than 1000 runs/task)'],
-      ['cost', '-21 %', '[-38, +4.6]', 'no evidence', '(≈9 runs/task to decide)'],
+      ['pass rate', '-', '-', 'no evidence', note],
+      ['cost', '-', '-', 'no evidence', note],
+    ]);
+    expect(card.querySelector('.gauge')).toBeNull();
+  });
+
+  it('caps runs needed and names the tasks a row leaves out', () => {
+    const data = fixture('rich');
+    const [card] = data.verdictCards;
+    if (card === undefined) throw new Error('no card');
+    const rows = card.rows.map((row) =>
+      row.metric === 'passRate'
+        ? {
+            ...row,
+            runsNeeded: undefined,
+            excludedTasks: [{ taskId: 'fix-refund-rounding', reason: 'too_few_runs' }],
+          }
+        : row,
+    );
+    const changed = { ...data, verdictCards: [{ ...card, rows }] };
+    render(<App loaded={loadResults(JSON.stringify(changed))} />);
+    const region = screen.getByRole('region', { name: /^none vs control/ });
+    expect(rowTexts(region)[0]).toEqual([
+      'pass rate',
+      '-25 pts',
+      '[-60, +10]',
+      'no evidence',
+      '(more than 1000 runs/task)left out: fix-refund-rounding (fewer than 2 runs)',
     ]);
   });
 });
@@ -88,11 +115,16 @@ describe('warnings and pins', () => {
     expect(warnings.compareDocumentPosition(card) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 
-  it('says results describe these tasks when there are few', () => {
+  it('says results describe these tasks when there are few, and runs are few', () => {
     renderReport('minimal');
     expect(
       screen.getByText(
         'With 1 task, fewer than 5, these results describe these tasks, not the repo.',
+      ),
+    ).toBeDefined();
+    expect(
+      screen.getByText(
+        'With 1 run per task, fewer than 3, only large differences can be detected; the ranges show how wide the uncertainty is.',
       ),
     ).toBeDefined();
   });
@@ -106,9 +138,10 @@ describe('warnings and pins', () => {
       { type: 'dead_task', taskId: 'validate-webhook-signature' },
       { type: 'isolation_residual', sources: ['claude_ai_connectors'] },
       { type: 'ancestor_configuration', paths: ['/Users/ada/CLAUDE.md', '/Users/ada/.claude'] },
+      { type: 'few_runs', runsPerTask: 2, threshold: 3 },
     ];
     render(<App loaded={loadResults(JSON.stringify({ ...data, warnings }))} />);
-    const region = screen.getByRole('region', { name: '6 warnings' });
+    const region = screen.getByRole('region', { name: '7 warnings' });
     expect(
       within(region)
         .getAllByRole('listitem')
@@ -120,6 +153,7 @@ describe('warnings and pins', () => {
       'Every arm scored zero on validate-webhook-signature, so it is flagged as unsolvable or brittle and excluded from verdicts.',
       'Project-only settings do not keep out claude.ai connectors, which may reach every arm.',
       'Claude Code loads /Users/ada/CLAUDE.md and /Users/ada/.claude from a directory above the run folders, so it reaches every arm.',
+      'With 2 runs per task, fewer than 3, only large differences can be detected; the ranges show how wide the uncertainty is.',
     ]);
   });
 

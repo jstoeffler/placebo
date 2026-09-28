@@ -115,6 +115,7 @@ export async function runExperiment(
     suite,
     arms: arms.value,
     taskCount: tasks.value.length,
+    runsPerTask,
     patchText: (patch) => patches.get(patch)?.text ?? '',
   });
   for (const warning of warnings) {

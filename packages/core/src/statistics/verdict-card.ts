@@ -4,7 +4,7 @@ import { METRICS, Metric, type MetricRow } from '../domain/metrics.js';
 import type { Results, TaskArmBreakdown } from '../domain/results.js';
 import type { Run } from '../domain/run.js';
 import type { Margins } from '../domain/suite.js';
-import { FEW_TASKS_THRESHOLD, type Warning } from '../domain/warnings.js';
+import { FEW_RUNS_THRESHOLD, FEW_TASKS_THRESHOLD, type Warning } from '../domain/warnings.js';
 import type { TaskId } from '../kernel/ids.js';
 import type { Random } from '../kernel/random.js';
 import { computeMetricRow, type TaskSamples } from './metric-row.js';
@@ -120,7 +120,8 @@ export function summarizeExperiment(input: ExperimentSummaryInput): ExperimentSu
 /**
  * Warnings the statistics can detect (brief §9, §13): one `dead_task` per dead task,
  * `few_tasks` when fewer than `FEW_TASKS_THRESHOLD` tasks remain once dead tasks are left out,
- * and `judge_equals_subject` when the pinned judge model is the subject model.
+ * `few_runs` when the experiment has fewer than `FEW_RUNS_THRESHOLD` runs per task, and
+ * `judge_equals_subject` when the pinned judge model is the subject model.
  */
 export function experimentWarnings(
   experiment: Experiment,
@@ -130,6 +131,13 @@ export function experimentWarnings(
   const taskCount = experiment.taskIds.length - deadTasks.length;
   if (taskCount < FEW_TASKS_THRESHOLD) {
     warnings.push({ type: 'few_tasks', taskCount, threshold: FEW_TASKS_THRESHOLD });
+  }
+  if (experiment.runsPerTask < FEW_RUNS_THRESHOLD) {
+    warnings.push({
+      type: 'few_runs',
+      runsPerTask: experiment.runsPerTask,
+      threshold: FEW_RUNS_THRESHOLD,
+    });
   }
   const { judgeModel, subjectModel } = experiment.pins;
   if (judgeModel === subjectModel) {

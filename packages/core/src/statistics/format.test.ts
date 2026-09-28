@@ -1,10 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import type { Metric } from '../domain/metrics.js';
+import { TaskId } from '../kernel/ids.js';
 import {
   formatBytes,
   formatCurrency,
   formatDifference,
   formatDuration,
+  formatExcludedTasks,
   formatMean,
   formatPlain,
   formatRange,
@@ -86,6 +88,59 @@ describe('formatRunsNeededNote', () => {
       '(more than 1000 runs/task)',
     );
     expect(formatRunsNeededNote({ verdict: 'placebo', taskCount: 3 })).toBeUndefined();
+    expect(formatRunsNeededNote({ verdict: 'no_evidence', taskCount: 0 })).toBeUndefined();
+  });
+
+  it('asks for two runs per task on a row whose tasks all had too few runs', () => {
+    expect(formatRunsNeededNote({ verdict: 'no_evidence', runsNeeded: 2, taskCount: 0 })).toBe(
+      '(at least 2 runs/task to compute a range)',
+    );
+  });
+});
+
+describe('rows with no task left', () => {
+  it('print no difference and no range', () => {
+    const row = {
+      metric: 'passRate' as const,
+      difference: 0,
+      range: [0, 0] as [number, number],
+      taskCount: 0,
+    };
+    expect(formatDifference(row)).toBe('-');
+    expect(formatRange(row)).toBe('-');
+  });
+});
+
+describe('formatExcludedTasks', () => {
+  const refund = TaskId.parse('refund');
+  const totals = TaskId.parse('totals');
+
+  it('lists every task a row leaves out, with why', () => {
+    expect(
+      formatExcludedTasks({
+        taskCount: 2,
+        excludedTasks: [
+          { taskId: refund, reason: 'too_few_runs' },
+          { taskId: totals, reason: 'control_zero' },
+        ],
+      }),
+    ).toBe('left out: refund (fewer than 2 runs), totals (control is zero)');
+    expect(
+      formatExcludedTasks({
+        taskCount: 0,
+        excludedTasks: [{ taskId: totals, reason: 'control_zero' }],
+      }),
+    ).toBe('left out: totals (control is zero)');
+  });
+
+  it('prints nothing when none is left out or the runs-needed note already says why', () => {
+    expect(formatExcludedTasks({ taskCount: 2 })).toBeUndefined();
+    expect(
+      formatExcludedTasks({
+        taskCount: 0,
+        excludedTasks: [{ taskId: refund, reason: 'too_few_runs' }],
+      }),
+    ).toBeUndefined();
   });
 });
 

@@ -59,6 +59,23 @@ export const METRICS: Readonly<Record<Metric, MetricInfo>> = {
 export const Verdict = z.enum(['helps', 'harms', 'placebo', 'no_evidence']);
 export type Verdict = z.infer<typeof Verdict>;
 
+/**
+ * Runs with a value an arm needs on a task before the task counts toward a metric row: with one
+ * run, every resample draws the same value and the range collapses to a point.
+ */
+export const MIN_RUNS_PER_ARM = 2;
+
+/**
+ * A task left out of a metric row, and why: `control_zero` for a `percent` metric whose control
+ * mean is zero (the difference is undefined), `too_few_runs` when an arm the row compares has
+ * fewer than {@link MIN_RUNS_PER_ARM} runs with a value on it.
+ */
+export const ExcludedTask = z.strictObject({
+  taskId: TaskId,
+  reason: z.enum(['control_zero', 'too_few_runs']),
+});
+export type ExcludedTask = z.infer<typeof ExcludedTask>;
+
 /** One line of a verdict card: treatment minus control for one metric. */
 export const MetricRow = z
   .strictObject({
@@ -76,11 +93,8 @@ export const MetricRow = z
     taskCount: z.int().nonnegative(),
     /** Runs that contributed, both arms. */
     runCount: z.int().nonnegative(),
-    /**
-     * Tasks left out of this row because the difference is undefined on them: a `percent`
-     * metric whose control mean is zero. Absent when none were left out.
-     */
-    excludedTasks: z.array(TaskId).optional(),
+    /** Tasks with values that this row leaves out, with the reason; absent when none. */
+    excludedTasks: z.array(ExcludedTask).optional(),
   })
   .refine(({ range: [lo, hi] }) => lo <= hi, {
     error: 'range must be [low, high]',
