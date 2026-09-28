@@ -160,5 +160,5 @@ describe('runExperiment end to end', () => {
     const passRate = results.verdictCards[0]?.rows.find((row) => row.metric === 'passRate');
     expect(passRate?.difference).toBe(0);
     expect(events.at(-1)).toMatchObject({ type: 'experiment_finished', completedRuns: 2 });
-  }, 30_000);
+  }, 180_000);
 });

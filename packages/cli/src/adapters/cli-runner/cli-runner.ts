@@ -11,7 +11,12 @@ import {
 } from '@placebo-eval/core';
 import { childEnv } from '../sdk-runner/env.js';
 import { READ_ONLY_TOOLS } from '../sdk-runner/sdk-runner.js';
-import { infraErrorFrom, StreamProtocolError, StreamTranslator } from '../sdk-runner/stream.js';
+import {
+  infraErrorFrom,
+  invalidRequestFrom,
+  StreamProtocolError,
+  StreamTranslator,
+} from '../sdk-runner/stream.js';
 import { subjectDisallowedTools, subjectEnv } from '../subject-tools.js';
 
 // The fallback runner: the user's installed `claude` in print mode with streamed JSON (brief §7).
@@ -171,6 +176,10 @@ export class CliRunner implements Runner {
     }
     if (translator.hasResult) return translator.finish({ timedOut: deadline.timedOut });
     if (!translator.started && aborted()) throw signal?.reason;
+    if (!translator.started && !deadline.timedOut) {
+      const rejected = invalidRequestFrom(exit.stderr);
+      if (rejected !== undefined) throw rejected;
+    }
     if (!deadline.timedOut) {
       const infra = infraErrorFrom(exit.stderr);
       if (infra !== undefined) throw infra;

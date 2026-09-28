@@ -17,7 +17,8 @@ interface Progress {
 export type ExperimentError =
   /**
    * An infrastructure error (spawn failure, rate limit, network) survived every attempt, or an
-   * `auth` error ended the experiment at its first occurrence, with a message saying how to log in.
+   * `auth` or `invalid_request` error ended the experiment at its first occurrence, with a
+   * message saying how to log in or where to report the rejected request.
    */
   | (Progress & {
       readonly type: 'infra_exhausted';

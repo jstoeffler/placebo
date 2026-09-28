@@ -127,7 +127,7 @@ Every metric row gets exactly one verdict:
 | placebo | the whole range sits inside the margin around zero |
 | no evidence | the range crosses zero and reaches beyond the margin; too few runs to say |
 
-Default margins, overridable per suite: five percentage points for pass rate, ten percent for cost and tokens, fifteen percent for duration. The word placebo is only used when the data supports an equivalence claim; "no evidence" is not the same thing. Every "no evidence" row prints how many runs per task would likely be needed to decide.
+Default margins, overridable per suite: five percentage points for pass rate, ten percent for cost and tokens, fifteen percent for duration. The word placebo is only used when the data supports an equivalence claim; "no evidence" is not the same thing. Every "no evidence" row prints how many runs per task would likely be needed to decide. A task counts toward a metric only when each arm it compares has at least two runs with a value, since a single run gives a range that is a point; a row whose tasks all fall short says so instead of printing an estimate, and the card names every task a row leaves out.
 
 The card leads with pass rate and cost by convention, and shows all other metrics below. The tool never declares an overall winner. Trade-offs like "more passes at more tokens" are for the human to make, and they are visible at a glance. With fewer than about five tasks, the report says the result describes these tasks, not the repo in general.
 
@@ -159,7 +159,7 @@ Maintained as a README section. The tool shows these where it can detect them.
 1. Personal configuration leaking into every arm. Closed by project-only settings, strict MCP config and unique run folders. Residual: global config file, managed settings, claude.ai connectors.
 2. The model changing under you. Closed by full model IDs in the suite and the Claude Code version in every report. A new model invalidates old baselines; rerun control.
 3. Tasks that never exercise the rule. A rule about validators shows nothing on a task without validation. Each rule needs tasks that touch it and a few that do not, to catch the context cost.
-4. Too few runs. Agent runs vary a lot. Three runs detect only large effects. The range and the "runs needed" line exist for this.
+4. Too few runs. Agent runs vary a lot. Three runs detect only large effects. The range and the "runs needed" line exist for this, and the report warns below three runs per task.
 5. Too few tasks. Results generalize to the tasks you ran, not to your repo. The report says so under five tasks.
 6. Brittle hidden tests. See §9.
 7. Judge self-preference and position bias. Closed by a different judge model, hidden arms, and random order.

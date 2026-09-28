@@ -3,7 +3,7 @@ import { Experiment } from '../domain/experiment.js';
 import { Results } from '../domain/results.js';
 import type { Run } from '../domain/run.js';
 import { Margins } from '../domain/suite.js';
-import { FEW_TASKS_THRESHOLD } from '../domain/warnings.js';
+import { FEW_RUNS_THRESHOLD, FEW_TASKS_THRESHOLD } from '../domain/warnings.js';
 import { TaskId, VariantName } from '../kernel/ids.js';
 import { createSeededRandom } from '../kernel/random.js';
 import {
@@ -57,15 +57,18 @@ describe('buildVerdictCard', () => {
 
   it('adds checklist and win rate rows when those grades exist', () => {
     const exp = experiment(['a']);
-    const runs = [
-      makeRun({ taskId: 'a', arm: 'control', grades: [checklistGrade(1)] }),
-      makeRun({ taskId: 'a', arm: 'none', grades: [checklistGrade(2), comparisonGrade(true)] }),
-    ];
+    const control = makeRun({ taskId: 'a', arm: 'control', grades: [checklistGrade(1)] });
+    const treatment = makeRun({
+      taskId: 'a',
+      arm: 'none',
+      grades: [checklistGrade(2), comparisonGrade(true)],
+    });
+    const runs = [control, control, treatment, treatment];
     const { rows } = card(runs, exp);
     expect(rows.find((row) => row.metric === 'checklist')).toMatchObject({ difference: 1 });
     expect(rows.find((row) => row.metric === 'winRate')).toMatchObject({
       difference: 50,
-      runCount: 1,
+      runCount: 2,
     });
     expect(rows.some((row) => row.metric === 'passRate')).toBe(false);
   });
@@ -178,6 +181,15 @@ describe('experimentWarnings', () => {
     expect(warnings).toEqual([
       { type: 'dead_task', taskId: 't0' },
       { type: 'few_tasks', taskCount: FEW_TASKS_THRESHOLD - 1, threshold: FEW_TASKS_THRESHOLD },
+    ]);
+  });
+
+  it('warns about few runs per task below the threshold, not at it', () => {
+    const at = experiment(ids(FEW_TASKS_THRESHOLD), { runsPerTask: FEW_RUNS_THRESHOLD });
+    expect(experimentWarnings(at, [])).toEqual([]);
+    const below = experiment(ids(FEW_TASKS_THRESHOLD), { runsPerTask: FEW_RUNS_THRESHOLD - 1 });
+    expect(experimentWarnings(below, [])).toEqual([
+      { type: 'few_runs', runsPerTask: FEW_RUNS_THRESHOLD - 1, threshold: FEW_RUNS_THRESHOLD },
     ]);
   });
 

@@ -10,6 +10,7 @@
   "scripts": {
     "build": "vite build",
     "dev": "vite",
+    "dev:review": "PLACEBO_FIXTURE=review vite",
     "fixtures": "tsx scripts/fixtures.ts && prettier --write fixtures",
     "preview": "tsx scripts/preview.ts"
   },

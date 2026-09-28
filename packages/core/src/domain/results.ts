@@ -3,7 +3,7 @@ import { TaskId, VariantName } from '../kernel/ids.js';
 import { Arm, ArmName } from './arm.js';
 import { Experiment } from './experiment.js';
 import { Metric, MetricRow } from './metrics.js';
-import { Review } from './review.js';
+import { Agreement, Review } from './review.js';
 import { Run } from './run.js';
 import { GRADER_TYPES, Margins } from './suite.js';
 import { Warning } from './warnings.js';
@@ -65,5 +65,7 @@ export const Results = z.strictObject({
   deadTasks: z.array(TaskId),
   warnings: z.array(Warning),
   reviews: z.array(Review),
+  /** Present once the experiment's runs have reviews. */
+  agreement: Agreement.optional(),
 });
 export type Results = z.infer<typeof Results>;

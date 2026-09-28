@@ -16,6 +16,7 @@ import {
   type ContextOptions,
 } from '../testing/grading.js';
 import { gradeRun } from './grade-run.js';
+import { GradingInfraError } from './grading-infra-error.js';
 import { CHECKLIST_SYSTEM_PROMPT } from './judge-prompts.js';
 
 const dirs = new TempDirs();
@@ -566,14 +567,69 @@ describe('gradeRun: checklist judge', () => {
     expect(judged.requests).toHaveLength(1);
   });
 
-  it('lets RunnerInfraError propagate, after removing the judge folder', async () => {
-    const error = new RunnerInfraError('rate_limited', 'slow down');
+  it('throws a GradingInfraError on RunnerInfraError, after removing the judge folder', async () => {
+    const error = new RunnerInfraError('rate_limited', 'slow down', { retryAfterMs: 2000 });
     const { ctx, executor } = setup([{ type: 'checklist', questions: QUESTIONS_PATH }], {
       plan: () => ({ infraError: error }),
     });
-    await expect(gradeRun(ctx)).rejects.toBe(error);
+    const thrown = await gradeRun(ctx).catch((caught: unknown) => caught);
+    expect(thrown).toBeInstanceOf(GradingInfraError);
+    expect(thrown).toMatchObject({
+      reason: 'rate_limited',
+      message: 'slow down',
+      retryAfterMs: 2000,
+      cause: error,
+    });
     expect(executor.calls.filter((c) => c.type === 'remove')).toHaveLength(1);
     expect(executor.openJudgeFolders.size).toBe(0);
+  });
+
+  it('carries the grades to save when giving up: those produced, then an error per judge left', async () => {
+    const error = new RunnerInfraError('invalid_request', 'Invalid schema');
+    const { ctx, runner } = setup(
+      [
+        { type: 'tool_used', tool: 'Read' },
+        { type: 'checklist', questions: QUESTIONS_PATH, repeats: 2 },
+        { type: 'checklist', questions: QUESTIONS_PATH },
+      ],
+      {
+        plan: () =>
+          runner.requests.length === 1
+            ? { ...answers(true, true), result: { ...answers(true, true).result, costUsd: 0.02 } }
+            : { infraError: error },
+      },
+    );
+    const thrown = await gradeRun(ctx).catch((caught: unknown) => caught);
+    if (!(thrown instanceof GradingInfraError)) throw new Error('expected a GradingInfraError');
+    const message = 'grading stopped on an infrastructure error (invalid_request): Invalid schema';
+    expect(Grade.array().parse(thrown.grades)).toEqual(thrown.grades);
+    expect(thrown.grades.map((grade) => grade.grader)).toEqual([
+      { type: 'tool_used', index: 0 },
+      { type: 'checklist', index: 1 },
+      { type: 'checklist', index: 2 },
+    ]);
+    expect(thrown.grades[0]?.kind).toBe('deterministic');
+    expect(thrown.grades[1]).toEqual({
+      grader: { type: 'checklist', index: 1 },
+      kind: 'judge',
+      score: 0,
+      detail: {
+        type: 'error',
+        message,
+        spend: {
+          costUsd: 0.02,
+          tokens: { input: 100, output: 20, cacheRead: 0, cacheWrite: 0 },
+          calls: 1,
+        },
+      },
+    });
+    expect(thrown.grades[2]).toEqual({
+      grader: { type: 'checklist', index: 2 },
+      kind: 'judge',
+      score: 0,
+      detail: { type: 'error', message },
+    });
+    expect(runner.requests).toHaveLength(2);
   });
 });
 

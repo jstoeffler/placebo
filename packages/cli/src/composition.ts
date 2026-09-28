@@ -15,7 +15,7 @@ import { CliRunner } from './adapters/cli-runner/cli-runner.js';
 import { SdkRunner } from './adapters/sdk-runner/sdk-runner.js';
 import { SqliteRunStore } from './adapters/sqlite-store/sqlite-run-store.js';
 import { dataDirOf } from './data-dir.js';
-import { fakePlan } from './fake-plan.js';
+import { createFakePlan } from './fake-plan.js';
 import { repoRootOf } from './git.js';
 import { VERSION } from './version.js';
 
@@ -73,7 +73,7 @@ export function createRunner(kind: RunnerKind, clock: Clock, env: Env): Runner {
     case 'cli':
       return new CliRunner({ clock, env });
     case 'fake':
-      return new FakeRunner({ clock, plan: fakePlan });
+      return new FakeRunner({ clock, plan: createFakePlan() });
   }
 }
 

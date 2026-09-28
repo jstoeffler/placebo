@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { main, NOT_IMPLEMENTED_EXIT_CODE } from './program.js';
+import { main } from './program.js';
 
 async function run(
   ...args: string[]
@@ -49,10 +49,23 @@ describe('placebo', () => {
     expect(stdout).not.toContain('fake');
   });
 
-  it.each(['review'])('stubs %s with exit code 2', async (name) => {
-    const { stderr, exitCode } = await run(name);
-    expect(stderr).toContain(`placebo ${name}: not implemented yet`);
-    expect(exitCode).toBe(NOT_IMPLEMENTED_EXIT_CODE);
+  it('documents the review flags', async () => {
+    const { stdout } = await run('review', '--help');
+    for (const flag of [
+      '[experiment]',
+      '--suite <dir>',
+      '--reviewer <name>',
+      '--port <n>',
+      '--no-open',
+      '--no-color',
+    ])
+      expect(stdout).toContain(flag);
+  });
+
+  it('refuses a port out of range with exit code 2', async () => {
+    const { stderr, exitCode } = await run('review', '--port', '70000');
+    expect(stderr).toContain('expected a whole number from 0 to 65535');
+    expect(exitCode).toBe(2);
   });
 
   it('exits 2 on an unknown command', async () => {

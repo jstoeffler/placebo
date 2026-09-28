@@ -1,18 +1,19 @@
 import type { Arm } from '../../domain/arm.js';
 import { outsideConfigurationSurface, patchPaths } from '../../domain/patch-paths.js';
 import type { Suite } from '../../domain/suite.js';
-import { FEW_TASKS_THRESHOLD, type Warning } from '../../domain/warnings.js';
+import { FEW_RUNS_THRESHOLD, FEW_TASKS_THRESHOLD, type Warning } from '../../domain/warnings.js';
 import { judgeEqualsSubject } from '../../graders/judge-equals-subject.js';
 
 /**
  * The warnings known before anything is spent (brief §13): the judge model equals the subject
  * model, a variant patch touches paths outside the configuration surface, fewer tasks than
- * `FEW_TASKS_THRESHOLD`, background work allowed.
+ * `FEW_TASKS_THRESHOLD`, fewer runs per task than `FEW_RUNS_THRESHOLD`, background work allowed.
  */
 export function upfrontWarnings(input: {
   readonly suite: Pick<Suite, 'model' | 'judgeModel'> & Partial<Pick<Suite, 'backgroundWork'>>;
   readonly arms: readonly Arm[];
   readonly taskCount: number;
+  readonly runsPerTask: number;
   /** Decoded variant patch of every treatment, by patch path. */
   readonly patchText: (patch: string) => string;
 }): Warning[] {
@@ -34,6 +35,13 @@ export function upfrontWarnings(input: {
       threshold: FEW_TASKS_THRESHOLD,
     });
   }
+  if (input.runsPerTask < FEW_RUNS_THRESHOLD) {
+    warnings.push({
+      type: 'few_runs',
+      runsPerTask: input.runsPerTask,
+      threshold: FEW_RUNS_THRESHOLD,
+    });
+  }
   return warnings;
 }
 
@@ -46,6 +54,8 @@ export function describeWarning(warning: Warning): string {
       return `variant "${warning.variant}" touches files outside the configuration surface: ${warning.paths.join(', ')}`;
     case 'few_tasks':
       return `only ${String(warning.taskCount)} task${warning.taskCount === 1 ? '' : 's'} (fewer than ${String(warning.threshold)}): results describe these tasks, not the repo in general`;
+    case 'few_runs':
+      return `only ${String(warning.runsPerTask)} run${warning.runsPerTask === 1 ? '' : 's'} per task (fewer than ${String(warning.threshold)}): only large differences can be detected`;
     case 'dead_task':
       return `task "${warning.taskId}" scored zero in every arm; it is left out of the verdicts`;
     case 'isolation_residual':

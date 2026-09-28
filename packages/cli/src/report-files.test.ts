@@ -1,11 +1,12 @@
 import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { Results } from '@placebo-eval/core/results';
+import { Results, type ReviewSession } from '@placebo-eval/core/results';
 import { sampleResults } from '@placebo-eval/core/testing';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import {
   embedResults,
+  embedReviewSession,
   locateReportTemplate,
   RESULTS_PLACEHOLDER,
   serializeForEmbedding,
@@ -49,6 +50,30 @@ describe('embedding results in the report', () => {
 
   it('refuses a template without the placeholder', () => {
     expect(() => embedResults('<html></html>', tricky)).toThrow(/no <!--PLACEBO_RESULTS-->/);
+  });
+});
+
+describe('embedding a review session', () => {
+  const session = {
+    experimentId: 'exp-1',
+    reviewer: null,
+    taskCount: 1,
+    items: [],
+    comparisons: [],
+  } as unknown as ReviewSession;
+
+  it('marks the tag as review mode and embeds the session', () => {
+    const html = embedReviewSession(TEMPLATE, session);
+    expect(html).toBe(
+      `<html><script data-mode="review" id="placebo-results" type="application/json">${serializeForEmbedding(session)}</script></html>`,
+    );
+  });
+
+  it('refuses a template without the placeholder in a script tag', () => {
+    expect(() => embedReviewSession('<html></html>', session)).toThrow(/placeholder/);
+    expect(() => embedReviewSession(`<p>${RESULTS_PLACEHOLDER}</p>`, session)).toThrow(
+      /placeholder/,
+    );
   });
 });
 

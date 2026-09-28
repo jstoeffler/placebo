@@ -3,7 +3,6 @@ import type {
   Grade,
   GradeDetail,
   JudgeSpend,
-  Review,
   Run,
   TaskSummary,
 } from '@placebo-eval/core/results';
@@ -35,14 +34,7 @@ export function Grades({
   readonly task: TaskSummary | undefined;
   readonly filter: RunFilter;
 }) {
-  const { index } = useReport();
-  const gradedReviews = new Set(
-    run.grades.flatMap((grade) => (grade.detail.type === 'review' ? [grade.detail.reviewId] : [])),
-  );
-  const extraReviews = (index.reviewsByRun.get(run.id) ?? []).filter(
-    (review) => !gradedReviews.has(review.id),
-  );
-  if (run.grades.length === 0 && extraReviews.length === 0) {
+  if (run.grades.length === 0) {
     return <p className="quiet">No grader scored this run.</p>;
   }
   return (
@@ -58,14 +50,6 @@ export function Grades({
             </span>
           </header>
           <GradeBody detail={grade.detail} filter={filter} />
-        </article>
-      ))}
-      {extraReviews.map((review) => (
-        <article key={review.id} className="grade grade-review">
-          <header className="grade-head">
-            <h4>review</h4>
-          </header>
-          <ReviewBody review={review} filter={filter} />
         </article>
       ))}
     </div>
@@ -89,7 +73,12 @@ function GradeBody({
     case 'comparison':
       return <ComparisonBody detail={detail} filter={filter} />;
     case 'error':
-      return <p className="grade-error">{detail.message}</p>;
+      return (
+        <>
+          <p className="grade-error">{detail.message}</p>
+          {detail.spend !== undefined && <Spend spend={detail.spend} />}
+        </>
+      );
     case 'review':
       return (
         <>
@@ -126,7 +115,7 @@ function CommandBody({ detail }: { readonly detail: DetailOf<'command'> }) {
   );
 }
 
-function Output({ label, text }: { readonly label: string; readonly text: string }) {
+export function Output({ label, text }: { readonly label: string; readonly text: string }) {
   return (
     <figure className="output">
       <figcaption>{label}</figcaption>
@@ -189,7 +178,7 @@ function Spend({ spend }: { readonly spend: JudgeSpend }) {
   );
 }
 
-function Opponent({
+export function Opponent({
   runId,
   position,
   filter,
@@ -222,7 +211,7 @@ function Opponent({
   );
 }
 
-function Answers({ answers }: { readonly answers: readonly ChecklistAnswer[] }) {
+export function Answers({ answers }: { readonly answers: readonly ChecklistAnswer[] }) {
   return (
     <ol className="answers">
       {answers.map((answer, i) => (
@@ -235,23 +224,5 @@ function Answers({ answers }: { readonly answers: readonly ChecklistAnswer[] }) 
         </li>
       ))}
     </ol>
-  );
-}
-
-function ReviewBody({ review, filter }: { readonly review: Review; readonly filter: RunFilter }) {
-  const { answer } = review;
-  return (
-    <>
-      <p className="grade-by">Reviewed by {review.reviewer}</p>
-      {answer.type === 'checklist' ? (
-        <Answers answers={answer.answers} />
-      ) : (
-        <>
-          <Opponent runId={answer.opponentRunId} filter={filter} />
-          <p>{answer.won ? 'Preferred this run.' : 'Preferred the other run.'}</p>
-          {answer.note !== undefined && <p className="reasoning">{answer.note}</p>}
-        </>
-      )}
-    </>
   );
 }

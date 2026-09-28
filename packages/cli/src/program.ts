@@ -3,16 +3,21 @@ import pc from 'picocolors';
 import { cleanCommand, type CleanFlags } from './commands/clean.js';
 import { initCommand, type InitFlags } from './commands/init.js';
 import { reportCommand, type ReportFlags } from './commands/report.js';
+import { reviewCommand, type ReviewFlags } from './commands/review.js';
 import { runCommand, type RunFlags } from './commands/run.js';
 import { EXIT, UsageError } from './errors.js';
 import { type Host, type Io, processHost } from './host.js';
-import { collect, keepPolicy, positiveInteger, runnerKind, seedValue } from './options.js';
+import {
+  collect,
+  keepPolicy,
+  portNumber,
+  positiveInteger,
+  runnerKind,
+  seedValue,
+} from './options.js';
 import { VERSION } from './version.js';
 
 export type { Io } from './host.js';
-
-/** Exit code of commands that exist in the surface but are not built yet. */
-export const NOT_IMPLEMENTED_EXIT_CODE = EXIT.usage;
 
 /**
  * Runs a command action, turning its outcome into an exit code: its own return value, 2 for a
@@ -85,10 +90,17 @@ function createProgram(io: Io, hostOverrides: Partial<Host> = {}): Command {
   program
     .command('review')
     .description('serve the report locally with blinded review mode')
-    .action(() => {
-      io.stderr(`${pc.yellow('placebo review: not implemented yet')}\n`);
-      io.setExitCode(NOT_IMPLEMENTED_EXIT_CODE);
-    });
+    .argument('[experiment]', 'experiment id (default: the newest)')
+    .option('--suite <dir>', 'suite folder (default: .placebo at the repo root)')
+    .option('--reviewer <name>', 'your name, stored with each review (default: the browser asks)')
+    .option('--port <n>', 'port on 127.0.0.1 (default: any free port)', portNumber)
+    .option('--no-open', 'print the address without opening a browser')
+    .option('--no-color', 'print without colour')
+    .action(
+      action(io, (experiment: string | undefined, flags: ReviewFlags) =>
+        reviewCommand(experiment, flags, io, host),
+      ),
+    );
 
   program
     .command('report')

@@ -120,7 +120,7 @@ describe('placebo init', () => {
     expect((await run(PINNED)).exitCode).toBe(0);
     const template = join(temp, 'template.html');
     await writeFile(template, RESULTS_PLACEHOLDER);
-    const ran = await run(['run', '--runner', 'fake', '--runs', '1', '--seed', '1'], {
+    const ran = await run(['run', '--runner', 'fake', '--runs', '2', '--seed', '1'], {
       reportTemplate: template,
     });
     expect(ran.stderr).not.toContain('error');

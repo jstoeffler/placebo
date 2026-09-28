@@ -322,11 +322,10 @@ describe('SdkRunner outcomes and infrastructure errors', () => {
     const fake = fakeQuery(withoutResult(sdkMessages('timeout')), { hang: true });
     const runner = new SdkRunner({ query: fake.query, clock: steppingClock() });
     const events: RunnerEvent[] = [];
-    const running = runner.run({ ...SUBJECT_REQUEST, signal: controller.signal }, (event) =>
-      events.push(event),
-    );
-    await new Promise((resolve) => setTimeout(resolve, 10));
-    controller.abort();
+    const running = runner.run({ ...SUBJECT_REQUEST, signal: controller.signal }, (event) => {
+      events.push(event);
+      if (event.type === 'system_init') controller.abort();
+    });
     const result = await running;
     expect(fake.calls[0]?.options.abortController?.signal.aborted).toBe(true);
     expect(result.result).toMatchObject({ outcome: 'failed', costUsd: 0, stopReason: null });
@@ -351,7 +350,6 @@ describe('SdkRunner outcomes and infrastructure errors', () => {
       { ...SUBJECT_REQUEST, signal: late.signal },
       () => undefined,
     );
-    await new Promise((resolve) => setTimeout(resolve, 10));
     late.abort(new Error('stopped before init'));
     await expect(running).rejects.toThrow('stopped before init');
   });
@@ -390,6 +388,12 @@ describe('SdkRunner outcomes and infrastructure errors', () => {
     ['API Error: 401 {"type":"authentication_error"}', 'auth'],
     ['API Error: 403 Forbidden', 'auth'],
     ['something odd', 'other'],
+    [
+      'Claude Code process exited with code 1: outputFormat.schema is not a valid JSON Schema',
+      'invalid_request',
+    ],
+    ["Claude Code process exited with code 1: error: unknown option '--foo'", 'invalid_request'],
+    ['Invalid option: permissionMode must be one of default, plan', 'invalid_request'],
   ])('rejects with a RunnerInfraError when %j is thrown before init', async (message, reason) => {
     const fake = fakeQuery([], { thenThrow: new Error(message) });
     const runner = new SdkRunner({ query: fake.query });
@@ -398,6 +402,13 @@ describe('SdkRunner outcomes and infrastructure errors', () => {
       reason,
     });
     expect(fake.calls).toHaveLength(1);
+  });
+
+  it('records a crash, not a rejected request, when a started run dies with such a text', async () => {
+    const { result } = await runWith(withoutResult(subject), SUBJECT_REQUEST, {
+      thenThrow: new Error('Invalid schema in tool input'),
+    });
+    expect(result.result.outcome).toBe('crashed');
   });
 
   it('rejects with rate_limited and the retry hint when a started run hits a 429', async () => {

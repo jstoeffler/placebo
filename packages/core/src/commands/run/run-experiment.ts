@@ -85,7 +85,7 @@ export interface RunExperimentOutput {
  * 5. Assembles and validates the results.
  *
  * Ends early with an `ExperimentError` when infrastructure errors outlast the retries (an `auth`
- * error is never retried: it ends the experiment at once), the executor fails, or
+ * or `invalid_request` error is never retried: it ends the experiment at once), the executor fails, or
  * `options.signal` aborts; runs saved until then stay in the store, and a run the abort cut short
  * is never saved. The agent's own failures are runs, never errors. Only bugs throw.
  */
@@ -115,6 +115,7 @@ export async function runExperiment(
     suite,
     arms: arms.value,
     taskCount: tasks.value.length,
+    runsPerTask,
     patchText: (patch) => patches.get(patch)?.text ?? '',
   });
   for (const warning of warnings) {
@@ -192,6 +193,7 @@ export async function runExperiment(
         finished.push(end.run);
         return 'continue';
       }
+      if (end.type === 'infra_exhausted' && end.run !== undefined) finished.push(end.run);
       // The first infrastructure or executor failure explains the stop better than an abort.
       if (stop.end === undefined || stop.end.type === 'aborted') {
         stop.end = end;
@@ -230,7 +232,7 @@ export async function runExperiment(
             ...(stop.runId === undefined ? {} : { runId: stop.runId }),
             reason: stopped.error.reason,
             attempts: stopped.attempts,
-            message: infraMessage(stopped.error),
+            message: infraMessage(stopped.error, claudeCodeVersion),
           },
     );
   }
@@ -262,7 +264,7 @@ export async function runExperiment(
       completedRuns: finished.length,
       reason: compared.error.reason,
       attempts: compared.attempts,
-      message: infraMessage(compared.error),
+      message: infraMessage(compared.error, claudeCodeVersion),
     });
   }
   if (compared.type === 'aborted') return failWith(aborted(progress, finished.length));
@@ -306,7 +308,7 @@ async function pin(
       reason: error.reason,
       attempts: 1,
       message:
-        error.reason === 'auth'
+        error.reason === 'auth' || error.reason === 'invalid_request'
           ? infraMessage(error)
           : `the Claude Code version could not be read: ${error.message}`,
     });

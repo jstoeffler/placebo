@@ -16,6 +16,7 @@ import { formatTimestamp } from '../format.js';
 import { navigate, toHash } from '../route.js';
 import { ChangeView } from './ChangeView.js';
 import { Grades } from './Grades.js';
+import { RunReviews } from './Reviews.js';
 import { Timeline } from './Timeline.js';
 
 export function RunDetail({
@@ -101,9 +102,11 @@ export function RunDetail({
         {task !== undefined && <blockquote className="prompt">{task.prompt}</blockquote>}
       </header>
 
-      {mode === 'review' && (
-        // The review panel of `placebo review` mounts here; review mode is not built yet.
+      {mode === 'review' ? (
+        // Results in review mode stay blinded: the slot is left empty.
         <section className="review-slot" data-slot="review" aria-label="Review" />
+      ) : (
+        <RunReviews run={run} filter={filter} />
       )}
 
       <section className="change-and-grades" aria-label="Change and grades">

@@ -10,9 +10,11 @@ import type { GraderSpec, Task } from '../domain/suite.js';
 import type { RunId } from '../kernel/ids.js';
 import type { Random } from '../kernel/random.js';
 import { err, ok } from '../kernel/result.js';
+import { RunnerInfraError } from '../ports/runner.js';
 import type { JudgeContext } from './context.js';
 import { commandEvidence } from './evidence.js';
 import { errorGrade, refOf } from './grades.js';
+import { ComparisonInfraError, spendBefore, stoppedGradingMessage } from './grading-infra-error.js';
 import { askRepeats, issuesText, type JudgeValidator } from './judge.js';
 import { COMPARISON_SYSTEM_PROMPT, comparisonPrompt } from './judge-prompts.js';
 
@@ -49,7 +51,9 @@ export interface ComparisonGrade {
  * once. The folder is removed once the judge finishes, also on failure.
  *
  * A pairing whose judge fails, or a treatment run with no control run to face, yields an error
- * grade scored 0, which keeps what the judge spent. `RunnerInfraError` propagates.
+ * grade scored 0, which keeps what the judge spent. A judge stopped by `RunnerInfraError` makes
+ * this throw a `ComparisonInfraError` with the same reason, carrying the grades to save if the
+ * caller gives up: those produced, and an error grade for that pairing and every later one.
  */
 export async function gradeComparisons(input: ComparisonInput): Promise<ComparisonGrade[]> {
   const ofTask = input.runs.filter((run) => run.taskId === input.task.id);
@@ -57,12 +61,23 @@ export async function gradeComparisons(input: ComparisonInput): Promise<Comparis
   const treatments = ofTask.filter(
     (run) => run.arm.kind === 'treatment' && armName(run.arm) === input.treatment,
   );
+  const pairings = [...input.task.graders.entries()].flatMap(([index, spec]) =>
+    spec.type === 'comparison'
+      ? treatments.map((run) => ({ spec, ref: refOf(spec, index), run }))
+      : [],
+  );
   const grades: ComparisonGrade[] = [];
-  for (const [index, spec] of input.task.graders.entries()) {
-    if (spec.type !== 'comparison') continue;
-    const ref = refOf(spec, index);
-    for (const run of treatments) {
+  for (const [position, { spec, ref, run }] of pairings.entries()) {
+    try {
       grades.push({ runId: run.id, grade: await compareOne(spec, ref, run, controls, input) });
+    } catch (error) {
+      if (!(error instanceof RunnerInfraError)) throw error;
+      const message = stoppedGradingMessage(error);
+      grades.push({ runId: run.id, grade: errorGrade(ref, 'judge', message, spendBefore(error)) });
+      for (const later of pairings.slice(position + 1)) {
+        grades.push({ runId: later.run.id, grade: errorGrade(later.ref, 'judge', message) });
+      }
+      throw new ComparisonInfraError(error, grades);
     }
   }
   return grades;

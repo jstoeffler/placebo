@@ -6,7 +6,8 @@ export type * from './domain/events.js';
 export type * from './domain/experiment.js';
 export type * from './domain/grade.js';
 export type * from './domain/measurements.js';
-export type * from './domain/review.js';
+// Runtime too: review mode validates the review session it is served.
+export * from './domain/review.js';
 export type * from './domain/run.js';
 export type * from './domain/run-key.js';
 export type * from './domain/warnings.js';

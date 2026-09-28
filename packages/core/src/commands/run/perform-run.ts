@@ -9,6 +9,7 @@ import type { Run } from '../../domain/run.js';
 import type { Limits, Task } from '../../domain/suite.js';
 import type { SuiteFileReader } from '../../graders/context.js';
 import { gradeRun } from '../../graders/grade-run.js';
+import { GradingInfraError } from '../../graders/grading-infra-error.js';
 import type { Clock } from '../../kernel/clock.js';
 import type { Sha256 } from '../../kernel/ids.js';
 import { createSeededRandom, type Random } from '../../kernel/random.js';
@@ -68,6 +69,11 @@ export type RunEnd =
       readonly type: 'infra_exhausted';
       readonly error: RunnerInfraError;
       readonly attempts: number;
+      /**
+       * The run, saved with an error grade for each grader that could not run, when the agent
+       * had completed and grading gave up; absent when the agent itself never finished.
+       */
+      readonly run?: Run;
     }
   | { readonly type: 'executor_failed'; readonly message: string };
 
@@ -136,7 +142,10 @@ function subjectRequest(
  * 3. Once the agent finished: computes the change and the measurements, builds the run key,
  *    grades the run (hidden files enter the folder only now), saves it, emits `run_finished`,
  *    then removes the folder unless `keepRunFolders` keeps it. An infrastructure error while
- *    grading retries the grading alone, with the same backoff.
+ *    grading retries the grading alone, with the same backoff. When grading gives up (attempts
+ *    ran out, or a reason no retry fixes), the run is still saved and `run_finished` emitted,
+ *    with an error grade for each grader that could not run, and the run ends `infra_exhausted`
+ *    with that run: a run whose agent completed is never discarded.
  *
  * The agent failing is never an error here: it is a run with its outcome. When `signal` fires,
  * no new attempt starts, and a run whose agent was in flight is not a run at all: it is never
@@ -233,10 +242,6 @@ async function finishRun(ctx: RunContext, agent: FinishedAgent): Promise<RunEnd>
   }
   ctx.reporter.report({ type: 'grading_started', runId: slot.runId });
   const graded = await gradeWithRetries(ctx, agent, change);
-  if (graded.type === 'infra_exhausted') {
-    await removeFolder(ctx, folder);
-    return graded;
-  }
 
   const kept = keepsRunFolder(ctx.keepRunFolders, task);
   const run: Run = {
@@ -258,13 +263,18 @@ async function finishRun(ctx: RunContext, agent: FinishedAgent): Promise<RunEnd>
   await ctx.store.save(run);
   ctx.reporter.report({ type: 'run_finished', runId: run.id, outcome });
   if (!kept) await removeFolder(ctx, folder);
-  return { type: 'finished', run };
+  return graded.type === 'graded'
+    ? { type: 'finished', run }
+    : { type: 'infra_exhausted', error: graded.error, attempts: graded.attempts, run };
 }
 
 type Graded =
   | { readonly type: 'graded'; readonly grades: Grade[]; readonly retries: number }
+  /** Grading gave up; `grades` hold an error grade for every grader that could not run. */
   | {
       readonly type: 'infra_exhausted';
+      readonly grades: Grade[];
+      readonly retries: number;
       readonly error: RunnerInfraError;
       readonly attempts: number;
     };
@@ -298,9 +308,16 @@ async function gradeWithRetries(
       });
       return { type: 'graded', grades, retries: attempt };
     } catch (error) {
-      if (!(error instanceof RunnerInfraError)) throw error;
+      // Graders report infrastructure errors with the grades to save when giving up.
+      if (!(error instanceof GradingInfraError)) throw error;
       if (isLastAttempt(error, attempt, ctx.maxInfraAttempts)) {
-        return { type: 'infra_exhausted', error, attempts: attempt + 1 };
+        return {
+          type: 'infra_exhausted',
+          grades: error.grades,
+          retries: attempt,
+          error,
+          attempts: attempt + 1,
+        };
       }
       const delayMs = backoffMs(attempt, error.retryAfterMs, agent.random);
       ctx.reporter.report({

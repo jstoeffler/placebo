@@ -846,21 +846,34 @@
         {
           "metric": "passRate",
           "difference": 0,
-          "range": [-100, 100],
+          "range": [0, 0],
           "verdict": "no_evidence",
           "margin": 5,
-          "taskCount": 1,
-          "runCount": 2
+          "runsNeeded": 2,
+          "taskCount": 0,
+          "runCount": 0,
+          "excludedTasks": [
+            {
+              "taskId": "validate-webhook-signature",
+              "reason": "too_few_runs"
+            }
+          ]
         },
         {
           "metric": "costUsd",
-          "difference": -21.4,
-          "range": [-38.2, 4.6],
+          "difference": 0,
+          "range": [0, 0],
           "verdict": "no_evidence",
           "margin": 10,
-          "runsNeeded": 9,
-          "taskCount": 1,
-          "runCount": 2
+          "runsNeeded": 2,
+          "taskCount": 0,
+          "runCount": 0,
+          "excludedTasks": [
+            {
+              "taskId": "validate-webhook-signature",
+              "reason": "too_few_runs"
+            }
+          ]
         }
       ]
     }
@@ -891,6 +904,11 @@
       "type": "few_tasks",
       "taskCount": 1,
       "threshold": 5
+    },
+    {
+      "type": "few_runs",
+      "runsPerTask": 1,
+      "threshold": 3
     }
   ],
   "reviews": []

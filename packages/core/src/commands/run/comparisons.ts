@@ -3,13 +3,14 @@ import type { Experiment } from '../../domain/experiment.js';
 import type { Grade } from '../../domain/grade.js';
 import type { Run } from '../../domain/run.js';
 import type { Task } from '../../domain/suite.js';
-import { gradeComparisons } from '../../graders/comparison.js';
+import { type ComparisonGrade, gradeComparisons } from '../../graders/comparison.js';
+import { ComparisonInfraError } from '../../graders/grading-infra-error.js';
 import type { RunId, VariantName } from '../../kernel/ids.js';
 import { createSeededRandom, MAX_SEED } from '../../kernel/random.js';
 import type { Executor } from '../../ports/executor.js';
 import type { Reporter } from '../../ports/reporter.js';
 import type { RunStore } from '../../ports/run-store.js';
-import { RunnerInfraError, type Runner } from '../../ports/runner.js';
+import type { RunnerInfraError, Runner } from '../../ports/runner.js';
 import type { Sleep } from './perform-run.js';
 import { backoffMs, isLastAttempt } from './retry.js';
 
@@ -45,7 +46,9 @@ export type ComparisonsEnd =
  * each task with a `comparison` grader, `gradeComparisons` pairs every treatment run with a
  * random control run of the task; the grades are appended to the treatment runs, which are saved
  * again. Each task and treatment draws from its own random stream, re-created on a retry, so an
- * infrastructure error retried with backoff replays the same pairings.
+ * infrastructure error retried with backoff replays the same pairings. When a task and treatment
+ * give up, their grades so far and an error grade for every pairing that could not run are saved
+ * before the comparisons end `infra_exhausted`.
  */
 export async function runComparisons(
   ctx: ComparisonContext,
@@ -71,28 +74,45 @@ export async function runComparisons(
       });
 
       const compared = await compareWithRetries(ctx, current, task, arm.variant, seed);
-      if (compared.type === 'infra_exhausted') return { ...compared, runs: current };
-
-      const added = new Map<RunId, Grade[]>();
-      for (const { runId, grade } of compared.grades) {
-        added.set(runId, [...(added.get(runId) ?? []), grade]);
-      }
-      for (const [index, run] of current.entries()) {
-        const grades = added.get(run.id);
-        if (grades === undefined) continue;
-        const updated: Run = { ...run, grades: [...run.grades, ...grades] };
-        await ctx.store.save(updated);
-        current[index] = updated;
+      await appendGrades(ctx, current, compared.grades);
+      if (compared.type === 'infra_exhausted') {
+        return {
+          type: 'infra_exhausted',
+          runs: current,
+          error: compared.error,
+          attempts: compared.attempts,
+        };
       }
     }
   }
   return { type: 'done', runs: current };
 }
 
+/** Appends each grade to its run in `current`, saving every run that changed. */
+async function appendGrades(
+  ctx: Pick<ComparisonContext, 'store'>,
+  current: Run[],
+  graded: readonly ComparisonGrade[],
+): Promise<void> {
+  const added = new Map<RunId, Grade[]>();
+  for (const { runId, grade } of graded) {
+    added.set(runId, [...(added.get(runId) ?? []), grade]);
+  }
+  for (const [index, run] of current.entries()) {
+    const grades = added.get(run.id);
+    if (grades === undefined) continue;
+    const updated: Run = { ...run, grades: [...run.grades, ...grades] };
+    await ctx.store.save(updated);
+    current[index] = updated;
+  }
+}
+
 type Compared =
-  | { readonly type: 'graded'; readonly grades: Awaited<ReturnType<typeof gradeComparisons>> }
+  | { readonly type: 'graded'; readonly grades: ComparisonGrade[] }
+  /** Gave up; `grades` hold an error grade for every pairing that could not run. */
   | {
       readonly type: 'infra_exhausted';
+      readonly grades: ComparisonGrade[];
       readonly error: RunnerInfraError;
       readonly attempts: number;
     };
@@ -118,9 +138,10 @@ async function compareWithRetries(
       });
       return { type: 'graded', grades };
     } catch (error) {
-      if (!(error instanceof RunnerInfraError)) throw error;
+      // Comparisons report infrastructure errors with the grades to save when giving up.
+      if (!(error instanceof ComparisonInfraError)) throw error;
       if (isLastAttempt(error, attempt, ctx.maxInfraAttempts)) {
-        return { type: 'infra_exhausted', error, attempts: attempt + 1 };
+        return { type: 'infra_exhausted', grades: error.grades, error, attempts: attempt + 1 };
       }
       const delayMs = backoffMs(attempt, error.retryAfterMs, jitter);
       ctx.reporter.report({

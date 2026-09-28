@@ -1,5 +1,7 @@
 import {
+  type ExcludedTask,
   METRICS,
+  MIN_RUNS_PER_ARM,
   type Metric,
   type MetricRow,
   type MetricUnit,
@@ -20,17 +22,27 @@ const VERDICT_LABELS: Readonly<Record<Verdict, string>> = {
   no_evidence: 'no evidence',
 };
 
+/** What a row with no task left prints in place of its difference and its range. */
+const NO_ESTIMATE = '-';
+
 /**
  * A row's difference with sign and unit, as printed on the terminal card and in the report:
- * `-7 pts`, `-18 %`, `-1.2`, `+0.3`. See {@link formatSigned} for the precision.
+ * `-7 pts`, `-18 %`, `-1.2`, `+0.3`. See {@link formatSigned} for the precision. A row with no
+ * task left (`taskCount` 0) has no difference and prints `-`.
  */
-export function formatDifference(row: Pick<MetricRow, 'metric' | 'difference'>): string {
+export function formatDifference(
+  row: Pick<MetricRow, 'metric' | 'difference'> & Partial<Pick<MetricRow, 'taskCount'>>,
+): string {
+  if (row.taskCount === 0) return NO_ESTIMATE;
   const { unit } = METRICS[row.metric];
   return formatSigned(row.difference, unit) + UNIT_SUFFIX[unit];
 }
 
-/** A row's range without unit, e.g. `[-30, +15]`. */
-export function formatRange(row: Pick<MetricRow, 'metric' | 'range'>): string {
+/** A row's range without unit, e.g. `[-30, +15]`; `-` like {@link formatDifference}. */
+export function formatRange(
+  row: Pick<MetricRow, 'metric' | 'range'> & Partial<Pick<MetricRow, 'taskCount'>>,
+): string {
+  if (row.taskCount === 0) return NO_ESTIMATE;
   const { unit } = METRICS[row.metric];
   const [low, high] = row.range;
   return `[${formatSigned(low, unit)}, ${formatSigned(high, unit)}]`;
@@ -56,14 +68,38 @@ export function formatRunsNeeded(
 
 /**
  * The runs-needed note of a `no_evidence` row as the card prints it, `(≈12 runs/task to decide)`
- * or `(more than 1000 runs/task)`; `undefined` wherever {@link formatRunsNeeded} is.
+ * or `(more than 1000 runs/task)`. A row with no task left because tasks had too few runs says
+ * `(at least 2 runs/task to compute a range)`. `undefined` on every other row.
  */
 export function formatRunsNeededNote(
   row: Pick<MetricRow, 'verdict' | 'runsNeeded' | 'taskCount'>,
 ): string | undefined {
+  if (row.verdict === 'no_evidence' && row.taskCount === 0 && row.runsNeeded !== undefined) {
+    return `(at least ${String(row.runsNeeded)} runs/task to compute a range)`;
+  }
   const runs = formatRunsNeeded(row);
   if (runs === undefined) return undefined;
   return row.runsNeeded === undefined ? `(${runs} runs/task)` : `(≈${runs} runs/task to decide)`;
+}
+
+const EXCLUSION_REASONS: Readonly<Record<ExcludedTask['reason'], string>> = {
+  control_zero: 'control is zero',
+  too_few_runs: `fewer than ${String(MIN_RUNS_PER_ARM)} runs`,
+};
+
+/**
+ * The tasks a row leaves out, with why, as the card prints it under the row:
+ * `left out: refund (fewer than 2 runs), totals (control is zero)`. `undefined` when none, and
+ * when every task was left out for too few runs, which the runs-needed note already says.
+ */
+export function formatExcludedTasks(
+  row: Pick<MetricRow, 'excludedTasks' | 'taskCount'>,
+): string | undefined {
+  const excluded = row.excludedTasks ?? [];
+  const thinOnly = excluded.every((task) => task.reason === 'too_few_runs');
+  if (excluded.length === 0 || (row.taskCount === 0 && thinOnly)) return undefined;
+  const items = excluded.map((task) => `${task.taskId} (${EXCLUSION_REASONS[task.reason]})`);
+  return `left out: ${items.join(', ')}`;
 }
 
 /**

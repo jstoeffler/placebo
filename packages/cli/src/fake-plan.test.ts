@@ -10,7 +10,7 @@ import {
   systemClock,
 } from '@placebo-eval/core';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
-import { fakePlan, namedFile } from './fake-plan.js';
+import { createFakePlan, namedFile } from './fake-plan.js';
 
 let cwd: string;
 beforeEach(async () => {
@@ -34,7 +34,7 @@ function request(prompt: string, extra: Partial<RunRequest> = {}): RunRequest {
   };
 }
 
-const runner = new FakeRunner({ clock: systemClock, plan: fakePlan });
+const runner = new FakeRunner({ clock: systemClock, plan: createFakePlan() });
 
 describe('namedFile', () => {
   it.each([
@@ -48,7 +48,7 @@ describe('namedFile', () => {
   });
 });
 
-describe('fakePlan', () => {
+describe('createFakePlan', () => {
   it('writes the named file and completes with usage and cost', async () => {
     const { result, usage } = await runner.run(
       request('Add a file named NOTES.md.'),
@@ -99,18 +99,30 @@ describe('fakePlan', () => {
     });
   });
 
-  it('prefers the attempt that adds more lines, a on a tie', async () => {
-    const ask = async (a: string, b: string) =>
-      (
-        await runner.run(
-          request(`## Attempt a\n${a}\n\n## Attempt b\n${b}\n`, {
-            outputSchema: COMPARISON_JUDGE_OUTPUT_SCHEMA,
-          }),
-          () => undefined,
-        )
-      ).result.structuredOutput;
+  const compare = (judge: FakeRunner) => async (a: string, b: string) =>
+    (
+      await judge.run(
+        request(`## Attempt a\n${a}\n\n## Attempt b\n${b}\n`, {
+          outputSchema: COMPARISON_JUDGE_OUTPUT_SCHEMA,
+        }),
+        () => undefined,
+      )
+    ).result.structuredOutput as { better: 'a' | 'b' };
+
+  it('prefers the attempt that adds more lines', async () => {
+    const ask = compare(new FakeRunner({ clock: systemClock, plan: createFakePlan() }));
     expect(await ask('+one', '+one\n+two')).toMatchObject({ better: 'b' });
     expect(await ask('+one\n+two', '+one')).toMatchObject({ better: 'a' });
-    expect(await ask('+same', '+same')).toMatchObject({ better: 'a' });
+  });
+
+  it('alternates ties so identical attempts split evenly', async () => {
+    const ask = compare(new FakeRunner({ clock: systemClock, plan: createFakePlan() }));
+    const picks: string[] = [];
+    for (let i = 0; i < 10; i++) picks.push((await ask('+same', '+same')).better);
+    expect(picks.filter((pick) => pick === 'a')).toHaveLength(5);
+    expect(picks.slice(0, 4)).toEqual(['a', 'b', 'a', 'b']);
+    // A decided comparison in between does not disturb the alternation.
+    await ask('+one', '+one\n+two');
+    expect((await ask('+same', '+same')).better).toBe('a');
   });
 });

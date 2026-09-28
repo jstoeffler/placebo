@@ -75,7 +75,8 @@ export interface RunnerResult {
  *   denial, is an `Outcome` in the result, never a rejection.
  * - Throws `RunnerInfraError` only for infrastructure problems: spawn failure, rate limit and
  *   network justify a retry; `auth` (Claude Code is not logged in, the key is invalid, or the
- *   account cannot pay) never does. It never retries on its own.
+ *   account cannot pay) and `invalid_request` (Claude Code rejected the options or the output
+ *   schema of the request) never do. It never retries on its own.
  * - Applies no limits beyond `request.limits` and `request.maxTurns`.
  * - Honours `request.signal`: once it aborts, the agent is stopped and the run resolves with
  *   outcome `failed`; if the agent had not started (no `system_init` yet), it rejects with
@@ -89,11 +90,17 @@ export interface Runner {
 
 /**
  * Why the infrastructure failed. `auth` covers authentication and billing (HTTP 401 or 403, an
- * invalid API key, not logged in, no credit or quota left): retrying cannot fix it.
+ * invalid API key, not logged in, no credit or quota left). `invalid_request` means Claude Code
+ * rejected the request Placebo built before starting (an unknown option, a missing option
+ * argument, an output schema it refuses). Retrying can fix neither.
  */
-export type RunnerInfraReason = 'spawn_failed' | 'rate_limited' | 'network' | 'auth' | 'other';
+export type RunnerInfraReason =
+  'spawn_failed' | 'rate_limited' | 'network' | 'auth' | 'invalid_request' | 'other';
 
-/** An infrastructure failure: the only kind of error that justifies retrying a run, `auth` aside. */
+/**
+ * An infrastructure failure: the only kind of error that justifies retrying a run, `auth` and
+ * `invalid_request` aside.
+ */
 export class RunnerInfraError extends Error {
   override readonly name = 'RunnerInfraError';
   readonly reason: RunnerInfraReason;
