@@ -20,7 +20,7 @@
     "build": "pnpm -r build",
     "verify:package": "node scripts/verify-package.ts",
     "changeset": "changeset",
-    "release": "pnpm build && changeset publish"
+    "release": "node scripts/release.ts"
   },
   "devDependencies": {
     "@changesets/changelog-github": "^1.0.1",
