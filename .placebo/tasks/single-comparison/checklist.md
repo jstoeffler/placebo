@@ -1,0 +1,4 @@
+- Is the rule enforced by the suite schema itself, so every way of reading a suite applies it?
+- Do the added tests assert the exact issue path and message, not just that parsing failed?
+- Do the added tests cover a task with one comparison grader still being accepted?
+- Does the change leave the cli and report packages untouched?

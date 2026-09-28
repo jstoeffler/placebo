@@ -1,0 +1,101 @@
+name: Dogfood
+
+# Runs Placebo's own suite (.placebo/, docs/dogfood.md) on demand. It spends real tokens and has
+# no cost cap: every run goes to completion, as locally.
+on:
+  workflow_dispatch:
+    inputs:
+      runs:
+        description: Runs per task per arm
+        type: number
+        default: 5
+      task:
+        description: Run only this task id (empty runs every task)
+        type: string
+        required: false
+      variant:
+        description: Run only this treatment with control (empty runs every variant)
+        type: string
+        required: false
+
+concurrency:
+  group: dogfood
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  dogfood:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          # The snapshot clones this checkout at the suite's pinned commit, which a shallow
+          # clone does not contain.
+          fetch-depth: 0
+      - uses: pnpm/action-setup@v6
+      - uses: actions/setup-node@v7
+        with:
+          node-version-file: .node-version
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+
+      # Claude Code's sandbox on Linux needs bubblewrap and socat, and bubblewrap needs
+      # unprivileged user namespaces, which Ubuntu's AppArmor profile restricts by default.
+      - name: Prepare Claude Code's sandbox
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq bubblewrap socat
+          sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0 || true
+
+      # Claude Code reads one of these; pass only the one that is set, so an empty value never
+      # shadows the other.
+      - name: Choose Claude Code authentication
+        env:
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          if [[ -n "$CLAUDE_CODE_OAUTH_TOKEN" ]]; then
+            echo "CLAUDE_CODE_OAUTH_TOKEN=$CLAUDE_CODE_OAUTH_TOKEN" >> "$GITHUB_ENV"
+          elif [[ -n "$ANTHROPIC_API_KEY" ]]; then
+            echo "ANTHROPIC_API_KEY=$ANTHROPIC_API_KEY" >> "$GITHUB_ENV"
+          else
+            echo "::error::Set the CLAUDE_CODE_OAUTH_TOKEN or ANTHROPIC_API_KEY secret."
+            exit 1
+          fi
+
+      # Progress goes to stderr and stays in the log; the card and table go to stdout, which is
+      # also copied into the job summary.
+      - name: Run the suite
+        shell: bash
+        env:
+          PLACEBO_HOME: ${{ runner.temp }}/placebo-home
+          REPORT_DIR: ${{ runner.temp }}/placebo-report
+          RUNS: ${{ inputs.runs }}
+          TASK: ${{ inputs.task }}
+          VARIANT: ${{ inputs.variant }}
+        run: |
+          args=(run --runs "$RUNS" --out "$REPORT_DIR" --no-color)
+          if [[ -n "$TASK" ]]; then args+=(--task "$TASK"); fi
+          if [[ -n "$VARIANT" ]]; then args+=(--variant "$VARIANT"); fi
+          status=0
+          pnpm exec placebo "${args[@]}" | tee "$RUNNER_TEMP/card.txt" || status=$?
+          {
+            echo '## Dogfood'
+            echo
+            echo '```'
+            cat "$RUNNER_TEMP/card.txt"
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          exit "$status"
+
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: dogfood-report
+          path: |
+            ${{ runner.temp }}/placebo-report/report.html
+            ${{ runner.temp }}/placebo-report/results.json
+          if-no-files-found: warn

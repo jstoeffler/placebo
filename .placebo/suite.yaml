@@ -1,0 +1,97 @@
+# .placebo/suite.yaml
+# Does Placebo's own AGENTS.md help an agent work on Placebo? See docs/dogfood.md.
+repo: .
+commit: 'b019d3eaa8ae751d736002fda650c2e81618131a'
+model: claude-sonnet-5 # from --model
+judge_model: claude-opus-5-5 # from --judge-model
+runs: 5
+parallelism: 4
+setup: pnpm install --frozen-lockfile
+
+variants:
+  none: { patch: variants/none.patch }
+
+tasks:
+  - id: compact-tokens
+    prompt: |
+      Token counts in narrow places need a compact form. Add `formatTokensCompact(count: number): string`, shared by the terminal and the report like the rest of the number formatting:
+
+      - Round the count to a whole number first; below 1,000, print that number as is.
+      - Otherwise print it in thousands (`k`), millions (`M`) or billions (`B`) with one decimal and no space, dropping a trailing `.0`. Use the smallest of these units in which the value, rounded to one decimal, is below 1,000; billions have no upper bound. So 12,345 prints `12.3k` and 999,960 prints `1M`.
+      - Throw a `RangeError` for a negative, NaN or infinite count.
+
+      Must keep working: `formatTokensCompact` is exported from both `@placebo-eval/core` and `@placebo-eval/core/format`; the tests import it from there.
+    graders:
+      - {
+          type: command,
+          run: 'pnpm vitest run packages/core/src/statistics/hidden-compact-tokens.test.ts --project core',
+          hidden: [packages/core/src/statistics/hidden-compact-tokens.test.ts],
+        }
+      - { type: checklist, questions: tasks/compact-tokens/checklist.md }
+      - { type: comparison }
+    review:
+      questions: tasks/compact-tokens/checklist.md
+
+  - id: single-comparison
+    prompt: |
+      A task can declare two `comparison` graders today, and then every treatment run of it is paired twice and its win rate counts double. Reject that when the suite is parsed: a task may have at most one grader of type `comparison`.
+
+      Each comparison grader after the first in a task is one issue, located at that grader (path `tasks[<task index>].graders[<grader index>]`, with its line), with exactly this message:
+
+          a task takes at most one comparison grader; a second one would count its win rate twice
+
+      Other tasks and other grader types are unaffected.
+
+      Must keep working: `parseSuite(text)` from `@placebo-eval/core` returns these issues; the tests call it.
+    graders:
+      - {
+          type: command,
+          run: 'pnpm vitest run packages/core/src/domain/hidden-single-comparison.test.ts --project core',
+          hidden: [packages/core/src/domain/hidden-single-comparison.test.ts],
+        }
+      - { type: file_modified, path: packages/core/src/domain/suite.ts }
+      - { type: checklist, questions: tasks/single-comparison/checklist.md }
+      - { type: comparison }
+    review:
+      questions: tasks/single-comparison/checklist.md
+
+  - id: trimmed-mean
+    prompt: |
+      Per-run cost and duration have long tails, and one runaway run drags a mean far from the typical run. Add a trimmed mean so the per-task tables can use it later: `trimmedMean(values: readonly number[], proportion: number): number`.
+
+      - Sort a copy of the values ascending, let k = floor(n × proportion), drop the k lowest and the k highest, and return the arithmetic mean of the rest.
+      - `proportion` must be at least 0 and below 0.5; anything else, NaN included, throws a `RangeError`.
+      - An empty list returns NaN, like the existing mean. The input is never mutated.
+
+      Must keep working: `trimmedMean` is exported from `@placebo-eval/core`; the tests import it from there.
+    graders:
+      - {
+          type: command,
+          run: 'pnpm vitest run packages/core/src/statistics/hidden-trimmed-mean.test.ts --project core',
+          hidden: [packages/core/src/statistics/hidden-trimmed-mean.test.ts],
+        }
+      - { type: checklist, questions: tasks/trimmed-mean/checklist.md }
+      - { type: comparison }
+    review:
+      questions: tasks/trimmed-mean/checklist.md
+
+  - id: task-id-from-title
+    prompt: |
+      Mining tasks from git history will name each task after its commit subject, so we need `taskIdFromTitle(title: string): TaskId | undefined`, which always yields a valid task id:
+
+      - Remove accents (Unicode NFKD decomposition, then drop the combining marks) and lowercase.
+      - Replace every run of characters other than `a`–`z` and `0`–`9` with a single `-`, then remove any `-` at either end.
+      - Keep at most the first 48 characters, then remove any `-` left at the end.
+      - Return `undefined` when nothing is left.
+
+      Must keep working: `taskIdFromTitle` and `TaskId` are exported from `@placebo-eval/core`; the tests import them from there.
+    graders:
+      - {
+          type: command,
+          run: 'pnpm vitest run packages/core/src/kernel/hidden-task-id-from-title.test.ts --project core',
+          hidden: [packages/core/src/kernel/hidden-task-id-from-title.test.ts],
+        }
+      - { type: checklist, questions: tasks/task-id-from-title/checklist.md }
+      - { type: comparison }
+    review:
+      questions: tasks/task-id-from-title/checklist.md

@@ -4,18 +4,14 @@
 
 Placebo measures whether a change to your Claude Code configuration actually helps. It runs the same tasks many times against a frozen copy of your repo, with and without the change, and reports the difference with an honest "give or take".
 
-**Status:** 0.1.0 is not yet published. `init`, `run`, `report` and `clean` work from source; `review` is not built yet.
-
 ## First run
 
-Once 0.1.0 is published, in the repo whose configuration you want to test:
+In the repo whose configuration you want to test, on Node 26 or later:
 
 ```
 npx placebo-eval init     # creates .placebo/, pins models and HEAD, writes none.patch
 npx placebo-eval run      # repo as-is vs stripped, 5 runs per task per arm
 ```
-
-Until then, build it from a clone of this repo (`pnpm install && pnpm build`) and run `node <clone>/packages/cli/bin/placebo.js` in place of `npx placebo-eval`.
 
 `init` detects the repo and its HEAD commit, asks Claude Code for your current default model and the current Opus and pins them as full model IDs (`--model <id>` and `--judge-model <id>` skip the question), generates `variants/none.patch` which deletes every tracked `CLAUDE.md`, `CLAUDE.local.md`, `AGENTS.md`, `.claude/` and `.mcp.json`, detects a setup command from the lockfile, and scaffolds one example task. Commit the suite and review it like code.
 
@@ -34,14 +30,25 @@ It exits 0 once the experiment completes, whatever the verdicts, 1 when the expe
 
 The first run asks "is your CLAUDE.md a placebo?". The same flow with a treatment patch that adds one rule asks "does this rule help?".
 
+## How to read a card
+
+Each line of the card is one metric, the treatment compared with control. The **difference** is the treatment's value minus control's, worked out task by task and then combined, so `-18 %` on cost means the treatment spent 18 % less than control. The **range** in brackets is how far that difference could plausibly move if you ran the whole experiment again: Placebo re-draws the runs you already have at random, a thousand times, and keeps the middle 95 % of the differences it gets. A narrow range means the runs agree; a wide one means they vary so much that the difference alone says little. The **verdict** reads the range against zero and against the metric's margin, the smallest difference worth caring about (5 points of pass rate, 10 % of cost or tokens, 15 % of duration by default):
+
+- **helps**: the whole range is on the good side of zero.
+- **harms**: the whole range is on the bad side of zero.
+- **placebo**: the whole range sits inside the margin, so any effect is too small to matter.
+- **no evidence**: the range crosses zero and reaches beyond the margin; there are too few runs to say.
+
+"No evidence" is not "placebo": it means "cannot tell yet", not "does nothing". On those lines, **runs needed** (`≈12 runs/task to decide`) estimates how many runs per task would shrink the range enough to reach another verdict. There is never an overall winner: a treatment can help pass rate and harm cost at once, and weighing that is your call.
+
 ## Commands
 
 | Command | Does |
 | --- | --- |
 | `placebo init [--model <id>] [--judge-model <id>] [--force]` | create `.placebo/`, pin models and commit, generate `none.patch`, scaffold a task |
 | `placebo run [--runs <n>] [--parallelism <n>] [--task <id>] [--variant <name>] [--keep all\|reviewable\|none] [--seed <n>] [--runner sdk\|cli] [--sandbox\|--no-sandbox] [--out <dir>] [--suite <dir>] [--no-color] [--quiet]` | run the suite, print card and table, write report and results |
-| `placebo report [experiment] [--out <dir>] [--suite <dir>]` | regenerate the HTML report from the run store, the newest experiment by default |
-| `placebo clean [--experiment <id>] [--snapshots] [--dry-run]` | remove kept run folders |
+| `placebo report [experiment] [--out <dir>] [--suite <dir>] [--no-color]` | regenerate the HTML report from the run store, the newest experiment by default |
+| `placebo clean [--experiment <id>] [--snapshots] [--dry-run] [--suite <dir>]` | remove kept run folders, and snapshots with `--snapshots` |
 | `placebo review` | serve the report locally with blinded review mode (not built yet) |
 
 `placebo <command> --help` describes every flag.
@@ -79,11 +86,21 @@ Placebo offers no login flow and requires no API key. It spawns Claude Code on y
 
 Other tools each cover part of this: blind A/B of rules files with ranges but no real agent or repo (skillcheck), one-shot judged comparisons (claude-bakeoff), cost ranges without correctness grading (evalfloor), task mining and sealed workspaces that compare agents rather than configurations (agentbench-local), and general eval infrastructure without configuration ablation (Harbor, promptfoo, Inspect AI). Placebo combines real Claude Code sessions with the full configuration surface, a frozen repo at a pinned commit with hidden tests, repeats with ranges and a paired design, and cost per arm. It is not a replacement for `claude plugin eval`: that tool tests plugins with and without themselves in an empty workspace, while Placebo tests any configuration change inside a real repo at a pinned commit, with repeats and ranges, and keeps grader names compatible where they overlap.
 
+## Dogfooding
+
+Placebo's own `AGENTS.md` is tested with Placebo: the suite in `.placebo/` runs four tasks on this repo with and without it. [docs/dogfood.md](docs/dogfood.md) explains what it measures, how to run it and how to add a task.
+
+## Status
+
+0.1.0 is the first release: `init`, `run`, `review`, `report` and `clean`; sealed snapshots; the SDK and CLI runners; deterministic, checklist and comparison graders; human review; ranges and the four verdicts; results keyed by content; the single-file report.
+
+Next, from [the roadmap](docs/brief.md#18-roadmap): distribution charts and a side-by-side diff viewer in the report; mining tasks from git history, with hidden tests taken from each commit and checked to fail before and pass after it; ablation, which tests each section of a `CLAUDE.md` by its absence; and `placebo compare`, which compares any two variants from the run store. After that: a GitHub Action with gating, a published study of popular `CLAUDE.md` advice, and a Docker executor.
+
 Not to be confused with the boto3 mocking library `placebo` on PyPI or `plzebo` on npm; skillcheck also uses PLACEBO as a verdict label.
 
 ## Contributing
 
-Read [AGENTS.md](AGENTS.md), [CONTEXT.md](CONTEXT.md) and [the brief](docs/brief.md). Run `pnpm install` and `pnpm check` on Node 26.
+Read [AGENTS.md](AGENTS.md), [CONTEXT.md](CONTEXT.md) and [the brief](docs/brief.md). On Node 26, run `pnpm install`, `pnpm build` and `pnpm check`; `node packages/cli/bin/placebo.js` then runs the CLI from source.
 
 ## License
 

@@ -1,0 +1,4 @@
+- Is the new formatter defined in core next to the existing number formatting, rather than in the cli or the report?
+- Does the change add tests for the new formatter next to the code it tests?
+- Do the added tests cover the case where a value rounds up to 1,000 of one unit and moves to the next unit?
+- Does the change leave the output of every existing formatter unchanged?

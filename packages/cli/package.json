@@ -1,16 +1,31 @@
 {
   "name": "placebo-eval",
   "version": "0.0.0",
-  "description": "Measure whether a Claude Code configuration change actually helps.",
+  "description": "Stop cargo-culting your CLAUDE.md. Measure whether a Claude Code configuration change actually helps.",
   "keywords": [
     "claude-code",
     "claude",
-    "evaluation",
-    "ablation",
+    "CLAUDE.md",
+    "AGENTS.md",
     "agents",
-    "CLAUDE.md"
+    "coding-agents",
+    "evaluation",
+    "eval",
+    "ablation",
+    "a-b-testing",
+    "cli"
   ],
+  "homepage": "https://github.com/jstoeffler/placebo#readme",
+  "bugs": {
+    "url": "https://github.com/jstoeffler/placebo/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jstoeffler/placebo.git",
+    "directory": "packages/cli"
+  },
   "license": "MIT",
+  "author": "Julien Stoeffler",
   "type": "module",
   "bin": {
     "placebo": "./bin/placebo.js"
