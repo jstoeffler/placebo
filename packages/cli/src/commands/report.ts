@@ -1,17 +1,11 @@
 import { resolve, join } from 'node:path';
-import {
-  assembleResults,
-  createSeededRandom,
-  type Experiment,
-  upfrontWarnings,
-} from '@placebo-eval/core';
 import { openStore, workspaceOf } from '../composition.js';
-import { EXIT, UsageError } from '../errors.js';
+import { EXIT } from '../errors.js';
 import type { Host, Io } from '../host.js';
 import { renderResults } from '../render/card.js';
 import { colorsFor } from '../render/colors.js';
 import { locateReportTemplate, writeArtifacts } from '../report-files.js';
-import { ancestorWarnings, artifactLines, loadSuiteOrExplain, withWarnings } from './shared.js';
+import { artifactLines, loadSuiteOrExplain, pickExperiment, rebuildResults } from './shared.js';
 
 export interface ReportFlags {
   readonly suite?: string;
@@ -41,34 +35,16 @@ export async function reportCommand(
   const store = await openStore(workspace);
   try {
     const experiments = await store.listExperiments();
-    const experiment = pick(experiments, experimentId, workspace.storeDir);
-    const [runs, reviews] = await Promise.all([
-      store.list({ experimentId: experiment.id }),
-      store.listReviews(),
-    ]);
-    const decoder = new TextDecoder();
-    const upfront = upfrontWarnings({
-      suite: loaded.suite,
-      arms: experiment.arms,
-      taskCount: experiment.taskIds.length,
-      patchText: (patch) => {
-        const bytes = loaded.files.get(patch);
-        return bytes === undefined ? '' : decoder.decode(bytes);
-      },
+    const experiment = pickExperiment(experiments, experimentId, workspace.storeDir);
+    const runs = await store.list({ experimentId: experiment.id });
+    const results = await rebuildResults({
+      workspace,
+      loaded,
+      experiment,
+      runs,
+      reviews: await store.listReviews(),
+      host,
     });
-    const results = withWarnings(
-      assembleResults({
-        experiment,
-        runs,
-        reviews,
-        suite: loaded.suite,
-        margins: loaded.suite.margins,
-        random: createSeededRandom(experiment.seed),
-        clock: host.clock,
-        warnings: upfront,
-      }),
-      await ancestorWarnings(workspace, host),
-    );
     const outDir =
       flags.out === undefined
         ? join(workspace.reportsDir, experiment.id)
@@ -82,23 +58,4 @@ export async function reportCommand(
   } finally {
     store.close();
   }
-}
-
-/** The named experiment, or the newest; a usage error when there is none. */
-function pick(
-  experiments: readonly Experiment[],
-  id: string | undefined,
-  storeDir: string,
-): Experiment {
-  if (experiments.length === 0) {
-    throw new UsageError(`the run store ${storeDir} has no experiment yet; run placebo run first`);
-  }
-  const found =
-    id === undefined ? experiments[0] : experiments.find((experiment) => experiment.id === id);
-  if (found === undefined) {
-    throw new UsageError(
-      `the run store has no experiment ${id ?? ''}; it has ${experiments.map((experiment) => experiment.id).join(', ')}`,
-    );
-  }
-  return found;
 }

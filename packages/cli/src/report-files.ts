@@ -2,7 +2,7 @@ import { existsSync } from 'node:fs';
 import { mkdir, readFile, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { Results } from '@placebo-eval/core/results';
+import { Results, type ReviewSession } from '@placebo-eval/core/results';
 import { UsageError } from './errors.js';
 
 /** The comment the built `report.html` carries until results replace it (report README). */
@@ -13,7 +13,7 @@ export const RESULTS_PLACEHOLDER = '<!--PLACEBO_RESULTS-->';
  * JSON escape `<`, so the text can never close the tag or open a comment, and `JSON.parse`
  * still returns the same data.
  */
-export function serializeForEmbedding(results: Results): string {
+export function serializeForEmbedding(results: Results | ReviewSession): string {
   return JSON.stringify(results).replaceAll('<', '\\u003c');
 }
 
@@ -25,6 +25,23 @@ export function embedResults(html: string, results: Results): string {
   const json = serializeForEmbedding(results);
   // A replacer function, so `$&` and similar sequences in the data stay literal.
   return html.replace(RESULTS_PLACEHOLDER, () => json);
+}
+
+/**
+ * The built report in review mode: `session` in place of the placeholder and `data-mode="review"`
+ * on the tag that holds it, so the app reads a review session instead of results.
+ */
+export function embedReviewSession(html: string, session: ReviewSession): string {
+  const at = html.indexOf(RESULTS_PLACEHOLDER);
+  const tag = at === -1 ? -1 : html.lastIndexOf('<script', at);
+  if (tag === -1) {
+    throw new Error(
+      `the report template has no ${RESULTS_PLACEHOLDER} placeholder in a script tag`,
+    );
+  }
+  const opened = tag + '<script'.length;
+  const json = serializeForEmbedding(session);
+  return `${html.slice(0, opened)} data-mode="review"${html.slice(opened, at)}${json}${html.slice(at + RESULTS_PLACEHOLDER.length)}`;
 }
 
 /**
