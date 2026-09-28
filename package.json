@@ -18,6 +18,7 @@
     "test": "vitest run",
     "test:coverage": "vitest run --coverage",
     "build": "pnpm -r build",
+    "verify:package": "node scripts/verify-package.ts",
     "changeset": "changeset",
     "release": "pnpm build && changeset publish"
   },

@@ -968,6 +968,10 @@ select {
   font-size: var(--step--1);
 }
 
+.grade-error {
+  color: var(--harms);
+}
+
 .reasoning {
   max-width: var(--measure);
   line-height: 1.6;

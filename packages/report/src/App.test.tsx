@@ -2,8 +2,10 @@
 import { cleanup, render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { formatCurrency } from '@placebo-eval/core/format';
 import { App } from './App.js';
 import { loadResults, type ReportMode } from './data/load.js';
+import { runOrdinal } from './data/model.js';
 import { fixture, fixtureText } from './testing/fixtures.js';
 
 function renderReport(name: 'rich' | 'minimal', hash = '#/', mode: ReportMode = 'report') {
@@ -41,12 +43,12 @@ describe('verdict card', () => {
       ['pass rate', '-25 pts', '[-60, +10]', 'no evidence', '(≈10 runs/task to decide)'],
       ['cost', '-25 %', '[-32, -21]', 'helps'],
       ['tokens in', '-11 %', '[-25, +7.6]', 'no evidence', '(≈11 runs/task to decide)'],
-      ['tokens out', '-7.0 %', '[-21, +12]', 'no evidence', '(≈27 runs/task to decide)'],
-      ['cache read', '-7.0 %', '[-20, +11]', 'no evidence', '(≈25 runs/task to decide)'],
+      ['tokens out', '-7 %', '[-21, +12]', 'no evidence', '(≈27 runs/task to decide)'],
+      ['cache read', '-7 %', '[-20, +11]', 'no evidence', '(≈25 runs/task to decide)'],
       ['cache write', '+0.6 %', '[-0.3, +1.5]', 'placebo'],
       ['turns', '-0.9', '[-2.5, +0.7]', 'no evidence', '(≈16 runs/task to decide)'],
       ['duration', '-19 %', '[-26, -9.9]', 'helps'],
-      ['checklist', '-0.69', '[-1.35, -0.09]', 'harms'],
+      ['checklist', '-0.69', '[-1.35, -0.088]', 'harms'],
       ['win rate', '-15 pts', '[-40, +10]', 'no evidence', '(≈14 runs/task to decide)'],
     ]);
   });
@@ -62,7 +64,7 @@ describe('verdict card', () => {
     renderReport('minimal');
     const card = screen.getByRole('region', { name: /^none vs control/ });
     expect(rowTexts(card)).toEqual([
-      ['pass rate', '0.0 pts', '[-100, +100]', 'no evidence', '(more than 1000 runs/task)'],
+      ['pass rate', '0 pts', '[-100, +100]', 'no evidence', '(more than 1000 runs/task)'],
       ['cost', '-21 %', '[-38, +4.6]', 'no evidence', '(≈9 runs/task to decide)'],
     ]);
   });
@@ -200,7 +202,7 @@ describe('run detail', () => {
     expect(document.querySelector('.diff-path')?.textContent).toBe('src/billing/refund.ts');
   });
 
-  it('shows the judge reasoning, the comparison and the reviews', () => {
+  it('shows the judge reasoning and spend, and the reviews', () => {
     const reviewed = results.runs.find((candidate) =>
       candidate.grades.some((grade) => grade.kind === 'review'),
     )!;
@@ -208,8 +210,52 @@ describe('run detail', () => {
     expect(screen.getByText(/^Reviewed by /)).toBeDefined();
     expect(screen.getAllByText(/^Judged by claude-opus/).length).toBeGreaterThan(0);
     const judge = reviewed.grades.find((grade) => grade.detail.type === 'judge')!;
-    if (judge.detail.type === 'judge')
-      expect(screen.getByText(judge.detail.reasoning)).toBeDefined();
+    if (judge.detail.type !== 'judge') throw new Error('expected a judge grade');
+    expect(screen.getByText(judge.detail.reasoning)).toBeDefined();
+    const card = screen.getByText(judge.detail.reasoning).closest('article')!;
+    expect(within(card).getByText('Judge cost').nextSibling?.textContent).toBe(
+      formatCurrency(judge.detail.spend.costUsd),
+    );
+    expect(within(card).getByText('Judge calls').nextSibling?.textContent).toBe('1');
+  });
+
+  it('shows a comparison with its opponent, position, preference, reason and spend', () => {
+    const compared = results.runs.find((candidate) =>
+      candidate.grades.some((grade) => grade.detail.type === 'comparison'),
+    )!;
+    const detail = compared.grades.find((grade) => grade.detail.type === 'comparison')!.detail;
+    if (detail.type !== 'comparison') throw new Error('expected a comparison grade');
+    const opponent = results.runs.find((candidate) => candidate.id === detail.opponentRunId)!;
+    const ordinal = runOrdinal(opponent, results.runs);
+    renderReport('rich', `#/runs/${compared.id}`);
+    const card = screen.getByText(detail.reason).closest('article')!;
+    const other = detail.position === 'a' ? 'b' : 'a';
+    expect(card.querySelector('.opponent')?.textContent).toBe(
+      `Compared with run ${String(ordinal)} of control; this run was shown as ${detail.position}, the other as ${other}.`,
+    );
+    expect(card.querySelector('.opponent a')?.getAttribute('href')).toBe(
+      `#/runs/${detail.opponentRunId}`,
+    );
+    expect(
+      within(card).getByText(
+        detail.preferred ? 'The judge preferred this run.' : 'The judge preferred the other run.',
+      ),
+    ).toBeDefined();
+    expect(card.querySelector('.grade-score')?.textContent).toBe(detail.preferred ? 'won' : 'lost');
+    expect(within(card).getByText('Judge cost').nextSibling?.textContent).toBe(
+      formatCurrency(detail.spend.costUsd),
+    );
+  });
+
+  it('shows the message of a grader that could not score', () => {
+    const failed = results.runs.find((candidate) =>
+      candidate.grades.some((grade) => grade.detail.type === 'error'),
+    )!;
+    renderReport('rich', `#/runs/${failed.id}`);
+    const message = screen.getByText(
+      'The judge answer failed its schema: answers has 2 items, the checklist has 3.',
+    );
+    expect(message.closest('article')?.querySelector('.grade-score')?.textContent).toBe('error');
   });
 
   it('steps to the next and previous run within the filter', async () => {

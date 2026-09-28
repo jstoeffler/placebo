@@ -68,9 +68,6 @@ importers:
       picocolors:
         specifier: ^1.1.1
         version: 1.1.1
-      zod:
-        specifier: ^4.6.5
-        version: 4.6.5
     devDependencies:
       '@placebo-eval/core':
         specifier: workspace:*
@@ -81,6 +78,9 @@ importers:
       tsdown:
         specifier: ^0.23.0
         version: 0.23.0(oxc-resolver@11.24.2)(tsx@4.23.15)(typescript@6.0.3)
+      zod:
+        specifier: ^4.6.5
+        version: 4.6.5
 
   packages/core:
     dependencies:

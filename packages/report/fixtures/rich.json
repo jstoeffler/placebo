@@ -577,7 +577,17 @@
                 "yes": false,
                 "note": "Not visible in the change; the relevant code path is untouched."
               }
-            ]
+            ],
+            "spend": {
+              "costUsd": 0.0403,
+              "tokens": {
+                "input": 7436,
+                "output": 123,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         },
         {
@@ -1047,7 +1057,17 @@
                 "yes": false,
                 "note": "Not visible in the change; the relevant code path is untouched."
               }
-            ]
+            ],
+            "spend": {
+              "costUsd": 0.0403,
+              "tokens": {
+                "input": 7436,
+                "output": 123,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         }
       ],
@@ -1416,7 +1436,17 @@
                 "yes": true,
                 "note": "The change shows this directly."
               }
-            ]
+            ],
+            "spend": {
+              "costUsd": 0.0408,
+              "tokens": {
+                "input": 7516,
+                "output": 127,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         }
       ],
@@ -1760,7 +1790,17 @@
                 "yes": true,
                 "note": "The change shows this directly."
               }
-            ]
+            ],
+            "spend": {
+              "costUsd": 0.0408,
+              "tokens": {
+                "input": 7516,
+                "output": 127,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         },
         {
@@ -2206,7 +2246,17 @@
                 "yes": true,
                 "note": "The change shows this directly."
               }
-            ]
+            ],
+            "spend": {
+              "costUsd": 0.0408,
+              "tokens": {
+                "input": 7516,
+                "output": 127,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         }
       ],
@@ -2578,7 +2628,17 @@
                 "yes": false,
                 "note": "Not visible in the change; the relevant code path is untouched."
               }
-            ]
+            ],
+            "spend": {
+              "costUsd": 0.0403,
+              "tokens": {
+                "input": 7436,
+                "output": 123,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         },
         {
@@ -2589,16 +2649,28 @@
           "kind": "judge",
           "score": 0,
           "detail": {
-            "type": "judge",
+            "type": "comparison",
+            "opponentRunId": "run_fix_control_2_ba87bc",
+            "position": "a",
+            "preferred": false,
+            "reason": "Result b is the smaller, more direct change and caps the refund explicitly; result a also rewrites the tax helper without need, which widens the change for no gain.",
             "model": "claude-opus-5-5-20260915",
-            "reasoning": "Result b is the smaller, more direct change and caps the refund explicitly; result a also rewrites the tax helper without need, which widens the change for no gain.",
             "raw": [
               {
-                "better": "b"
+                "better": "b",
+                "reason": "Result b is the smaller, more direct change and caps the refund explicitly; result a also rewrites the tax helper without need, which widens the change for no gain."
               }
             ],
-            "opponentRunId": "run_fix_control_2_ba87bc",
-            "shownAs": "a"
+            "spend": {
+              "costUsd": 0.0682,
+              "tokens": {
+                "input": 13072,
+                "output": 115,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         }
       ],
@@ -3067,7 +3139,17 @@
                 "yes": false,
                 "note": "Not visible in the change; the relevant code path is untouched."
               }
-            ]
+            ],
+            "spend": {
+              "costUsd": 0.0275,
+              "tokens": {
+                "input": 4888,
+                "output": 123,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         },
         {
@@ -3078,16 +3160,28 @@
           "kind": "judge",
           "score": 0,
           "detail": {
-            "type": "judge",
+            "type": "comparison",
+            "opponentRunId": "run_fix_control_2_ba87bc",
+            "position": "a",
+            "preferred": false,
+            "reason": "Result b is the smaller, more direct change and caps the refund explicitly; result a also rewrites the tax helper without need, which widens the change for no gain.",
             "model": "claude-opus-5-5-20260915",
-            "reasoning": "Result b is the smaller, more direct change and caps the refund explicitly; result a also rewrites the tax helper without need, which widens the change for no gain.",
             "raw": [
               {
-                "better": "b"
+                "better": "b",
+                "reason": "Result b is the smaller, more direct change and caps the refund explicitly; result a also rewrites the tax helper without need, which widens the change for no gain."
               }
             ],
-            "opponentRunId": "run_fix_control_2_ba87bc",
-            "shownAs": "a"
+            "spend": {
+              "costUsd": 0.0555,
+              "tokens": {
+                "input": 10524,
+                "output": 115,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         },
         {
@@ -3536,7 +3630,17 @@
                 "yes": true,
                 "note": "The change shows this directly."
               }
-            ]
+            ],
+            "spend": {
+              "costUsd": 0.0275,
+              "tokens": {
+                "input": 4888,
+                "output": 123,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         },
         {
@@ -3547,16 +3651,28 @@
           "kind": "judge",
           "score": 1,
           "detail": {
-            "type": "judge",
+            "type": "comparison",
+            "opponentRunId": "run_fix_control_2_ba87bc",
+            "position": "a",
+            "preferred": true,
+            "reason": "Result a keeps the arithmetic in integer cents end to end and adds a focused test; result b converts back to dollars mid-calculation, which reintroduces the rounding it set out to fix.",
             "model": "claude-opus-5-5-20260915",
-            "reasoning": "Result a keeps the arithmetic in integer cents end to end and adds a focused test; result b converts back to dollars mid-calculation, which reintroduces the rounding it set out to fix.",
             "raw": [
               {
-                "better": "a"
+                "better": "a",
+                "reason": "Result a keeps the arithmetic in integer cents end to end and adds a focused test; result b converts back to dollars mid-calculation, which reintroduces the rounding it set out to fix."
               }
             ],
-            "opponentRunId": "run_fix_control_2_ba87bc",
-            "shownAs": "a"
+            "spend": {
+              "costUsd": 0.0556,
+              "tokens": {
+                "input": 10524,
+                "output": 121,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         }
       ],
@@ -3902,7 +4018,17 @@
                 "yes": false,
                 "note": "Not visible in the change; the relevant code path is untouched."
               }
-            ]
+            ],
+            "spend": {
+              "costUsd": 0.0275,
+              "tokens": {
+                "input": 4888,
+                "output": 123,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         },
         {
@@ -3913,16 +4039,28 @@
           "kind": "judge",
           "score": 0,
           "detail": {
-            "type": "judge",
+            "type": "comparison",
+            "opponentRunId": "run_fix_control_5_efee2d",
+            "position": "a",
+            "preferred": false,
+            "reason": "Result b is the smaller, more direct change and caps the refund explicitly; result a also rewrites the tax helper without need, which widens the change for no gain.",
             "model": "claude-opus-5-5-20260915",
-            "reasoning": "Result b is the smaller, more direct change and caps the refund explicitly; result a also rewrites the tax helper without need, which widens the change for no gain.",
             "raw": [
               {
-                "better": "b"
+                "better": "b",
+                "reason": "Result b is the smaller, more direct change and caps the refund explicitly; result a also rewrites the tax helper without need, which widens the change for no gain."
               }
             ],
-            "opponentRunId": "run_fix_control_5_efee2d",
-            "shownAs": "a"
+            "spend": {
+              "costUsd": 0.0559,
+              "tokens": {
+                "input": 10604,
+                "output": 115,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         }
       ],
@@ -4294,7 +4432,17 @@
                 "yes": false,
                 "note": "Not visible in the change; the relevant code path is untouched."
               }
-            ]
+            ],
+            "spend": {
+              "costUsd": 0.0403,
+              "tokens": {
+                "input": 7436,
+                "output": 123,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         },
         {
@@ -4305,16 +4453,28 @@
           "kind": "judge",
           "score": 0,
           "detail": {
-            "type": "judge",
+            "type": "comparison",
+            "opponentRunId": "run_fix_control_1_16c9a0",
+            "position": "a",
+            "preferred": false,
+            "reason": "Result b is the smaller, more direct change and caps the refund explicitly; result a also rewrites the tax helper without need, which widens the change for no gain.",
             "model": "claude-opus-5-5-20260915",
-            "reasoning": "Result b is the smaller, more direct change and caps the refund explicitly; result a also rewrites the tax helper without need, which widens the change for no gain.",
             "raw": [
               {
-                "better": "b"
+                "better": "b",
+                "reason": "Result b is the smaller, more direct change and caps the refund explicitly; result a also rewrites the tax helper without need, which widens the change for no gain."
               }
             ],
-            "opponentRunId": "run_fix_control_1_16c9a0",
-            "shownAs": "a"
+            "spend": {
+              "costUsd": 0.0682,
+              "tokens": {
+                "input": 13072,
+                "output": 115,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         },
         {
@@ -4835,7 +4995,17 @@
                 "yes": true,
                 "note": "The change shows this directly."
               }
-            ]
+            ],
+            "spend": {
+              "costUsd": 0.028,
+              "tokens": {
+                "input": 4968,
+                "output": 127,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         },
         {
@@ -4846,16 +5016,28 @@
           "kind": "judge",
           "score": 1,
           "detail": {
-            "type": "judge",
+            "type": "comparison",
+            "opponentRunId": "run_fix_control_2_ba87bc",
+            "position": "a",
+            "preferred": true,
+            "reason": "Result a keeps the arithmetic in integer cents end to end and adds a focused test; result b converts back to dollars mid-calculation, which reintroduces the rounding it set out to fix.",
             "model": "claude-opus-5-5-20260915",
-            "reasoning": "Result a keeps the arithmetic in integer cents end to end and adds a focused test; result b converts back to dollars mid-calculation, which reintroduces the rounding it set out to fix.",
             "raw": [
               {
-                "better": "a"
+                "better": "a",
+                "reason": "Result a keeps the arithmetic in integer cents end to end and adds a focused test; result b converts back to dollars mid-calculation, which reintroduces the rounding it set out to fix."
               }
             ],
-            "opponentRunId": "run_fix_control_2_ba87bc",
-            "shownAs": "a"
+            "spend": {
+              "costUsd": 0.056,
+              "tokens": {
+                "input": 10604,
+                "output": 121,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         },
         {
@@ -5304,7 +5486,17 @@
                 "yes": true,
                 "note": "The change shows this directly."
               }
-            ]
+            ],
+            "spend": {
+              "costUsd": 0.0408,
+              "tokens": {
+                "input": 7516,
+                "output": 127,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         },
         {
@@ -5315,16 +5507,28 @@
           "kind": "judge",
           "score": 1,
           "detail": {
-            "type": "judge",
+            "type": "comparison",
+            "opponentRunId": "run_fix_control_2_ba87bc",
+            "position": "b",
+            "preferred": true,
+            "reason": "Result b keeps the arithmetic in integer cents end to end and adds a focused test; result a converts back to dollars mid-calculation, which reintroduces the rounding it set out to fix.",
             "model": "claude-opus-5-5-20260915",
-            "reasoning": "Result b keeps the arithmetic in integer cents end to end and adds a focused test; result a converts back to dollars mid-calculation, which reintroduces the rounding it set out to fix.",
             "raw": [
               {
-                "better": "b"
+                "better": "b",
+                "reason": "Result b keeps the arithmetic in integer cents end to end and adds a focused test; result a converts back to dollars mid-calculation, which reintroduces the rounding it set out to fix."
               }
             ],
-            "opponentRunId": "run_fix_control_2_ba87bc",
-            "shownAs": "b"
+            "spend": {
+              "costUsd": 0.0688,
+              "tokens": {
+                "input": 13152,
+                "output": 121,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         }
       ],
@@ -5791,7 +5995,17 @@
                 "yes": true,
                 "note": "The change shows this directly."
               }
-            ]
+            ],
+            "spend": {
+              "costUsd": 0.0408,
+              "tokens": {
+                "input": 7516,
+                "output": 127,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         },
         {
@@ -5802,16 +6016,28 @@
           "kind": "judge",
           "score": 1,
           "detail": {
-            "type": "judge",
+            "type": "comparison",
+            "opponentRunId": "run_fix_control_1_16c9a0",
+            "position": "b",
+            "preferred": true,
+            "reason": "Result b keeps the arithmetic in integer cents end to end and adds a focused test; result a converts back to dollars mid-calculation, which reintroduces the rounding it set out to fix.",
             "model": "claude-opus-5-5-20260915",
-            "reasoning": "Result b keeps the arithmetic in integer cents end to end and adds a focused test; result a converts back to dollars mid-calculation, which reintroduces the rounding it set out to fix.",
             "raw": [
               {
-                "better": "b"
+                "better": "b",
+                "reason": "Result b keeps the arithmetic in integer cents end to end and adds a focused test; result a converts back to dollars mid-calculation, which reintroduces the rounding it set out to fix."
               }
             ],
-            "opponentRunId": "run_fix_control_1_16c9a0",
-            "shownAs": "b"
+            "spend": {
+              "costUsd": 0.0688,
+              "tokens": {
+                "input": 13152,
+                "output": 121,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         }
       ],
@@ -6257,7 +6483,17 @@
                 "yes": false,
                 "note": "Not visible in the change; the relevant code path is untouched."
               }
-            ]
+            ],
+            "spend": {
+              "costUsd": 0.0408,
+              "tokens": {
+                "input": 7516,
+                "output": 127,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         },
         {
@@ -6268,16 +6504,28 @@
           "kind": "judge",
           "score": 1,
           "detail": {
-            "type": "judge",
+            "type": "comparison",
+            "opponentRunId": "run_fix_control_3_1bb4a7",
+            "position": "a",
+            "preferred": true,
+            "reason": "Result a keeps the arithmetic in integer cents end to end and adds a focused test; result b converts back to dollars mid-calculation, which reintroduces the rounding it set out to fix.",
             "model": "claude-opus-5-5-20260915",
-            "reasoning": "Result a keeps the arithmetic in integer cents end to end and adds a focused test; result b converts back to dollars mid-calculation, which reintroduces the rounding it set out to fix.",
             "raw": [
               {
-                "better": "a"
+                "better": "a",
+                "reason": "Result a keeps the arithmetic in integer cents end to end and adds a focused test; result b converts back to dollars mid-calculation, which reintroduces the rounding it set out to fix."
               }
             ],
-            "opponentRunId": "run_fix_control_3_1bb4a7",
-            "shownAs": "a"
+            "spend": {
+              "costUsd": 0.0692,
+              "tokens": {
+                "input": 13232,
+                "output": 121,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         }
       ],
@@ -6720,7 +6968,17 @@
                 "yes": true,
                 "note": "The change shows this directly."
               }
-            ]
+            ],
+            "spend": {
+              "costUsd": 0.0408,
+              "tokens": {
+                "input": 7516,
+                "output": 127,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         },
         {
@@ -6731,16 +6989,28 @@
           "kind": "judge",
           "score": 1,
           "detail": {
-            "type": "judge",
+            "type": "comparison",
+            "opponentRunId": "run_fix_control_5_efee2d",
+            "position": "a",
+            "preferred": true,
+            "reason": "Result a keeps the arithmetic in integer cents end to end and adds a focused test; result b converts back to dollars mid-calculation, which reintroduces the rounding it set out to fix.",
             "model": "claude-opus-5-5-20260915",
-            "reasoning": "Result a keeps the arithmetic in integer cents end to end and adds a focused test; result b converts back to dollars mid-calculation, which reintroduces the rounding it set out to fix.",
             "raw": [
               {
-                "better": "a"
+                "better": "a",
+                "reason": "Result a keeps the arithmetic in integer cents end to end and adds a focused test; result b converts back to dollars mid-calculation, which reintroduces the rounding it set out to fix."
               }
             ],
-            "opponentRunId": "run_fix_control_5_efee2d",
-            "shownAs": "a"
+            "spend": {
+              "costUsd": 0.0692,
+              "tokens": {
+                "input": 13232,
+                "output": 121,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         }
       ],
@@ -7306,7 +7576,17 @@
                 "yes": true,
                 "note": "The change shows this directly."
               }
-            ]
+            ],
+            "spend": {
+              "costUsd": 0.0281,
+              "tokens": {
+                "input": 4984,
+                "output": 127,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         }
       ],
@@ -7847,7 +8127,17 @@
                 "yes": true,
                 "note": "The change shows this directly."
               }
-            ]
+            ],
+            "spend": {
+              "costUsd": 0.0404,
+              "tokens": {
+                "input": 7468,
+                "output": 123,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         }
       ],
@@ -8287,7 +8577,17 @@
                 "yes": true,
                 "note": "The change shows this directly."
               }
-            ]
+            ],
+            "spend": {
+              "costUsd": 0.0281,
+              "tokens": {
+                "input": 4984,
+                "output": 127,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         }
       ],
@@ -8706,7 +9006,17 @@
                 "yes": true,
                 "note": "The change shows this directly."
               }
-            ]
+            ],
+            "spend": {
+              "costUsd": 0.0409,
+              "tokens": {
+                "input": 7548,
+                "output": 127,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         }
       ],
@@ -9222,7 +9532,17 @@
                 "yes": false,
                 "note": "Not visible in the change; the relevant code path is untouched."
               }
-            ]
+            ],
+            "spend": {
+              "costUsd": 0.0404,
+              "tokens": {
+                "input": 7468,
+                "output": 123,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         }
       ],
@@ -9593,7 +9913,17 @@
                 "yes": true,
                 "note": "The change shows this directly."
               }
-            ]
+            ],
+            "spend": {
+              "costUsd": 0.0404,
+              "tokens": {
+                "input": 7468,
+                "output": 123,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         },
         {
@@ -9604,16 +9934,28 @@
           "kind": "judge",
           "score": 0,
           "detail": {
-            "type": "judge",
+            "type": "comparison",
+            "opponentRunId": "run_add_control_5_d99ed5",
+            "position": "a",
+            "preferred": false,
+            "reason": "Result b is the smaller, more direct change and caps the refund explicitly; result a also rewrites the tax helper without need, which widens the change for no gain.",
             "model": "claude-opus-5-5-20260915",
-            "reasoning": "Result b is the smaller, more direct change and caps the refund explicitly; result a also rewrites the tax helper without need, which widens the change for no gain.",
             "raw": [
               {
-                "better": "b"
+                "better": "b",
+                "reason": "Result b is the smaller, more direct change and caps the refund explicitly; result a also rewrites the tax helper without need, which widens the change for no gain."
               }
             ],
-            "opponentRunId": "run_add_control_5_d99ed5",
-            "shownAs": "a"
+            "spend": {
+              "costUsd": 0.0686,
+              "tokens": {
+                "input": 13136,
+                "output": 115,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         }
       ],
@@ -10057,7 +10399,17 @@
                 "yes": true,
                 "note": "The change shows this directly."
               }
-            ]
+            ],
+            "spend": {
+              "costUsd": 0.0281,
+              "tokens": {
+                "input": 4984,
+                "output": 127,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         },
         {
@@ -10068,16 +10420,28 @@
           "kind": "judge",
           "score": 1,
           "detail": {
-            "type": "judge",
+            "type": "comparison",
+            "opponentRunId": "run_add_control_2_b690eb",
+            "position": "b",
+            "preferred": true,
+            "reason": "Result b keeps the arithmetic in integer cents end to end and adds a focused test; result a converts back to dollars mid-calculation, which reintroduces the rounding it set out to fix.",
             "model": "claude-opus-5-5-20260915",
-            "reasoning": "Result b keeps the arithmetic in integer cents end to end and adds a focused test; result a converts back to dollars mid-calculation, which reintroduces the rounding it set out to fix.",
             "raw": [
               {
-                "better": "b"
+                "better": "b",
+                "reason": "Result b keeps the arithmetic in integer cents end to end and adds a focused test; result a converts back to dollars mid-calculation, which reintroduces the rounding it set out to fix."
               }
             ],
-            "opponentRunId": "run_add_control_2_b690eb",
-            "shownAs": "b"
+            "spend": {
+              "costUsd": 0.0563,
+              "tokens": {
+                "input": 10652,
+                "output": 121,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         }
       ],
@@ -10522,7 +10886,17 @@
                 "yes": false,
                 "note": "Not visible in the change; the relevant code path is untouched."
               }
-            ]
+            ],
+            "spend": {
+              "costUsd": 0.0404,
+              "tokens": {
+                "input": 7468,
+                "output": 123,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         },
         {
@@ -10533,16 +10907,28 @@
           "kind": "judge",
           "score": 0,
           "detail": {
-            "type": "judge",
+            "type": "comparison",
+            "opponentRunId": "run_add_control_1_a2618f",
+            "position": "a",
+            "preferred": false,
+            "reason": "Result b is the smaller, more direct change and caps the refund explicitly; result a also rewrites the tax helper without need, which widens the change for no gain.",
             "model": "claude-opus-5-5-20260915",
-            "reasoning": "Result b is the smaller, more direct change and caps the refund explicitly; result a also rewrites the tax helper without need, which widens the change for no gain.",
             "raw": [
               {
-                "better": "b"
+                "better": "b",
+                "reason": "Result b is the smaller, more direct change and caps the refund explicitly; result a also rewrites the tax helper without need, which widens the change for no gain."
               }
             ],
-            "opponentRunId": "run_add_control_1_a2618f",
-            "shownAs": "a"
+            "spend": {
+              "costUsd": 0.0561,
+              "tokens": {
+                "input": 10652,
+                "output": 115,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         }
       ],
@@ -11062,7 +11448,17 @@
                 "yes": true,
                 "note": "The change shows this directly."
               }
-            ]
+            ],
+            "spend": {
+              "costUsd": 0.0409,
+              "tokens": {
+                "input": 7548,
+                "output": 127,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         },
         {
@@ -11073,16 +11469,28 @@
           "kind": "judge",
           "score": 1,
           "detail": {
-            "type": "judge",
+            "type": "comparison",
+            "opponentRunId": "run_add_control_2_b690eb",
+            "position": "a",
+            "preferred": true,
+            "reason": "Result a keeps the arithmetic in integer cents end to end and adds a focused test; result b converts back to dollars mid-calculation, which reintroduces the rounding it set out to fix.",
             "model": "claude-opus-5-5-20260915",
-            "reasoning": "Result a keeps the arithmetic in integer cents end to end and adds a focused test; result b converts back to dollars mid-calculation, which reintroduces the rounding it set out to fix.",
             "raw": [
               {
-                "better": "a"
+                "better": "a",
+                "reason": "Result a keeps the arithmetic in integer cents end to end and adds a focused test; result b converts back to dollars mid-calculation, which reintroduces the rounding it set out to fix."
               }
             ],
-            "opponentRunId": "run_add_control_2_b690eb",
-            "shownAs": "a"
+            "spend": {
+              "costUsd": 0.0691,
+              "tokens": {
+                "input": 13216,
+                "output": 121,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         }
       ],
@@ -11527,7 +11935,17 @@
                 "yes": false,
                 "note": "Not visible in the change; the relevant code path is untouched."
               }
-            ]
+            ],
+            "spend": {
+              "costUsd": 0.0281,
+              "tokens": {
+                "input": 4984,
+                "output": 127,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         },
         {
@@ -11538,16 +11956,28 @@
           "kind": "judge",
           "score": 1,
           "detail": {
-            "type": "judge",
+            "type": "comparison",
+            "opponentRunId": "run_add_control_2_b690eb",
+            "position": "a",
+            "preferred": true,
+            "reason": "Result a keeps the arithmetic in integer cents end to end and adds a focused test; result b converts back to dollars mid-calculation, which reintroduces the rounding it set out to fix.",
             "model": "claude-opus-5-5-20260915",
-            "reasoning": "Result a keeps the arithmetic in integer cents end to end and adds a focused test; result b converts back to dollars mid-calculation, which reintroduces the rounding it set out to fix.",
             "raw": [
               {
-                "better": "a"
+                "better": "a",
+                "reason": "Result a keeps the arithmetic in integer cents end to end and adds a focused test; result b converts back to dollars mid-calculation, which reintroduces the rounding it set out to fix."
               }
             ],
-            "opponentRunId": "run_add_control_2_b690eb",
-            "shownAs": "a"
+            "spend": {
+              "costUsd": 0.0563,
+              "tokens": {
+                "input": 10652,
+                "output": 121,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         }
       ],
@@ -12016,7 +12446,17 @@
                 "yes": true,
                 "note": "The change shows this directly."
               }
-            ]
+            ],
+            "spend": {
+              "costUsd": 0.0281,
+              "tokens": {
+                "input": 4984,
+                "output": 127,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         },
         {
@@ -12027,16 +12467,28 @@
           "kind": "judge",
           "score": 1,
           "detail": {
-            "type": "judge",
+            "type": "comparison",
+            "opponentRunId": "run_add_control_4_eac0d0",
+            "position": "b",
+            "preferred": true,
+            "reason": "Result b keeps the arithmetic in integer cents end to end and adds a focused test; result a converts back to dollars mid-calculation, which reintroduces the rounding it set out to fix.",
             "model": "claude-opus-5-5-20260915",
-            "reasoning": "Result b keeps the arithmetic in integer cents end to end and adds a focused test; result a converts back to dollars mid-calculation, which reintroduces the rounding it set out to fix.",
             "raw": [
               {
-                "better": "b"
+                "better": "b",
+                "reason": "Result b keeps the arithmetic in integer cents end to end and adds a focused test; result a converts back to dollars mid-calculation, which reintroduces the rounding it set out to fix."
               }
             ],
-            "opponentRunId": "run_add_control_4_eac0d0",
-            "shownAs": "b"
+            "spend": {
+              "costUsd": 0.0567,
+              "tokens": {
+                "input": 10732,
+                "output": 121,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         }
       ],
@@ -12602,7 +13054,17 @@
                 "yes": true,
                 "note": "The change shows this directly."
               }
-            ]
+            ],
+            "spend": {
+              "costUsd": 0.0409,
+              "tokens": {
+                "input": 7548,
+                "output": 127,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         },
         {
@@ -12613,16 +13075,28 @@
           "kind": "judge",
           "score": 1,
           "detail": {
-            "type": "judge",
+            "type": "comparison",
+            "opponentRunId": "run_add_control_2_b690eb",
+            "position": "b",
+            "preferred": true,
+            "reason": "Result b keeps the arithmetic in integer cents end to end and adds a focused test; result a converts back to dollars mid-calculation, which reintroduces the rounding it set out to fix.",
             "model": "claude-opus-5-5-20260915",
-            "reasoning": "Result b keeps the arithmetic in integer cents end to end and adds a focused test; result a converts back to dollars mid-calculation, which reintroduces the rounding it set out to fix.",
             "raw": [
               {
-                "better": "b"
+                "better": "b",
+                "reason": "Result b keeps the arithmetic in integer cents end to end and adds a focused test; result a converts back to dollars mid-calculation, which reintroduces the rounding it set out to fix."
               }
             ],
-            "opponentRunId": "run_add_control_2_b690eb",
-            "shownAs": "b"
+            "spend": {
+              "costUsd": 0.0691,
+              "tokens": {
+                "input": 13216,
+                "output": 121,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         }
       ],
@@ -13044,7 +13518,17 @@
                 "yes": true,
                 "note": "The change shows this directly."
               }
-            ]
+            ],
+            "spend": {
+              "costUsd": 0.0409,
+              "tokens": {
+                "input": 7548,
+                "output": 127,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         },
         {
@@ -13055,16 +13539,28 @@
           "kind": "judge",
           "score": 1,
           "detail": {
-            "type": "judge",
+            "type": "comparison",
+            "opponentRunId": "run_add_control_4_eac0d0",
+            "position": "a",
+            "preferred": true,
+            "reason": "Result a keeps the arithmetic in integer cents end to end and adds a focused test; result b converts back to dollars mid-calculation, which reintroduces the rounding it set out to fix.",
             "model": "claude-opus-5-5-20260915",
-            "reasoning": "Result a keeps the arithmetic in integer cents end to end and adds a focused test; result b converts back to dollars mid-calculation, which reintroduces the rounding it set out to fix.",
             "raw": [
               {
-                "better": "a"
+                "better": "a",
+                "reason": "Result a keeps the arithmetic in integer cents end to end and adds a focused test; result b converts back to dollars mid-calculation, which reintroduces the rounding it set out to fix."
               }
             ],
-            "opponentRunId": "run_add_control_4_eac0d0",
-            "shownAs": "a"
+            "spend": {
+              "costUsd": 0.0695,
+              "tokens": {
+                "input": 13296,
+                "output": 121,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         }
       ],
@@ -13435,7 +13931,17 @@
                 "yes": false,
                 "note": "Not visible in the change; the relevant code path is untouched."
               }
-            ]
+            ],
+            "spend": {
+              "costUsd": 0.0409,
+              "tokens": {
+                "input": 7548,
+                "output": 127,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         },
         {
@@ -13446,16 +13952,28 @@
           "kind": "judge",
           "score": 0,
           "detail": {
-            "type": "judge",
+            "type": "comparison",
+            "opponentRunId": "run_add_control_1_a2618f",
+            "position": "b",
+            "preferred": false,
+            "reason": "Result a is the smaller, more direct change and caps the refund explicitly; result b also rewrites the tax helper without need, which widens the change for no gain.",
             "model": "claude-opus-5-5-20260915",
-            "reasoning": "Result a is the smaller, more direct change and caps the refund explicitly; result b also rewrites the tax helper without need, which widens the change for no gain.",
             "raw": [
               {
-                "better": "a"
+                "better": "a",
+                "reason": "Result a is the smaller, more direct change and caps the refund explicitly; result b also rewrites the tax helper without need, which widens the change for no gain."
               }
             ],
-            "opponentRunId": "run_add_control_1_a2618f",
-            "shownAs": "b"
+            "spend": {
+              "costUsd": 0.0565,
+              "tokens": {
+                "input": 10732,
+                "output": 115,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         }
       ],
@@ -13923,7 +14441,17 @@
                 "yes": true,
                 "note": "The change shows this directly."
               }
-            ]
+            ],
+            "spend": {
+              "costUsd": 0.0409,
+              "tokens": {
+                "input": 7548,
+                "output": 127,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         },
         {
@@ -13934,16 +14462,28 @@
           "kind": "judge",
           "score": 1,
           "detail": {
-            "type": "judge",
+            "type": "comparison",
+            "opponentRunId": "run_add_control_4_eac0d0",
+            "position": "a",
+            "preferred": true,
+            "reason": "Result a keeps the arithmetic in integer cents end to end and adds a focused test; result b converts back to dollars mid-calculation, which reintroduces the rounding it set out to fix.",
             "model": "claude-opus-5-5-20260915",
-            "reasoning": "Result a keeps the arithmetic in integer cents end to end and adds a focused test; result b converts back to dollars mid-calculation, which reintroduces the rounding it set out to fix.",
             "raw": [
               {
-                "better": "a"
+                "better": "a",
+                "reason": "Result a keeps the arithmetic in integer cents end to end and adds a focused test; result b converts back to dollars mid-calculation, which reintroduces the rounding it set out to fix."
               }
             ],
-            "opponentRunId": "run_add_control_4_eac0d0",
-            "shownAs": "a"
+            "spend": {
+              "costUsd": 0.0695,
+              "tokens": {
+                "input": 13296,
+                "output": 121,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         }
       ],
@@ -14336,7 +14876,17 @@
                 "yes": false,
                 "note": "Not visible in the change; the relevant code path is untouched."
               }
-            ]
+            ],
+            "spend": {
+              "costUsd": 0.0404,
+              "tokens": {
+                "input": 7468,
+                "output": 123,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         }
       ],
@@ -14777,7 +15327,17 @@
                 "yes": true,
                 "note": "The change shows this directly."
               }
-            ]
+            ],
+            "spend": {
+              "costUsd": 0.0409,
+              "tokens": {
+                "input": 7548,
+                "output": 127,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         }
       ],
@@ -15294,7 +15854,17 @@
                 "yes": false,
                 "note": "Not visible in the change; the relevant code path is untouched."
               }
-            ]
+            ],
+            "spend": {
+              "costUsd": 0.0409,
+              "tokens": {
+                "input": 7548,
+                "output": 127,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         }
       ],
@@ -15739,7 +16309,17 @@
                 "yes": false,
                 "note": "Not visible in the change; the relevant code path is untouched."
               }
-            ]
+            ],
+            "spend": {
+              "costUsd": 0.0281,
+              "tokens": {
+                "input": 4984,
+                "output": 127,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         }
       ],
@@ -16181,7 +16761,17 @@
                 "yes": true,
                 "note": "The change shows this directly."
               }
-            ]
+            ],
+            "spend": {
+              "costUsd": 0.0409,
+              "tokens": {
+                "input": 7548,
+                "output": 127,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         }
       ],
@@ -16628,7 +17218,17 @@
                 "yes": false,
                 "note": "Not visible in the change; the relevant code path is untouched."
               }
-            ]
+            ],
+            "spend": {
+              "costUsd": 0.0276,
+              "tokens": {
+                "input": 4904,
+                "output": 123,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         },
         {
@@ -16639,16 +17239,28 @@
           "kind": "judge",
           "score": 0,
           "detail": {
-            "type": "judge",
+            "type": "comparison",
+            "opponentRunId": "run_validate_control_5_df49e1",
+            "position": "b",
+            "preferred": false,
+            "reason": "Result a is the smaller, more direct change and caps the refund explicitly; result b also rewrites the tax helper without need, which widens the change for no gain.",
             "model": "claude-opus-5-5-20260915",
-            "reasoning": "Result a is the smaller, more direct change and caps the refund explicitly; result b also rewrites the tax helper without need, which widens the change for no gain.",
             "raw": [
               {
-                "better": "a"
+                "better": "a",
+                "reason": "Result a is the smaller, more direct change and caps the refund explicitly; result b also rewrites the tax helper without need, which widens the change for no gain."
               }
             ],
-            "opponentRunId": "run_validate_control_5_df49e1",
-            "shownAs": "b"
+            "spend": {
+              "costUsd": 0.0561,
+              "tokens": {
+                "input": 10652,
+                "output": 115,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         }
       ],
@@ -17043,7 +17655,17 @@
                 "yes": true,
                 "note": "The change shows this directly."
               }
-            ]
+            ],
+            "spend": {
+              "costUsd": 0.0281,
+              "tokens": {
+                "input": 4984,
+                "output": 127,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         },
         {
@@ -17054,16 +17676,28 @@
           "kind": "judge",
           "score": 0,
           "detail": {
-            "type": "judge",
+            "type": "comparison",
+            "opponentRunId": "run_validate_control_2_381c11",
+            "position": "b",
+            "preferred": false,
+            "reason": "Result a is the smaller, more direct change and caps the refund explicitly; result b also rewrites the tax helper without need, which widens the change for no gain.",
             "model": "claude-opus-5-5-20260915",
-            "reasoning": "Result a is the smaller, more direct change and caps the refund explicitly; result b also rewrites the tax helper without need, which widens the change for no gain.",
             "raw": [
               {
-                "better": "a"
+                "better": "a",
+                "reason": "Result a is the smaller, more direct change and caps the refund explicitly; result b also rewrites the tax helper without need, which widens the change for no gain."
               }
             ],
-            "opponentRunId": "run_validate_control_2_381c11",
-            "shownAs": "b"
+            "spend": {
+              "costUsd": 0.0565,
+              "tokens": {
+                "input": 10732,
+                "output": 115,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         }
       ],
@@ -17423,22 +18057,46 @@
         },
         {
           "grader": {
+            "type": "checklist",
+            "index": 2
+          },
+          "kind": "judge",
+          "score": 0,
+          "detail": {
+            "type": "error",
+            "message": "The judge answer failed its schema: answers has 2 items, the checklist has 3."
+          }
+        },
+        {
+          "grader": {
             "type": "comparison",
             "index": 3
           },
           "kind": "judge",
           "score": 0,
           "detail": {
-            "type": "judge",
+            "type": "comparison",
+            "opponentRunId": "run_validate_control_2_381c11",
+            "position": "b",
+            "preferred": false,
+            "reason": "Result a is the smaller, more direct change and caps the refund explicitly; result b also rewrites the tax helper without need, which widens the change for no gain.",
             "model": "claude-opus-5-5-20260915",
-            "reasoning": "Result a is the smaller, more direct change and caps the refund explicitly; result b also rewrites the tax helper without need, which widens the change for no gain.",
             "raw": [
               {
-                "better": "a"
+                "better": "a",
+                "reason": "Result a is the smaller, more direct change and caps the refund explicitly; result b also rewrites the tax helper without need, which widens the change for no gain."
               }
             ],
-            "opponentRunId": "run_validate_control_2_381c11",
-            "shownAs": "b"
+            "spend": {
+              "costUsd": 0.0406,
+              "tokens": {
+                "input": 7548,
+                "output": 115,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         }
       ],
@@ -17835,7 +18493,17 @@
                 "yes": false,
                 "note": "Not visible in the change; the relevant code path is untouched."
               }
-            ]
+            ],
+            "spend": {
+              "costUsd": 0.0409,
+              "tokens": {
+                "input": 7548,
+                "output": 127,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         },
         {
@@ -17846,16 +18514,28 @@
           "kind": "judge",
           "score": 0,
           "detail": {
-            "type": "judge",
+            "type": "comparison",
+            "opponentRunId": "run_validate_control_2_381c11",
+            "position": "a",
+            "preferred": false,
+            "reason": "Result b is the smaller, more direct change and caps the refund explicitly; result a also rewrites the tax helper without need, which widens the change for no gain.",
             "model": "claude-opus-5-5-20260915",
-            "reasoning": "Result b is the smaller, more direct change and caps the refund explicitly; result a also rewrites the tax helper without need, which widens the change for no gain.",
             "raw": [
               {
-                "better": "b"
+                "better": "b",
+                "reason": "Result b is the smaller, more direct change and caps the refund explicitly; result a also rewrites the tax helper without need, which widens the change for no gain."
               }
             ],
-            "opponentRunId": "run_validate_control_2_381c11",
-            "shownAs": "a"
+            "spend": {
+              "costUsd": 0.0694,
+              "tokens": {
+                "input": 13296,
+                "output": 115,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         }
       ],
@@ -18252,7 +18932,17 @@
                 "yes": true,
                 "note": "The change shows this directly."
               }
-            ]
+            ],
+            "spend": {
+              "costUsd": 0.0409,
+              "tokens": {
+                "input": 7548,
+                "output": 127,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         },
         {
@@ -18263,16 +18953,28 @@
           "kind": "judge",
           "score": 1,
           "detail": {
-            "type": "judge",
+            "type": "comparison",
+            "opponentRunId": "run_validate_control_5_df49e1",
+            "position": "b",
+            "preferred": true,
+            "reason": "Result b keeps the arithmetic in integer cents end to end and adds a focused test; result a converts back to dollars mid-calculation, which reintroduces the rounding it set out to fix.",
             "model": "claude-opus-5-5-20260915",
-            "reasoning": "Result b keeps the arithmetic in integer cents end to end and adds a focused test; result a converts back to dollars mid-calculation, which reintroduces the rounding it set out to fix.",
             "raw": [
               {
-                "better": "b"
+                "better": "b",
+                "reason": "Result b keeps the arithmetic in integer cents end to end and adds a focused test; result a converts back to dollars mid-calculation, which reintroduces the rounding it set out to fix."
               }
             ],
-            "opponentRunId": "run_validate_control_5_df49e1",
-            "shownAs": "b"
+            "spend": {
+              "costUsd": 0.0695,
+              "tokens": {
+                "input": 13296,
+                "output": 121,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         }
       ],
@@ -18716,7 +19418,17 @@
                 "yes": false,
                 "note": "Not visible in the change; the relevant code path is untouched."
               }
-            ]
+            ],
+            "spend": {
+              "costUsd": 0.0281,
+              "tokens": {
+                "input": 4984,
+                "output": 127,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         },
         {
@@ -18727,16 +19439,28 @@
           "kind": "judge",
           "score": 0,
           "detail": {
-            "type": "judge",
+            "type": "comparison",
+            "opponentRunId": "run_validate_control_2_381c11",
+            "position": "a",
+            "preferred": false,
+            "reason": "Result b is the smaller, more direct change and caps the refund explicitly; result a also rewrites the tax helper without need, which widens the change for no gain.",
             "model": "claude-opus-5-5-20260915",
-            "reasoning": "Result b is the smaller, more direct change and caps the refund explicitly; result a also rewrites the tax helper without need, which widens the change for no gain.",
             "raw": [
               {
-                "better": "b"
+                "better": "b",
+                "reason": "Result b is the smaller, more direct change and caps the refund explicitly; result a also rewrites the tax helper without need, which widens the change for no gain."
               }
             ],
-            "opponentRunId": "run_validate_control_2_381c11",
-            "shownAs": "a"
+            "spend": {
+              "costUsd": 0.0565,
+              "tokens": {
+                "input": 10732,
+                "output": 115,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         }
       ],
@@ -19181,7 +19905,17 @@
                 "yes": true,
                 "note": "The change shows this directly."
               }
-            ]
+            ],
+            "spend": {
+              "costUsd": 0.0409,
+              "tokens": {
+                "input": 7548,
+                "output": 127,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         },
         {
@@ -19192,16 +19926,28 @@
           "kind": "judge",
           "score": 1,
           "detail": {
-            "type": "judge",
+            "type": "comparison",
+            "opponentRunId": "run_validate_control_4_e8f5c5",
+            "position": "a",
+            "preferred": true,
+            "reason": "Result a keeps the arithmetic in integer cents end to end and adds a focused test; result b converts back to dollars mid-calculation, which reintroduces the rounding it set out to fix.",
             "model": "claude-opus-5-5-20260915",
-            "reasoning": "Result a keeps the arithmetic in integer cents end to end and adds a focused test; result b converts back to dollars mid-calculation, which reintroduces the rounding it set out to fix.",
             "raw": [
               {
-                "better": "a"
+                "better": "a",
+                "reason": "Result a keeps the arithmetic in integer cents end to end and adds a focused test; result b converts back to dollars mid-calculation, which reintroduces the rounding it set out to fix."
               }
             ],
-            "opponentRunId": "run_validate_control_4_e8f5c5",
-            "shownAs": "a"
+            "spend": {
+              "costUsd": 0.0567,
+              "tokens": {
+                "input": 10732,
+                "output": 121,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         }
       ],
@@ -19746,7 +20492,17 @@
                 "yes": false,
                 "note": "Not visible in the change; the relevant code path is untouched."
               }
-            ]
+            ],
+            "spend": {
+              "costUsd": 0.0276,
+              "tokens": {
+                "input": 4904,
+                "output": 123,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         },
         {
@@ -19757,16 +20513,28 @@
           "kind": "judge",
           "score": 0,
           "detail": {
-            "type": "judge",
+            "type": "comparison",
+            "opponentRunId": "run_validate_control_2_381c11",
+            "position": "a",
+            "preferred": false,
+            "reason": "Result b is the smaller, more direct change and caps the refund explicitly; result a also rewrites the tax helper without need, which widens the change for no gain.",
             "model": "claude-opus-5-5-20260915",
-            "reasoning": "Result b is the smaller, more direct change and caps the refund explicitly; result a also rewrites the tax helper without need, which widens the change for no gain.",
             "raw": [
               {
-                "better": "b"
+                "better": "b",
+                "reason": "Result b is the smaller, more direct change and caps the refund explicitly; result a also rewrites the tax helper without need, which widens the change for no gain."
               }
             ],
-            "opponentRunId": "run_validate_control_2_381c11",
-            "shownAs": "a"
+            "spend": {
+              "costUsd": 0.0561,
+              "tokens": {
+                "input": 10652,
+                "output": 115,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         }
       ],
@@ -20262,7 +21030,17 @@
                 "yes": true,
                 "note": "The change shows this directly."
               }
-            ]
+            ],
+            "spend": {
+              "costUsd": 0.0409,
+              "tokens": {
+                "input": 7548,
+                "output": 127,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         },
         {
@@ -20273,16 +21051,28 @@
           "kind": "judge",
           "score": 1,
           "detail": {
-            "type": "judge",
+            "type": "comparison",
+            "opponentRunId": "run_validate_control_1_816e1c",
+            "position": "a",
+            "preferred": true,
+            "reason": "Result a keeps the arithmetic in integer cents end to end and adds a focused test; result b converts back to dollars mid-calculation, which reintroduces the rounding it set out to fix.",
             "model": "claude-opus-5-5-20260915",
-            "reasoning": "Result a keeps the arithmetic in integer cents end to end and adds a focused test; result b converts back to dollars mid-calculation, which reintroduces the rounding it set out to fix.",
             "raw": [
               {
-                "better": "a"
+                "better": "a",
+                "reason": "Result a keeps the arithmetic in integer cents end to end and adds a focused test; result b converts back to dollars mid-calculation, which reintroduces the rounding it set out to fix."
               }
             ],
-            "opponentRunId": "run_validate_control_1_816e1c",
-            "shownAs": "a"
+            "spend": {
+              "costUsd": 0.0691,
+              "tokens": {
+                "input": 13216,
+                "output": 121,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         }
       ],
@@ -20798,7 +21588,17 @@
                 "yes": false,
                 "note": "Not visible in the change; the relevant code path is untouched."
               }
-            ]
+            ],
+            "spend": {
+              "costUsd": 0.0276,
+              "tokens": {
+                "input": 4904,
+                "output": 123,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         },
         {
@@ -20809,16 +21609,28 @@
           "kind": "judge",
           "score": 0,
           "detail": {
-            "type": "judge",
+            "type": "comparison",
+            "opponentRunId": "run_validate_control_3_a56dab",
+            "position": "b",
+            "preferred": false,
+            "reason": "Result a is the smaller, more direct change and caps the refund explicitly; result b also rewrites the tax helper without need, which widens the change for no gain.",
             "model": "claude-opus-5-5-20260915",
-            "reasoning": "Result a is the smaller, more direct change and caps the refund explicitly; result b also rewrites the tax helper without need, which widens the change for no gain.",
             "raw": [
               {
-                "better": "a"
+                "better": "a",
+                "reason": "Result a is the smaller, more direct change and caps the refund explicitly; result b also rewrites the tax helper without need, which widens the change for no gain."
               }
             ],
-            "opponentRunId": "run_validate_control_3_a56dab",
-            "shownAs": "b"
+            "spend": {
+              "costUsd": 0.0561,
+              "tokens": {
+                "input": 10652,
+                "output": 115,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         }
       ],
@@ -21231,7 +22043,17 @@
                 "yes": true,
                 "note": "The change shows this directly."
               }
-            ]
+            ],
+            "spend": {
+              "costUsd": 0.0277,
+              "tokens": {
+                "input": 4920,
+                "output": 123,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         }
       ],
@@ -21717,7 +22539,17 @@
                 "yes": false,
                 "note": "Not visible in the change; the relevant code path is untouched."
               }
-            ]
+            ],
+            "spend": {
+              "costUsd": 0.0277,
+              "tokens": {
+                "input": 4920,
+                "output": 123,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         }
       ],
@@ -22279,7 +23111,17 @@
                 "yes": false,
                 "note": "Not visible in the change; the relevant code path is untouched."
               }
-            ]
+            ],
+            "spend": {
+              "costUsd": 0.0277,
+              "tokens": {
+                "input": 4920,
+                "output": 123,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         }
       ],
@@ -22717,7 +23559,17 @@
                 "yes": true,
                 "note": "The change shows this directly."
               }
-            ]
+            ],
+            "spend": {
+              "costUsd": 0.0277,
+              "tokens": {
+                "input": 4920,
+                "output": 123,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         }
       ],
@@ -23129,7 +23981,17 @@
                 "yes": false,
                 "note": "Not visible in the change; the relevant code path is untouched."
               }
-            ]
+            ],
+            "spend": {
+              "costUsd": 0.0277,
+              "tokens": {
+                "input": 4920,
+                "output": 123,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         }
       ],
@@ -23395,7 +24257,17 @@
                 "yes": false,
                 "note": "Not visible in the change; the relevant code path is untouched."
               }
-            ]
+            ],
+            "spend": {
+              "costUsd": 0.0406,
+              "tokens": {
+                "input": 7500,
+                "output": 123,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         },
         {
@@ -23406,16 +24278,28 @@
           "kind": "judge",
           "score": 0,
           "detail": {
-            "type": "judge",
+            "type": "comparison",
+            "opponentRunId": "run_migrate_control_5_956006",
+            "position": "b",
+            "preferred": false,
+            "reason": "Result a is the smaller, more direct change and caps the refund explicitly; result b also rewrites the tax helper without need, which widens the change for no gain.",
             "model": "claude-opus-5-5-20260915",
-            "reasoning": "Result a is the smaller, more direct change and caps the refund explicitly; result b also rewrites the tax helper without need, which widens the change for no gain.",
             "raw": [
               {
-                "better": "a"
+                "better": "a",
+                "reason": "Result a is the smaller, more direct change and caps the refund explicitly; result b also rewrites the tax helper without need, which widens the change for no gain."
               }
             ],
-            "opponentRunId": "run_migrate_control_5_956006",
-            "shownAs": "b"
+            "spend": {
+              "costUsd": 0.056,
+              "tokens": {
+                "input": 10620,
+                "output": 115,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         }
       ],
@@ -23855,7 +24739,17 @@
                 "yes": true,
                 "note": "The change shows this directly."
               }
-            ]
+            ],
+            "spend": {
+              "costUsd": 0.0406,
+              "tokens": {
+                "input": 7500,
+                "output": 123,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         },
         {
@@ -23866,16 +24760,28 @@
           "kind": "judge",
           "score": 0,
           "detail": {
-            "type": "judge",
+            "type": "comparison",
+            "opponentRunId": "run_migrate_control_1_7f5735",
+            "position": "a",
+            "preferred": false,
+            "reason": "Result b is the smaller, more direct change and caps the refund explicitly; result a also rewrites the tax helper without need, which widens the change for no gain.",
             "model": "claude-opus-5-5-20260915",
-            "reasoning": "Result b is the smaller, more direct change and caps the refund explicitly; result a also rewrites the tax helper without need, which widens the change for no gain.",
             "raw": [
               {
-                "better": "b"
+                "better": "b",
+                "reason": "Result b is the smaller, more direct change and caps the refund explicitly; result a also rewrites the tax helper without need, which widens the change for no gain."
               }
             ],
-            "opponentRunId": "run_migrate_control_1_7f5735",
-            "shownAs": "a"
+            "spend": {
+              "costUsd": 0.056,
+              "tokens": {
+                "input": 10620,
+                "output": 115,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         }
       ],
@@ -24315,7 +25221,17 @@
                 "yes": true,
                 "note": "The change shows this directly."
               }
-            ]
+            ],
+            "spend": {
+              "costUsd": 0.0406,
+              "tokens": {
+                "input": 7500,
+                "output": 123,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         },
         {
@@ -24326,16 +25242,28 @@
           "kind": "judge",
           "score": 1,
           "detail": {
-            "type": "judge",
+            "type": "comparison",
+            "opponentRunId": "run_migrate_control_3_6b443b",
+            "position": "a",
+            "preferred": true,
+            "reason": "Result a keeps the arithmetic in integer cents end to end and adds a focused test; result b converts back to dollars mid-calculation, which reintroduces the rounding it set out to fix.",
             "model": "claude-opus-5-5-20260915",
-            "reasoning": "Result a keeps the arithmetic in integer cents end to end and adds a focused test; result b converts back to dollars mid-calculation, which reintroduces the rounding it set out to fix.",
             "raw": [
               {
-                "better": "a"
+                "better": "a",
+                "reason": "Result a keeps the arithmetic in integer cents end to end and adds a focused test; result b converts back to dollars mid-calculation, which reintroduces the rounding it set out to fix."
               }
             ],
-            "opponentRunId": "run_migrate_control_3_6b443b",
-            "shownAs": "a"
+            "spend": {
+              "costUsd": 0.0561,
+              "tokens": {
+                "input": 10620,
+                "output": 121,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         }
       ],
@@ -24725,7 +25653,17 @@
                 "yes": false,
                 "note": "Not visible in the change; the relevant code path is untouched."
               }
-            ]
+            ],
+            "spend": {
+              "costUsd": 0.0277,
+              "tokens": {
+                "input": 4920,
+                "output": 123,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         },
         {
@@ -24736,16 +25674,28 @@
           "kind": "judge",
           "score": 0,
           "detail": {
-            "type": "judge",
+            "type": "comparison",
+            "opponentRunId": "run_migrate_control_2_c44a3f",
+            "position": "b",
+            "preferred": false,
+            "reason": "Result a is the smaller, more direct change and caps the refund explicitly; result b also rewrites the tax helper without need, which widens the change for no gain.",
             "model": "claude-opus-5-5-20260915",
-            "reasoning": "Result a is the smaller, more direct change and caps the refund explicitly; result b also rewrites the tax helper without need, which widens the change for no gain.",
             "raw": [
               {
-                "better": "a"
+                "better": "a",
+                "reason": "Result a is the smaller, more direct change and caps the refund explicitly; result b also rewrites the tax helper without need, which widens the change for no gain."
               }
             ],
-            "opponentRunId": "run_migrate_control_2_c44a3f",
-            "shownAs": "b"
+            "spend": {
+              "costUsd": 0.0431,
+              "tokens": {
+                "input": 8040,
+                "output": 115,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         }
       ],
@@ -25234,7 +26184,17 @@
                 "yes": true,
                 "note": "The change shows this directly."
               }
-            ]
+            ],
+            "spend": {
+              "costUsd": 0.0406,
+              "tokens": {
+                "input": 7500,
+                "output": 123,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         },
         {
@@ -25245,16 +26205,28 @@
           "kind": "judge",
           "score": 1,
           "detail": {
-            "type": "judge",
+            "type": "comparison",
+            "opponentRunId": "run_migrate_control_5_956006",
+            "position": "b",
+            "preferred": true,
+            "reason": "Result b keeps the arithmetic in integer cents end to end and adds a focused test; result a converts back to dollars mid-calculation, which reintroduces the rounding it set out to fix.",
             "model": "claude-opus-5-5-20260915",
-            "reasoning": "Result b keeps the arithmetic in integer cents end to end and adds a focused test; result a converts back to dollars mid-calculation, which reintroduces the rounding it set out to fix.",
             "raw": [
               {
-                "better": "b"
+                "better": "b",
+                "reason": "Result b keeps the arithmetic in integer cents end to end and adds a focused test; result a converts back to dollars mid-calculation, which reintroduces the rounding it set out to fix."
               }
             ],
-            "opponentRunId": "run_migrate_control_5_956006",
-            "shownAs": "b"
+            "spend": {
+              "costUsd": 0.0561,
+              "tokens": {
+                "input": 10620,
+                "output": 121,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         }
       ],
@@ -25670,7 +26642,17 @@
                 "yes": true,
                 "note": "The change shows this directly."
               }
-            ]
+            ],
+            "spend": {
+              "costUsd": 0.0406,
+              "tokens": {
+                "input": 7500,
+                "output": 123,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         },
         {
@@ -25681,16 +26663,28 @@
           "kind": "judge",
           "score": 0,
           "detail": {
-            "type": "judge",
+            "type": "comparison",
+            "opponentRunId": "run_migrate_control_5_956006",
+            "position": "a",
+            "preferred": false,
+            "reason": "Result b is the smaller, more direct change and caps the refund explicitly; result a also rewrites the tax helper without need, which widens the change for no gain.",
             "model": "claude-opus-5-5-20260915",
-            "reasoning": "Result b is the smaller, more direct change and caps the refund explicitly; result a also rewrites the tax helper without need, which widens the change for no gain.",
             "raw": [
               {
-                "better": "b"
+                "better": "b",
+                "reason": "Result b is the smaller, more direct change and caps the refund explicitly; result a also rewrites the tax helper without need, which widens the change for no gain."
               }
             ],
-            "opponentRunId": "run_migrate_control_5_956006",
-            "shownAs": "a"
+            "spend": {
+              "costUsd": 0.056,
+              "tokens": {
+                "input": 10620,
+                "output": 115,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         }
       ],
@@ -26249,7 +27243,17 @@
                 "yes": false,
                 "note": "Not visible in the change; the relevant code path is untouched."
               }
-            ]
+            ],
+            "spend": {
+              "costUsd": 0.0406,
+              "tokens": {
+                "input": 7500,
+                "output": 123,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         },
         {
@@ -26260,16 +27264,28 @@
           "kind": "judge",
           "score": 1,
           "detail": {
-            "type": "judge",
+            "type": "comparison",
+            "opponentRunId": "run_migrate_control_5_956006",
+            "position": "b",
+            "preferred": true,
+            "reason": "Result b keeps the arithmetic in integer cents end to end and adds a focused test; result a converts back to dollars mid-calculation, which reintroduces the rounding it set out to fix.",
             "model": "claude-opus-5-5-20260915",
-            "reasoning": "Result b keeps the arithmetic in integer cents end to end and adds a focused test; result a converts back to dollars mid-calculation, which reintroduces the rounding it set out to fix.",
             "raw": [
               {
-                "better": "b"
+                "better": "b",
+                "reason": "Result b keeps the arithmetic in integer cents end to end and adds a focused test; result a converts back to dollars mid-calculation, which reintroduces the rounding it set out to fix."
               }
             ],
-            "opponentRunId": "run_migrate_control_5_956006",
-            "shownAs": "b"
+            "spend": {
+              "costUsd": 0.0561,
+              "tokens": {
+                "input": 10620,
+                "output": 121,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         }
       ],
@@ -26781,7 +27797,17 @@
                 "yes": true,
                 "note": "The change shows this directly."
               }
-            ]
+            ],
+            "spend": {
+              "costUsd": 0.0277,
+              "tokens": {
+                "input": 4920,
+                "output": 123,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         },
         {
@@ -26792,16 +27818,28 @@
           "kind": "judge",
           "score": 1,
           "detail": {
-            "type": "judge",
+            "type": "comparison",
+            "opponentRunId": "run_migrate_control_4_8cc1d9",
+            "position": "b",
+            "preferred": true,
+            "reason": "Result b keeps the arithmetic in integer cents end to end and adds a focused test; result a converts back to dollars mid-calculation, which reintroduces the rounding it set out to fix.",
             "model": "claude-opus-5-5-20260915",
-            "reasoning": "Result b keeps the arithmetic in integer cents end to end and adds a focused test; result a converts back to dollars mid-calculation, which reintroduces the rounding it set out to fix.",
             "raw": [
               {
-                "better": "b"
+                "better": "b",
+                "reason": "Result b keeps the arithmetic in integer cents end to end and adds a focused test; result a converts back to dollars mid-calculation, which reintroduces the rounding it set out to fix."
               }
             ],
-            "opponentRunId": "run_migrate_control_4_8cc1d9",
-            "shownAs": "b"
+            "spend": {
+              "costUsd": 0.0432,
+              "tokens": {
+                "input": 8040,
+                "output": 121,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         }
       ],
@@ -27267,7 +28305,17 @@
                 "yes": false,
                 "note": "Not visible in the change; the relevant code path is untouched."
               }
-            ]
+            ],
+            "spend": {
+              "costUsd": 0.0406,
+              "tokens": {
+                "input": 7500,
+                "output": 123,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         },
         {
@@ -27278,16 +28326,28 @@
           "kind": "judge",
           "score": 0,
           "detail": {
-            "type": "judge",
+            "type": "comparison",
+            "opponentRunId": "run_migrate_control_4_8cc1d9",
+            "position": "a",
+            "preferred": false,
+            "reason": "Result b is the smaller, more direct change and caps the refund explicitly; result a also rewrites the tax helper without need, which widens the change for no gain.",
             "model": "claude-opus-5-5-20260915",
-            "reasoning": "Result b is the smaller, more direct change and caps the refund explicitly; result a also rewrites the tax helper without need, which widens the change for no gain.",
             "raw": [
               {
-                "better": "b"
+                "better": "b",
+                "reason": "Result b is the smaller, more direct change and caps the refund explicitly; result a also rewrites the tax helper without need, which widens the change for no gain."
               }
             ],
-            "opponentRunId": "run_migrate_control_4_8cc1d9",
-            "shownAs": "a"
+            "spend": {
+              "costUsd": 0.056,
+              "tokens": {
+                "input": 10620,
+                "output": 115,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         }
       ],
@@ -27750,7 +28810,17 @@
                 "yes": true,
                 "note": "The change shows this directly."
               }
-            ]
+            ],
+            "spend": {
+              "costUsd": 0.0406,
+              "tokens": {
+                "input": 7500,
+                "output": 123,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         },
         {
@@ -27761,16 +28831,28 @@
           "kind": "judge",
           "score": 1,
           "detail": {
-            "type": "judge",
+            "type": "comparison",
+            "opponentRunId": "run_migrate_control_3_6b443b",
+            "position": "b",
+            "preferred": true,
+            "reason": "Result b keeps the arithmetic in integer cents end to end and adds a focused test; result a converts back to dollars mid-calculation, which reintroduces the rounding it set out to fix.",
             "model": "claude-opus-5-5-20260915",
-            "reasoning": "Result b keeps the arithmetic in integer cents end to end and adds a focused test; result a converts back to dollars mid-calculation, which reintroduces the rounding it set out to fix.",
             "raw": [
               {
-                "better": "b"
+                "better": "b",
+                "reason": "Result b keeps the arithmetic in integer cents end to end and adds a focused test; result a converts back to dollars mid-calculation, which reintroduces the rounding it set out to fix."
               }
             ],
-            "opponentRunId": "run_migrate_control_3_6b443b",
-            "shownAs": "b"
+            "spend": {
+              "costUsd": 0.0561,
+              "tokens": {
+                "input": 10620,
+                "output": 121,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         }
       ],
@@ -28263,7 +29345,17 @@
                 "yes": true,
                 "note": "The change shows this directly."
               }
-            ]
+            ],
+            "spend": {
+              "costUsd": 0.0281,
+              "tokens": {
+                "input": 4984,
+                "output": 127,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         }
       ],
@@ -28631,7 +29723,17 @@
                 "yes": false,
                 "note": "Not visible in the change; the relevant code path is untouched."
               }
-            ]
+            ],
+            "spend": {
+              "costUsd": 0.0281,
+              "tokens": {
+                "input": 4984,
+                "output": 127,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         }
       ],
@@ -29001,7 +30103,17 @@
                 "yes": true,
                 "note": "The change shows this directly."
               }
-            ]
+            ],
+            "spend": {
+              "costUsd": 0.0409,
+              "tokens": {
+                "input": 7548,
+                "output": 127,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         }
       ],
@@ -29443,7 +30555,17 @@
                 "yes": false,
                 "note": "Not visible in the change; the relevant code path is untouched."
               }
-            ]
+            ],
+            "spend": {
+              "costUsd": 0.0409,
+              "tokens": {
+                "input": 7548,
+                "output": 127,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         }
       ],
@@ -29861,7 +30983,17 @@
                 "yes": false,
                 "note": "Not visible in the change; the relevant code path is untouched."
               }
-            ]
+            ],
+            "spend": {
+              "costUsd": 0.0276,
+              "tokens": {
+                "input": 4904,
+                "output": 123,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         }
       ],
@@ -30207,7 +31339,17 @@
                 "yes": false,
                 "note": "Not visible in the change; the relevant code path is untouched."
               }
-            ]
+            ],
+            "spend": {
+              "costUsd": 0.0409,
+              "tokens": {
+                "input": 7548,
+                "output": 127,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         },
         {
@@ -30218,16 +31360,28 @@
           "kind": "judge",
           "score": 1,
           "detail": {
-            "type": "judge",
+            "type": "comparison",
+            "opponentRunId": "run_rename_control_1_664bd7",
+            "position": "a",
+            "preferred": true,
+            "reason": "Result a keeps the arithmetic in integer cents end to end and adds a focused test; result b converts back to dollars mid-calculation, which reintroduces the rounding it set out to fix.",
             "model": "claude-opus-5-5-20260915",
-            "reasoning": "Result a keeps the arithmetic in integer cents end to end and adds a focused test; result b converts back to dollars mid-calculation, which reintroduces the rounding it set out to fix.",
             "raw": [
               {
-                "better": "a"
+                "better": "a",
+                "reason": "Result a keeps the arithmetic in integer cents end to end and adds a focused test; result b converts back to dollars mid-calculation, which reintroduces the rounding it set out to fix."
               }
             ],
-            "opponentRunId": "run_rename_control_1_664bd7",
-            "shownAs": "a"
+            "spend": {
+              "costUsd": 0.0567,
+              "tokens": {
+                "input": 10732,
+                "output": 121,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         }
       ],
@@ -30623,7 +31777,17 @@
                 "yes": false,
                 "note": "Not visible in the change; the relevant code path is untouched."
               }
-            ]
+            ],
+            "spend": {
+              "costUsd": 0.0276,
+              "tokens": {
+                "input": 4904,
+                "output": 123,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         },
         {
@@ -30634,16 +31798,28 @@
           "kind": "judge",
           "score": 0,
           "detail": {
-            "type": "judge",
+            "type": "comparison",
+            "opponentRunId": "run_rename_control_3_0262d1",
+            "position": "b",
+            "preferred": false,
+            "reason": "Result a is the smaller, more direct change and caps the refund explicitly; result b also rewrites the tax helper without need, which widens the change for no gain.",
             "model": "claude-opus-5-5-20260915",
-            "reasoning": "Result a is the smaller, more direct change and caps the refund explicitly; result b also rewrites the tax helper without need, which widens the change for no gain.",
             "raw": [
               {
-                "better": "a"
+                "better": "a",
+                "reason": "Result a is the smaller, more direct change and caps the refund explicitly; result b also rewrites the tax helper without need, which widens the change for no gain."
               }
             ],
-            "opponentRunId": "run_rename_control_3_0262d1",
-            "shownAs": "b"
+            "spend": {
+              "costUsd": 0.0561,
+              "tokens": {
+                "input": 10652,
+                "output": 115,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         }
       ],
@@ -31114,7 +32290,17 @@
                 "yes": true,
                 "note": "The change shows this directly."
               }
-            ]
+            ],
+            "spend": {
+              "costUsd": 0.0281,
+              "tokens": {
+                "input": 4984,
+                "output": 127,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         },
         {
@@ -31125,16 +32311,28 @@
           "kind": "judge",
           "score": 1,
           "detail": {
-            "type": "judge",
+            "type": "comparison",
+            "opponentRunId": "run_rename_control_5_167149",
+            "position": "a",
+            "preferred": true,
+            "reason": "Result a keeps the arithmetic in integer cents end to end and adds a focused test; result b converts back to dollars mid-calculation, which reintroduces the rounding it set out to fix.",
             "model": "claude-opus-5-5-20260915",
-            "reasoning": "Result a keeps the arithmetic in integer cents end to end and adds a focused test; result b converts back to dollars mid-calculation, which reintroduces the rounding it set out to fix.",
             "raw": [
               {
-                "better": "a"
+                "better": "a",
+                "reason": "Result a keeps the arithmetic in integer cents end to end and adds a focused test; result b converts back to dollars mid-calculation, which reintroduces the rounding it set out to fix."
               }
             ],
-            "opponentRunId": "run_rename_control_5_167149",
-            "shownAs": "a"
+            "spend": {
+              "costUsd": 0.0435,
+              "tokens": {
+                "input": 8088,
+                "output": 121,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         }
       ],
@@ -31577,7 +32775,17 @@
                 "yes": true,
                 "note": "The change shows this directly."
               }
-            ]
+            ],
+            "spend": {
+              "costUsd": 0.0281,
+              "tokens": {
+                "input": 4984,
+                "output": 127,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         },
         {
@@ -31588,16 +32796,28 @@
           "kind": "judge",
           "score": 0,
           "detail": {
-            "type": "judge",
+            "type": "comparison",
+            "opponentRunId": "run_rename_control_4_c86de6",
+            "position": "b",
+            "preferred": false,
+            "reason": "Result a is the smaller, more direct change and caps the refund explicitly; result b also rewrites the tax helper without need, which widens the change for no gain.",
             "model": "claude-opus-5-5-20260915",
-            "reasoning": "Result a is the smaller, more direct change and caps the refund explicitly; result b also rewrites the tax helper without need, which widens the change for no gain.",
             "raw": [
               {
-                "better": "a"
+                "better": "a",
+                "reason": "Result a is the smaller, more direct change and caps the refund explicitly; result b also rewrites the tax helper without need, which widens the change for no gain."
               }
             ],
-            "opponentRunId": "run_rename_control_4_c86de6",
-            "shownAs": "b"
+            "spend": {
+              "costUsd": 0.0565,
+              "tokens": {
+                "input": 10732,
+                "output": 115,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         }
       ],
@@ -32092,7 +33312,17 @@
                 "yes": false,
                 "note": "Not visible in the change; the relevant code path is untouched."
               }
-            ]
+            ],
+            "spend": {
+              "costUsd": 0.0404,
+              "tokens": {
+                "input": 7468,
+                "output": 123,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         },
         {
@@ -32103,16 +33333,28 @@
           "kind": "judge",
           "score": 0,
           "detail": {
-            "type": "judge",
+            "type": "comparison",
+            "opponentRunId": "run_rename_control_3_0262d1",
+            "position": "a",
+            "preferred": false,
+            "reason": "Result b is the smaller, more direct change and caps the refund explicitly; result a also rewrites the tax helper without need, which widens the change for no gain.",
             "model": "claude-opus-5-5-20260915",
-            "reasoning": "Result b is the smaller, more direct change and caps the refund explicitly; result a also rewrites the tax helper without need, which widens the change for no gain.",
             "raw": [
               {
-                "better": "b"
+                "better": "b",
+                "reason": "Result b is the smaller, more direct change and caps the refund explicitly; result a also rewrites the tax helper without need, which widens the change for no gain."
               }
             ],
-            "opponentRunId": "run_rename_control_3_0262d1",
-            "shownAs": "a"
+            "spend": {
+              "costUsd": 0.069,
+              "tokens": {
+                "input": 13216,
+                "output": 115,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         }
       ],
@@ -32679,7 +33921,17 @@
                 "yes": true,
                 "note": "The change shows this directly."
               }
-            ]
+            ],
+            "spend": {
+              "costUsd": 0.0409,
+              "tokens": {
+                "input": 7548,
+                "output": 127,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         },
         {
@@ -32690,16 +33942,28 @@
           "kind": "judge",
           "score": 1,
           "detail": {
-            "type": "judge",
+            "type": "comparison",
+            "opponentRunId": "run_rename_control_5_167149",
+            "position": "a",
+            "preferred": true,
+            "reason": "Result a keeps the arithmetic in integer cents end to end and adds a focused test; result b converts back to dollars mid-calculation, which reintroduces the rounding it set out to fix.",
             "model": "claude-opus-5-5-20260915",
-            "reasoning": "Result a keeps the arithmetic in integer cents end to end and adds a focused test; result b converts back to dollars mid-calculation, which reintroduces the rounding it set out to fix.",
             "raw": [
               {
-                "better": "a"
+                "better": "a",
+                "reason": "Result a keeps the arithmetic in integer cents end to end and adds a focused test; result b converts back to dollars mid-calculation, which reintroduces the rounding it set out to fix."
               }
             ],
-            "opponentRunId": "run_rename_control_5_167149",
-            "shownAs": "a"
+            "spend": {
+              "costUsd": 0.0563,
+              "tokens": {
+                "input": 10652,
+                "output": 121,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         }
       ],
@@ -33119,7 +34383,17 @@
                 "yes": true,
                 "note": "The change shows this directly."
               }
-            ]
+            ],
+            "spend": {
+              "costUsd": 0.0409,
+              "tokens": {
+                "input": 7548,
+                "output": 127,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         },
         {
@@ -33130,16 +34404,28 @@
           "kind": "judge",
           "score": 1,
           "detail": {
-            "type": "judge",
+            "type": "comparison",
+            "opponentRunId": "run_rename_control_4_c86de6",
+            "position": "a",
+            "preferred": true,
+            "reason": "Result a keeps the arithmetic in integer cents end to end and adds a focused test; result b converts back to dollars mid-calculation, which reintroduces the rounding it set out to fix.",
             "model": "claude-opus-5-5-20260915",
-            "reasoning": "Result a keeps the arithmetic in integer cents end to end and adds a focused test; result b converts back to dollars mid-calculation, which reintroduces the rounding it set out to fix.",
             "raw": [
               {
-                "better": "a"
+                "better": "a",
+                "reason": "Result a keeps the arithmetic in integer cents end to end and adds a focused test; result b converts back to dollars mid-calculation, which reintroduces the rounding it set out to fix."
               }
             ],
-            "opponentRunId": "run_rename_control_4_c86de6",
-            "shownAs": "a"
+            "spend": {
+              "costUsd": 0.0695,
+              "tokens": {
+                "input": 13296,
+                "output": 121,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         }
       ],
@@ -33731,7 +35017,17 @@
                 "yes": true,
                 "note": "The change shows this directly."
               }
-            ]
+            ],
+            "spend": {
+              "costUsd": 0.0281,
+              "tokens": {
+                "input": 4984,
+                "output": 127,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         },
         {
@@ -33742,16 +35038,28 @@
           "kind": "judge",
           "score": 1,
           "detail": {
-            "type": "judge",
+            "type": "comparison",
+            "opponentRunId": "run_rename_control_4_c86de6",
+            "position": "b",
+            "preferred": true,
+            "reason": "Result b keeps the arithmetic in integer cents end to end and adds a focused test; result a converts back to dollars mid-calculation, which reintroduces the rounding it set out to fix.",
             "model": "claude-opus-5-5-20260915",
-            "reasoning": "Result b keeps the arithmetic in integer cents end to end and adds a focused test; result a converts back to dollars mid-calculation, which reintroduces the rounding it set out to fix.",
             "raw": [
               {
-                "better": "b"
+                "better": "b",
+                "reason": "Result b keeps the arithmetic in integer cents end to end and adds a focused test; result a converts back to dollars mid-calculation, which reintroduces the rounding it set out to fix."
               }
             ],
-            "opponentRunId": "run_rename_control_4_c86de6",
-            "shownAs": "b"
+            "spend": {
+              "costUsd": 0.0567,
+              "tokens": {
+                "input": 10732,
+                "output": 121,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         }
       ],
@@ -34293,7 +35601,17 @@
                 "yes": true,
                 "note": "The change shows this directly."
               }
-            ]
+            ],
+            "spend": {
+              "costUsd": 0.0409,
+              "tokens": {
+                "input": 7548,
+                "output": 127,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         },
         {
@@ -34304,16 +35622,28 @@
           "kind": "judge",
           "score": 0,
           "detail": {
-            "type": "judge",
+            "type": "comparison",
+            "opponentRunId": "run_rename_control_1_664bd7",
+            "position": "b",
+            "preferred": false,
+            "reason": "Result a is the smaller, more direct change and caps the refund explicitly; result b also rewrites the tax helper without need, which widens the change for no gain.",
             "model": "claude-opus-5-5-20260915",
-            "reasoning": "Result a is the smaller, more direct change and caps the refund explicitly; result b also rewrites the tax helper without need, which widens the change for no gain.",
             "raw": [
               {
-                "better": "a"
+                "better": "a",
+                "reason": "Result a is the smaller, more direct change and caps the refund explicitly; result b also rewrites the tax helper without need, which widens the change for no gain."
               }
             ],
-            "opponentRunId": "run_rename_control_1_664bd7",
-            "shownAs": "b"
+            "spend": {
+              "costUsd": 0.0565,
+              "tokens": {
+                "input": 10732,
+                "output": 115,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         }
       ],
@@ -34678,7 +36008,17 @@
                 "yes": false,
                 "note": "Not visible in the change; the relevant code path is untouched."
               }
-            ]
+            ],
+            "spend": {
+              "costUsd": 0.0276,
+              "tokens": {
+                "input": 4904,
+                "output": 123,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         },
         {
@@ -34689,16 +36029,28 @@
           "kind": "judge",
           "score": 0,
           "detail": {
-            "type": "judge",
+            "type": "comparison",
+            "opponentRunId": "run_rename_control_3_0262d1",
+            "position": "b",
+            "preferred": false,
+            "reason": "Result a is the smaller, more direct change and caps the refund explicitly; result b also rewrites the tax helper without need, which widens the change for no gain.",
             "model": "claude-opus-5-5-20260915",
-            "reasoning": "Result a is the smaller, more direct change and caps the refund explicitly; result b also rewrites the tax helper without need, which widens the change for no gain.",
             "raw": [
               {
-                "better": "a"
+                "better": "a",
+                "reason": "Result a is the smaller, more direct change and caps the refund explicitly; result b also rewrites the tax helper without need, which widens the change for no gain."
               }
             ],
-            "opponentRunId": "run_rename_control_3_0262d1",
-            "shownAs": "b"
+            "spend": {
+              "costUsd": 0.0561,
+              "tokens": {
+                "input": 10652,
+                "output": 115,
+                "cacheRead": 0,
+                "cacheWrite": 0
+              },
+              "calls": 1
+            }
           }
         }
       ],

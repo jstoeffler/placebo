@@ -841,7 +841,6 @@
           "range": [-100, 100],
           "verdict": "no_evidence",
           "margin": 5,
-          "runsNeeded": 1600,
           "taskCount": 1,
           "runCount": 2
         },

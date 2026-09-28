@@ -32,12 +32,7 @@ What the reader sees:
 
 ## Number formatting
 
-Shared with the terminal card in core; both must print the same strings.
-
-- Differences carry an explicit sign (`+`, `-`; zero has none). `pts` and `percent`: an integer when the absolute value is 10 or more, else one decimal (`-7.0 pts`, `-18 %`). `absolute`: at most two decimals, trailing zeros dropped (`-1.2`, `-0.69`).
-- Ranges: both ends signed, no unit: `[-30, +15]`.
-- Runs needed: `(≈12 runs/task to decide)`; above 1000, `(more than 1000 runs/task)`.
-- Currency `$0.42`; counts `12,345`; durations `12.3 s`, `1 m 04 s`, `2 h 03 m`.
+Differences, ranges, verdicts, runs needed, currency, token counts and durations come from `@placebo-eval/core/format`, the same functions the terminal card uses, so both print the same strings. `src/format.ts` holds only what the report alone shows: shares, plain means, byte sizes and timestamps.
 
 ## Scripts
 

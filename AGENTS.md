@@ -22,7 +22,7 @@ Layers of core, from the bottom:
 - **commands**: one module per CLI command, taking ports and reporting progress through the reporter port.
 - **adapters**: port implementations that need only Node built-ins. Implementations needing anything else live in cli.
 
-Core exposes a public API and, separately, the results contract that report depends on. Anything outside core uses only those two entry points.
+Core exposes a public API and, separately, the results contract and the number formatting that report depends on. Anything outside core uses only those entry points.
 
 ## Dependency rules
 
@@ -35,8 +35,8 @@ Enforced by dependency-cruiser in `pnpm check`:
 - commands import domain, ports, graders, statistics and kernel; never adapters.
 - An adapter never imports commands, graders, statistics or another adapter.
 - core never imports the Agent SDK, SQLite, React, cli or report.
-- cli imports core only through its two entry points and never imports report code.
-- report imports only core's results contract from the workspace.
+- cli imports core only through its public API and results contract and never imports report code.
+- report imports only core's results contract and number formatting from the workspace.
 - Production code never imports tests, test fixtures or vitest. No cycles anywhere.
 
 ## Checks
@@ -59,6 +59,7 @@ Enforced by dependency-cruiser in `pnpm check`:
 - Commands never write to stdout or stderr; they emit progress events to the reporter.
 - No turn, cost or time limit exists by default (ADR 0008); limits are opt-in suite settings only.
 - Every number shown to a user carries its range.
+- Numbers shown both on the terminal and in the report are formatted by core, so both print the same strings.
 - Relative imports use the `.js` extension; type-only imports use `import type`.
 
 ## Extending
