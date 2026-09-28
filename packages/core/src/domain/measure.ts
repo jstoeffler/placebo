@@ -23,10 +23,13 @@ export function deriveOutcome(events: readonly RunnerEvent[]): Outcome {
 /**
  * What is measured per run (brief §8), derived from the event stream and the change. Pure.
  *
- * - `tokens` is the sum of every `usage` event (one per assistant turn).
+ * - `tokens` is the sum of every `usage` event: the main loop's turns, subagents' turns and the
+ *   remainder, so it matches Claude Code's own per-model totals.
  * - `costUsd`, `turns`, `durationMs`, `apiDurationMs` come from the `result` event; a stream with
  *   no `result` (a crashed run) reports zeros for them.
- * - `toolCalls` counts `tool_call` events, in total and by tool name.
+ * - `subagentTurns` counts `usage` events of subagent turns (with a `parentToolUseId`).
+ * - `toolCalls` counts `tool_call` events, the main loop's and subagents', in total and by tool
+ *   name; so do `filesRead`, `bytesRead` and `searchCalls`.
  * - `filesRead` is the number of distinct `file_path` inputs of `Read` calls.
  * - `bytesRead` is the total UTF-8 length of the non-error `tool_result` outputs of `Read` calls.
  *   An approximation: Claude Code returns file content with line numbers and may truncate long
@@ -42,6 +45,7 @@ export function deriveMeasurements(events: readonly RunnerEvent[], change: Chang
   let total = 0;
   let searchCalls = 0;
   let bytesRead = 0;
+  let subagentTurns = 0;
 
   for (const event of events) {
     if (event.type === 'usage') {
@@ -49,6 +53,7 @@ export function deriveMeasurements(events: readonly RunnerEvent[], change: Chang
       tokens.output += event.output;
       tokens.cacheRead += event.cacheRead;
       tokens.cacheWrite += event.cacheWrite;
+      if (event.parentToolUseId !== undefined && event.remainder !== true) subagentTurns += 1;
     } else if (event.type === 'tool_call') {
       total += 1;
       byTool[event.name] = (byTool[event.name] ?? 0) + 1;
@@ -68,6 +73,7 @@ export function deriveMeasurements(events: readonly RunnerEvent[], change: Chang
     tokens,
     costUsd: result?.costUsd ?? 0,
     turns: result?.turns ?? 0,
+    subagentTurns,
     durationMs: result?.durationMs ?? 0,
     apiDurationMs: result?.apiDurationMs ?? 0,
     toolCalls: { total, byTool },

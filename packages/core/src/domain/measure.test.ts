@@ -76,6 +76,7 @@ describe('deriveMeasurements', () => {
       tokens: { input: 110, output: 22, cacheRead: 1300, cacheWrite: 50 },
       costUsd: 0.5,
       turns: 4,
+      subagentTurns: 0,
       durationMs: 12_000,
       apiDurationMs: 9_000,
       toolCalls: { total: 9, byTool: { Read: 5, Grep: 1, Glob: 1, WebSearch: 1, Edit: 1 } },
@@ -97,6 +98,7 @@ describe('deriveMeasurements', () => {
       tokens: { input: 0, output: 0, cacheRead: 0, cacheWrite: 0 },
       costUsd: 0,
       turns: 0,
+      subagentTurns: 0,
       durationMs: 0,
       apiDurationMs: 0,
       toolCalls: { total: 0, byTool: {} },
@@ -106,6 +108,49 @@ describe('deriveMeasurements', () => {
       changeBytes: 0,
       filesTouched: 0,
     });
+  });
+});
+
+describe('deriveMeasurements with subagents', () => {
+  const nested = (event: unknown, parentToolUseId: string): unknown => ({
+    ...(event as object),
+    parentToolUseId,
+  });
+  const events = RunnerEvent.array().parse([
+    { type: 'system_init', timestamp: T, model: 'm', claudeCodeVersion: '2.1.283', tools: [] },
+    call('a', 'Agent', { description: 'fix it', prompt: 'Fix it.' }),
+    usage(10, 5, 100, 0),
+    nested(call('s1', 'Read', { file_path: 'src/a.ts' }), 'a'),
+    nested(output('s1', 'abc'), 'a'),
+    nested(usage(20, 3, 200, 10), 'a'),
+    nested(call('s2', 'Grep', { pattern: 'x' }), 'a'),
+    nested(call('n1', 'Agent', { prompt: 'deeper' }), 'a'),
+    nested(usage(5, 1, 0, 0), 'n1'),
+    nested(usage(8, 4, 0, 0), 'a'),
+    output('a', 'done'),
+    usage(10, 5, 100, 0),
+    { ...(usage(900, 400, 0, 0) as object), remainder: true },
+    { ...result, turns: 2 },
+  ]);
+
+  it('sums tokens and counts tool calls across the main loop, subagents and the remainder', () => {
+    const measurements = deriveMeasurements(events, sampleChange);
+    expect(measurements.tokens).toEqual({
+      input: 953,
+      output: 418,
+      cacheRead: 400,
+      cacheWrite: 10,
+    });
+    expect(measurements.toolCalls).toEqual({ total: 4, byTool: { Agent: 2, Read: 1, Grep: 1 } });
+    expect(measurements.filesRead).toBe(1);
+    expect(measurements.bytesRead).toBe(3);
+    expect(measurements.searchCalls).toBe(1);
+  });
+
+  it('counts main-loop turns from the result and subagent turns from their usage events', () => {
+    const measurements = deriveMeasurements(events, sampleChange);
+    expect(measurements.turns).toBe(2);
+    expect(measurements.subagentTurns).toBe(3);
   });
 });
 
