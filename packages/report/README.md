@@ -18,7 +18,7 @@ To write a report:
 
 `src/data/embed.ts` (`serializeForEmbedding`, `embedResults`) is the reference implementation; the cli cannot import report code, so it copies these few lines.
 
-Optional: `data-mode="review"` on the same tag switches the app to review mode (arm names hidden, room for a review panel). `placebo review` will set it; `placebo run` and `placebo report` leave it off.
+Review mode: `placebo review` puts `data-mode="review"` on the same tag and embeds a `ReviewSession` (validated with the schema of the same name) instead of results: the blinded queue of runs and comparisons, in which no arm, variant name, run id or verdict appears. The app then shows the review queue and talks to the review server's `/api/*` routes; finishing the pass swaps in the full results. Results embedded with `data-mode="review"` are shown with arm labels hidden. `placebo run` and `placebo report` leave the attribute off.
 
 What the reader sees:
 
@@ -29,6 +29,7 @@ What the reader sees:
 | `schemaVersion` other than `RESULTS_SCHEMA_VERSION` | the version found and the version it reads |
 | fails the `Results` schema | the first issue path, e.g. `runs[3].grades[0].score`, and its message |
 | valid | the report |
+| review mode, a `ReviewSession` | the review queue, or the first issue path when it fails the schema |
 
 ## Number formatting
 
@@ -37,5 +38,6 @@ Differences, ranges, verdicts, runs needed, per-run means, currency, token count
 ## Scripts
 
 - `dev`: Vite dev server with `fixtures/rich.json` embedded (`PLACEBO_FIXTURE=minimal` to switch).
+- `dev:review`: the same with `fixtures/review.json` in review mode, and a stand-in for the review server's API that accepts answers without keeping them and finishes with `fixtures/rich.json`.
 - `fixtures`: regenerates `fixtures/*.json` from a fixed seed; the output is committed.
 - `preview [rich|minimal]`: embeds a fixture into the built `dist/report.html` and writes `.preview/<name>.html`.

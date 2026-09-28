@@ -3,7 +3,12 @@
 // `pnpm --filter @placebo-eval/report fixtures`.
 import { writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { Results, RESULTS_SCHEMA_VERSION, type Metric } from '@placebo-eval/core/results';
+import {
+  Results,
+  RESULTS_SCHEMA_VERSION,
+  ReviewSession,
+  type Metric,
+} from '@placebo-eval/core/results';
 
 const SEED = 20260927;
 const out = (name: string) => fileURLToPath(new URL(`../fixtures/${name}`, import.meta.url));
@@ -933,8 +938,98 @@ function minimal() {
   };
 }
 
+// --- Review session fixture --------------------------------------------------------------------
+
+/**
+ * What `placebo review` serves for the rich experiment: its first two tasks, every run as an item
+ * with the task's checklist, and every treatment run of the first task paired with a control run,
+ * all behind random tokens and in shuffled order. The first item is already answered.
+ */
+function reviewSession(results: Json) {
+  const rng = seeded(SEED + 2);
+  const runs = results.runs as Json[];
+  const tasks = TASKS.slice(0, 2);
+  const shuffle = <T>(items: readonly T[]): T[] => {
+    const copy = [...items];
+    for (let i = copy.length - 1; i > 0; i -= 1) {
+      const j = Math.floor(rng.next() * (i + 1));
+      [copy[i], copy[j]] = [copy[j] as T, copy[i] as T];
+    }
+    return copy;
+  };
+  const checks = (run: Json) =>
+    (run.grades as Json[]).flatMap((grade) => {
+      const detail = grade.detail as Json;
+      return detail.type === 'command'
+        ? [
+            {
+              command: detail.command,
+              exitCode: detail.exitCode,
+              stdout: detail.stdout,
+              stderr: detail.stderr,
+            },
+          ]
+        : [];
+    });
+  const items = shuffle(
+    tasks.flatMap((task) =>
+      runs
+        .filter((run) => run.taskId === task.id)
+        .slice(0, 6)
+        .map((run) => ({
+          token: rng.hex(12),
+          taskId: task.id,
+          prompt: task.prompt,
+          change: run.change,
+          checks: checks(run),
+          events: run.events,
+          questions: task.checklist,
+          answered: false,
+        })),
+    ),
+  );
+  const first = tasks[0];
+  const ofFirst = runs.filter((run) => run.taskId === first?.id);
+  const controls = ofFirst.filter((run) => (run.arm as Json).kind === 'control');
+  const comparisons = shuffle(
+    ofFirst
+      .filter((run) => (run.arm as Json).kind === 'treatment')
+      .slice(0, 4)
+      .map((run) => {
+        const control = rng.pick(controls);
+        const [a, b] = rng.next() < 0.5 ? [run, control] : [control, run];
+        return {
+          token: rng.hex(12),
+          taskId: first?.id,
+          prompt: first?.prompt,
+          a: { change: a.change, checks: checks(a) },
+          b: { change: b.change, checks: checks(b) },
+          answered: false,
+        };
+      }),
+  );
+  const answered = items.pop();
+  if (answered !== undefined) items.push({ ...answered, answered: true });
+  return {
+    experimentId: (results.experiment as Json).id,
+    reviewer: null,
+    taskCount: tasks.length,
+    items,
+    comparisons,
+  };
+}
+
+const richResults = rich();
+const review = ReviewSession.safeParse(reviewSession(richResults));
+if (!review.success) {
+  throw new Error(
+    `review.json does not match ReviewSession: ${JSON.stringify(review.error.issues[0])}`,
+  );
+}
+writeFileSync(out('review.json'), `${JSON.stringify(review.data, null, 2)}\n`);
+
 for (const [name, data] of [
-  ['rich.json', rich()],
+  ['rich.json', richResults],
   ['minimal.json', minimal()],
 ] as const) {
   const parsed = Results.safeParse(data);
