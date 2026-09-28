@@ -1,12 +1,10 @@
 #!/usr/bin/env node
-import { createProgram } from './program.js';
+import { main } from './program.js';
 
-const program = createProgram({
+await main(process.argv, {
   stdout: (text) => process.stdout.write(text),
   stderr: (text) => process.stderr.write(text),
   setExitCode: (code) => {
     process.exitCode = code;
   },
 });
-
-await program.parseAsync(process.argv);

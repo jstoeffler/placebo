@@ -30,7 +30,10 @@ import { isConfigurationSurface, patchPaths } from '../../domain/patch-paths.js'
 import { spawnProcess, type ProcessOutput, type ProcessRunner } from './process.js';
 
 export interface LocalExecutorOptions {
-  /** Where snapshots and run folders live. Defaults to `.placebo` in the current directory. */
+  /**
+   * Where snapshots and run folders live; the cli passes a data directory outside the repo (ADR
+   * 0014). Defaults to `.placebo` in the current directory.
+   */
   readonly root?: string;
   readonly clock?: Clock;
   /** Starts child processes; tests pass a spy. */
@@ -612,7 +615,7 @@ export class LocalExecutor implements Executor {
     args: readonly string[],
     options: { readonly reason?: ExecutorErrorReason; readonly env?: Record<string, string> } = {},
   ): Promise<string> {
-    // Snapshots and run folders sit inside the user's repo: never let git walk up into it.
+    // Snapshots and run folders may sit inside another repo: never let git walk up into it.
     const out = await this.run('git', [...GIT_SETTINGS, ...args], {
       cwd,
       env: { GIT_CEILING_DIRECTORIES: dirname(resolve(cwd)), ...options.env },
