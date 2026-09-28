@@ -11,6 +11,8 @@ export default defineConfig(
       '**/coverage/**',
       '**/.tsbuild/**',
       '.claude/worktrees/**',
+      // Hidden tests of the dogfood suite call functions its tasks ask for; they exist only in runs.
+      '.placebo/tasks/**',
       '.dependency-cruiser.cjs',
     ],
   },

@@ -1,0 +1,4 @@
+- Is the new function in core's kernel, next to the task id schema, with no import from a higher layer?
+- Is the result checked against or built from the existing task id schema, rather than a second copy of its pattern?
+- Do the added tests cover accents, the 48-character cut and a title with no usable character?
+- Does the change add no new dependency?

@@ -1,0 +1,4 @@
+- Is the new function placed with the other pure statistics code in core?
+- Does it reuse the existing mean helper instead of summing values a second way?
+- Do the added tests cover an empty list, a proportion out of range and an unsorted input?
+- Does the change leave the behaviour of every existing function unchanged?
